@@ -73,6 +73,13 @@ Short - 9
 Undefined - 10
 
 
+The dataset:
+* contains 7923 audio recordings of 70 young mice USVs, differing in strain, gender, genotype and age.
+* includes mice from two different breeds. 
+* contains 7923 audio files with a total of around 60,000 syllables. 
+
+
+
 
 
 
