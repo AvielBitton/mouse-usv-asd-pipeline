@@ -14,7 +14,7 @@ python3 -m pip install -r requirements.txt
 ````
 
 For the full original project (data, notebooks, scripts):
-[https://drive.google.com/drive/folders/1oSipZLnoeQB0Awz8U68KYeCPsULy_dQ7](https://drive.google.com/drive/folders/1oSipZLnoeQB0Awz8U68KYeCPsULy_dQ7)
+https://drive.google.com/drive/folders/1oSipZLnoeQB0Awz8U68KYeCPsULy_dQ7
 
 If there are TensorFlow incompatibility issues:
 
