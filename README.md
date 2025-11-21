@@ -78,3 +78,24 @@ Project overview and description.
 - The available data is partial. Full dataset access requires access to the BGU lab servers.
 
 ---
+
+## Project Sources
+
+The pipeline is based on several external sources:
+
+- **Full original USV project (data, notebooks, scripts)**  
+  Contains the original segmentation code and all research components.  
+  https://drive.google.com/drive/folders/1oSipZLnoeQB0Awz8U68KYeCPsULy_dQ7
+
+- **USV audio recordings (partial set)**  
+  These are the recordings shared manually. Additional data exists on the BGU servers.  
+  https://drive.google.com/drive/u/0/folders/13wMMTZUPSN5djigxD7Uk7L2D1bKCS9bF
+
+- **Original repository by Daniela Gingold**  
+  The source project that this repository was reorganized from.  
+  https://github.com/daniela-gingold/USV_Project
+
+- **Legacy repository (Dror Lederman)**  
+  Earlier version of the USV/ASD research tools.  
+  https://github.com/drorlederman/autism
+
