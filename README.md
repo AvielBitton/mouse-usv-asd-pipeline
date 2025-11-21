@@ -85,7 +85,7 @@ The pipeline is based on several external sources:
 
 - **Full original USV project (data, notebooks, scripts)**  
   Contains the original segmentation code and all research components.  
-  https://drive.google.com/drive/folders/1oSipZLnoeQB0Awz8U68KYeCPsULy_dQ7
+  https://drive.google.com/drive/folders/1zZ_ZmjBKjN3HmpYadLwvXXlHkCyi5dM9
 
 - **USV audio recordings (partial set)**  
   These are the recordings shared manually. Additional data exists on the BGU servers.  
