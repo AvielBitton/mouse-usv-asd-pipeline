@@ -1,4 +1,3 @@
-````md
 # USV_Project
 
 This project aims to classify mouse pups into two categories: **healthy** or **ASD**, based on their ultrasonic vocalizations (USVs).
@@ -142,5 +141,4 @@ plus: `mother_gen`, `pup_sex`, `avg_ISI_time`, `pup_age`, `session`, `pup_strain
 * Two different strains
 * Variation in strain, genotype, sex, and age
 
-```
-```
+
