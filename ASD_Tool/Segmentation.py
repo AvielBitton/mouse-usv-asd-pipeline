@@ -29,6 +29,12 @@ import sk_dsp_comm.fir_design_helper as fir_d
 import openpyxl
 from openpyxl import Workbook
 
+# default values for standalone script
+FrameLength = 0.006
+Fs = 250000
+
+
+
 """# **Functions**
 
 'Preprocessing' function:
@@ -260,15 +266,21 @@ def Syllables_Detection2(signal,Fs,FrameLength,Overlap, thresh, harmony_th, sign
 
 """'Rearrange_signal' function:"""
 
-def Rearrange_signal(signal,Fs,StartEnd):
- Between =[StartEnd[0][1:len(StartEnd[0])]-StartEnd[1][0:-1]]
- Between1 = np.insert(Between[0], 0, 1)
- bz1 = [Between1>0]
- Between2 = np.insert(Between[0], len(Between[0]), 1)
- bz2 = [Between2>0]
+def Rearrange_signal(signal, Fs, StartEnd):
+  Between = [StartEnd[0][1:len(StartEnd[0])] - StartEnd[1][0:-1]]
+  Between1 = np.insert(Between[0], 0, 1)
+  # במקום רשימה עם מערך בוליאני – פשוט מערך בוליאני
+  bz1 = (Between1 > 0)
+  Between2 = np.insert(Between[0], len(Between[0]), 1)
+  bz2 = (Between2 > 0)
 
- StartEndNew = [StartEnd[0][bz1], StartEnd[1][bz2]]
- return StartEndNew
+  # להבטיח שאלה numpy arrays כדי שהאינדוקס הבוליאני יעבוד יפה
+  start_arr = np.asarray(StartEnd[0])
+  end_arr   = np.asarray(StartEnd[1])
+
+  StartEndNew = [start_arr[bz1], end_arr[bz2]]
+  return StartEndNew
+
 
 """'Check_length_Call' function:"""
 

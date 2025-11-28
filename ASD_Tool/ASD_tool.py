@@ -8,7 +8,7 @@ from scipy.signal import argrelextrema
 import pandas as pd
 import xlrd
 import os
-import librosa 
+import librosa
 import librosa.display
 import math
 import sys
@@ -20,9 +20,23 @@ from openpyxl import Workbook
 from pytictoc import TicToc
 from audio_feature_extraction_reduction_by_recording import *
 
+class Logger(object):
+    def __init__(self, filename):
+        self.terminal = sys.stdout
+        self.log = open(filename, "w")
+
+    def write(self, message):
+        self.terminal.write(message)   # print to screen
+        self.log.write(message)        # write to file
+
+    def flush(self):
+        pass
+
 orig_stdout = sys.stdout
-f = open('outputs/output.txt', 'w')
-sys.stdout = f
+logger = Logger("outputs/output.txt")
+sys.stdout = logger
+# --------------------------
+
 
 input_files = os.listdir('running_data')
 
@@ -36,7 +50,7 @@ for file_name in input_files:
   if len([x for x in os.listdir('outputs') if x.startswith(file_name.split('.')[0])])==3:
     print(f"""***** {file_name} is already processed *****""")
     continue
-  
+
   # Commented out IPython magic to ensure Python compatibility.
   # read the data table:
   input_dir = f'running_data/{file_name}'
@@ -65,6 +79,7 @@ for file_name in input_files:
       if not os.path.exists('{}'.format(path)):
         print(i)
         continue
+    print(f"Loaded recording {i+1}/{len(mother)}: {path}", flush=True)
     signal_name.append(path)
     rec, rate = librosa.load(path, sr) #opens recordings and sample rate
     SignalVec.append(rec)
@@ -110,7 +125,7 @@ for file_name in input_files:
       StEndMatF = Check_length_Call(StartEndNew)
       # print(StEndMatF)
 
-      
+
       for i in range(len(StEndMatF)):
         Duration = StEndMatF[i][1] - StEndMatF[i][0]
         new_row = [signal_name[s2],mother[s2],matgen[s2],name[s2],sex[s2],pupgen[s2],age[s2],session[s2],rec_num[s2],StEndMatF[i][0],StEndMatF[i][1],Duration]
@@ -210,7 +225,9 @@ for file_name in input_files:
   t.toc() #Time elapsed since t.tic()
 
 sys.stdout = orig_stdout
-f.close()
+# Close the log file
+if 'logger' in globals():
+  logger.log.close()
 
 
 
