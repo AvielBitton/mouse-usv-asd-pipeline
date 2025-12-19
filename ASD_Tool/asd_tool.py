@@ -9,7 +9,7 @@ import openpyxl
 from openpyxl import Workbook
 from pytictoc import TicToc
 from audio_feature_extraction_reduction_by_recording import *
-from pipeline.utils import setup_logger, list_metadata_files
+from pipeline.utils import setup_logger, list_metadata_files, is_already_processed
 
 
 logger = setup_logger()
@@ -17,23 +17,23 @@ logger = setup_logger()
 
 # Load metadata Excel files from the metadata directory (excludes temporary files)
 input_files = list_metadata_files("metadata")
-logger.info(input_files)
+logger.info(f"Found {len(input_files)} metadata file(s): {input_files}")
+
 for file_name in input_files:
   try:
     t = TicToc() #create instance of class
     t.tic() #Start timer
-    logger.info("*****load data*****")
-    logger.info(f"*****processing file {file_name} *****")
+    logger.info(f"Starting file: {file_name}")
 
-    # check wheather this file was already processed or not
-    if len([x for x in os.listdir('outputs') if x.startswith(file_name.split('.')[0])])==3:
-      logger.info(f"***** {file_name} is already processed *****")
+    # Skip if already processed to support resume and avoid overwriting results
+    if is_already_processed(file_name, "outputs"):
+      logger.info(f"Skipping file (already processed): {file_name}")
       continue
 
-    # Commented out IPython magic to ensure Python compatibility.
-    # read the data table:
+    # Read metadata table from Excel file
     input_dir = f'metadata/{file_name}'
     year = file_name[5:9]
+    logger.info(f"Loading metadata: {input_dir} (year={year})")
 
     xlrd.xlsx.ensure_elementtree_imported(False, None)
     xlrd.xlsx.Element_has_iter = True
@@ -47,10 +47,11 @@ for file_name in input_files:
     session = data_table.col_values(6, 1)
     rec_num = data_table.col_values(7, 1)
 
-    #find path and load recordings:
+    # Load audio recordings for each entry in metadata
     SignalVec = []
     signal_name = []
     sr = 250000
+    logger.info(f"Loading recordings (n={len(mother)})")
     for i in range(len(mother)):
       path = 'USV_Recordings/{}/{}_{}/{}_{}/day_{}/session{}/{}.wav'.format(year, mother[i], matgen[i], name[i], pupgen[i], int(age[i]), int(session[i]), rec_num[i]) #find path of each recording
       if not os.path.exists('{}'.format(path)):
@@ -63,7 +64,7 @@ for file_name in input_files:
       rec, rate = librosa.load(path, sr) #opens recordings and sample rate
       SignalVec.append(rec)
 
-    logger.info("*****Segmentation*****")
+    logger.info(f"Segmentation started (recordings={len(SignalVec)})")
     from Segmentation import *
 
     Fs = rate
@@ -109,10 +110,13 @@ for file_name in input_files:
           Duration = StEndMatF[i][1] - StEndMatF[i][0]
           new_row = [signal_name[s2],mother[s2],matgen[s2],name[s2],sex[s2],pupgen[s2],age[s2],session[s2],rec_num[s2],StEndMatF[i][0],StEndMatF[i][1],Duration]
           sheet.append(new_row)
-    book.save(f'outputs/{file_name}')
+    
+    # Export segmentation results to Excel
+    output_xlsx = f'outputs/{file_name}'
+    book.save(output_xlsx)
+    logger.info(f"Segmentation finished (calls={siz}, exported to {output_xlsx})")
 
-
-    logger.info("*****Features: ISI and StartEnFreq*****")
+    logger.info("Features computed: ISI + start/end frequency")
     data_table = xlrd.open_workbook(f'outputs/{file_name}').sheet_by_index(0)
     motherSyl = data_table.col_values(1, 1)
     matgenSyl = data_table.col_values(2, 1)
@@ -151,7 +155,7 @@ for file_name in input_files:
     workbook.save(f'outputs/{file_name}')
 
 
-    logger.info("*****Syllabel classification*****")
+    logger.info("Classification started")
     from statistics_generator import *
 
     model_path = 'ASD_tool/model_weights.h6'
@@ -160,7 +164,8 @@ for file_name in input_files:
 
     samples = Syl_Class_Vec(year, model,ageSyl,matgenSyl,pupgenSyl,motherSyl,nameSyl,sexSyl,sessionSyl,rec_numSyl,startSyl,endSyl)
     logger.debug(f"Samples: {samples}")
-    np.save(f"outputs/{file_name.split('.')[0]}.npy", samples)
+    output_npy = f"outputs/{file_name.split('.')[0]}.npy"
+    np.save(output_npy, samples)
 
     syl_num = []
     for i in range(len(samples)):
@@ -186,21 +191,24 @@ for file_name in input_files:
         cell_to_write.value = syl_num[x]
         y += 1
     workbook.save(f'outputs/{file_name}')
+    logger.info(f"Classification finished (syllables={len(syl_num)})")
 
-    logger.info('*****Features extracting table*****')
+    logger.info("Feature extraction started")
 
     from audio_feature_extraction_reduction_by_recording import *
 
     dataset = pd.read_excel(f'outputs/{file_name}')
 
-    # extract only the relevant columns / features
+    # Extract only the relevant columns / features
     X = dataset[["Name", "Day", "Session", "Start Point (Hz)", "End Point (Hz)", "Duration (time)", "Syllable number", "Recording Number", "Mother Genotype", "Sex", "ISI_time", "Offspring Genotype"]]
 
     mouse_final_data = feature_extraction(X)
-    # export data to csv file for further use - COLAB
-    np.savetxt(f"outputs/{file_name.split('.')[0]}.csv", X=mouse_final_data, delimiter=",")
+    # Export data to CSV file for further use
+    output_csv = f"outputs/{file_name.split('.')[0]}.csv"
+    np.savetxt(output_csv, X=mouse_final_data, delimiter=",")
 
-    logger.info(f'finished to process file {file_name}')
+    logger.info(f"Exported: {output_xlsx}, {output_csv}, {output_npy}")
+    logger.info(f"Finished processing file: {file_name}")
     t.toc() #Time elapsed since t.tic()
   except Exception as e:
     logger.exception(f"Error processing file {file_name}: {e}")
@@ -210,21 +218,23 @@ for file_name in input_files:
 
 def extract_features(dir):
   try:
-    logger.info('*****Features extracting table*****')
-    # extract all files with xlsx extension
+    logger.info("Aggregating features from all processed files")
+    # Extract all files with xlsx extension
     all_files = glob.glob(os.path.join('outputs' , "*.xlsx"))
-    # read the input file
+    logger.info(f"Found {len(all_files)} processed file(s)")
+    # Read and combine all input files
     dataset = pd.concat((pd.read_excel(f) for f in all_files), ignore_index=True)
-    # add Stain column
+    # Add Strain column based on year in path
     dataset["Strain"] = [1 if int(x.split('/')[1]) == 2022 else 2 for x in dataset['Path']]
     dataset.to_excel(f"{dir}/all_data.xlsx")
-    # extract only the relevant columns / features
+    # Extract only the relevant columns / features
     dataset = dataset[["Name", "Day", "Session", "Start Point (Hz)", "End Point (Hz)", "Duration (time)", "Syllable number", "Recording Number", "Mother Genotype", "Sex", "ISI_time", "Offspring Genotype", "Strain"]]
-    # extract features
+    # Extract features
     mouse_final_data = feature_extraction(dataset)
-    # save the ouput file
-    np.savetxt(f"{dir}/all_data.csv", X=mouse_final_data, delimiter=",")
-    logger.info(f'finished to process file all_data')
+    # Save the output file
+    output_path = f"{dir}/all_data.csv"
+    np.savetxt(output_path, X=mouse_final_data, delimiter=",")
+    logger.info(f"Finished aggregating features: {dir}/all_data.xlsx, {output_path}")
   except Exception as e:
     logger.exception(f"Error in extract_features: {e}")
     raise
