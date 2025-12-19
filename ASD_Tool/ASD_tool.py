@@ -1,36 +1,15 @@
 import numpy as np
-import numpy.matlib
-import tensorflow as tf
-from scipy import signal
-from scipy.signal import butter, lfilter, freqz
-from scipy.signal import find_peaks
-from scipy.signal import argrelextrema
 import pandas as pd
 import xlrd
 import os
 import librosa
-import librosa.display
-import math
 import sys
 import glob
-import sk_dsp_comm.sigsys as ss
-import sk_dsp_comm.fir_design_helper as fir_d
 import openpyxl
 from openpyxl import Workbook
 from pytictoc import TicToc
 from audio_feature_extraction_reduction_by_recording import *
-
-class Logger(object):
-    def __init__(self, filename):
-        self.terminal = sys.stdout
-        self.log = open(filename, "w")
-
-    def write(self, message):
-        self.terminal.write(message)   # print to screen
-        self.log.write(message)        # write to file
-
-    def flush(self):
-        pass
+from pipeline.utils import Logger
 
 orig_stdout = sys.stdout
 logger = Logger("outputs/output.txt")
