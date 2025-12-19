@@ -21,7 +21,7 @@ This is the core folder containing the actual algorithmic work.
 
 ---
 
-### **running_data/**
+### **metadata/**
 Example input structure:
 
 - Metadata files prepared manually in the lab  

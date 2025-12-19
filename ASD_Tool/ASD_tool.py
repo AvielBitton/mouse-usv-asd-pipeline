@@ -38,7 +38,7 @@ sys.stdout = logger
 # --------------------------
 
 
-input_files = os.listdir('running_data')
+input_files = os.listdir('metadata')
 
 for file_name in input_files:
   t = TicToc() #create instance of class
@@ -53,7 +53,7 @@ for file_name in input_files:
 
   # Commented out IPython magic to ensure Python compatibility.
   # read the data table:
-  input_dir = f'running_data/{file_name}'
+  input_dir = f'metadata/{file_name}'
   year = file_name[5:9]
 
   xlrd.xlsx.ensure_elementtree_imported(False, None)
