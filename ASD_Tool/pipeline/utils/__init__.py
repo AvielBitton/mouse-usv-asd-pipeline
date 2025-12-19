@@ -8,6 +8,7 @@ from pipeline.utils.io_utils import (
 )
 from pipeline.utils.audio_paths import build_recording_base_path, resolve_wav_path
 from pipeline.utils.recordings_loader import load_recordings_from_metadata
+from pipeline.utils.cli_utils import parse_args, get_files_to_process
 
 __all__ = [
     'setup_logger',
@@ -19,4 +20,6 @@ __all__ = [
     'build_recording_base_path',
     'resolve_wav_path',
     'load_recordings_from_metadata',
+    'parse_args',
+    'get_files_to_process',
 ]

@@ -13,18 +13,24 @@ from pipeline.utils import (
     setup_logger,
     list_metadata_files,
     is_already_processed,
+    parse_args,
+    get_files_to_process,
 )
 from pipeline.steps import prepare_recording_metadata
 
 
 logger = setup_logger()
 
-
-# Load metadata Excel files from the metadata directory (excludes temporary files)
 input_files = list_metadata_files("metadata")
 logger.info(f"Found {len(input_files)} metadata file(s): {input_files}")
 
-for file_name in input_files:
+# Parse CLI arguments to check if user specified a single file to process
+args = parse_args()
+# Determine which files to process: all files or single file if --metadata-file was provided
+# This function validates the file exists and logs the selection
+files_to_process = get_files_to_process(input_files, args.metadata_file, logger)
+
+for file_name in files_to_process:
   try:
     t = TicToc() #create instance of class
     t.tic() #Start timer
