@@ -1,5 +1,7 @@
+import re
 from pathlib import Path
-from typing import List
+from typing import Dict, List
+import pandas as pd
 
 
 def list_metadata_files(metadata_dir: str = "metadata") -> List[str]:
@@ -55,3 +57,58 @@ def is_already_processed(file_name: str, outputs_dir: str = "outputs") -> bool:
     
     # Check if all files exist
     return xlsx_file.exists() and csv_file.exists() and npy_file.exists()
+
+
+# Required column names from metadata Excel files
+# These columns contain essential mouse information needed for processing:
+# - Mother: mother mouse identifier
+# - Mother Genotype: genetic type of the mother
+# - Name: pup mouse identifier
+# - Sex: gender of the pup
+# - Offspring Genotype: genetic type of the pup
+# - Day: age of the mouse in days
+# - Session: recording session number
+# - Recording Number: unique identifier for each audio recording
+METADATA_REQUIRED_COLUMNS = [
+    "Mother",
+    "Mother Genotype",
+    "Name",
+    "Sex",
+    "Offspring Genotype",
+    "Day",
+    "Session",
+    "Recording Number",
+]
+
+
+# Regular expression pattern to extract 4-digit year (1900-2099) from filenames
+# Used to identify the year from metadata file names (e.g., "metadata_2022.xlsx" -> "2022")
+_YEAR_REGEX_PATTERN = re.compile(r"(19|20)\d{2}")
+
+
+def extract_year_from_filename(file_name: str) -> str:
+    """Extract a 4-digit year (e.g., 2015) from the filename."""
+    m = _YEAR_REGEX_PATTERN.search(file_name)
+    if not m:
+        raise ValueError(f"Could not extract year from filename: {file_name}")
+    return m.group(0)
+
+
+def read_metadata_as_lists(metadata_path: str) -> Dict[str, List]:
+    """
+    Read the first sheet of the metadata Excel file and return a dict:
+    {column_name: list_of_values}, for METADATA_REQUIRED_COLUMNS only.
+    Assumes the first row is a header (matches the metadata files in this project).
+    """
+    df = pd.read_excel(metadata_path, sheet_name=0, engine="openpyxl")
+    df.columns = [str(c).strip() for c in df.columns]
+
+    missing = [c for c in METADATA_REQUIRED_COLUMNS if c not in df.columns]
+    if missing:
+        raise ValueError(f"Missing required columns in {metadata_path}: {missing}")
+
+    df = df[METADATA_REQUIRED_COLUMNS].dropna(how="all")
+    if df.empty:
+        raise ValueError(f"No metadata rows found in {metadata_path}")
+
+    return {c: df[c].tolist() for c in METADATA_REQUIRED_COLUMNS}

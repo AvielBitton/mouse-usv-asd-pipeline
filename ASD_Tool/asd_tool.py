@@ -9,7 +9,14 @@ import openpyxl
 from openpyxl import Workbook
 from pytictoc import TicToc
 from audio_feature_extraction_reduction_by_recording import *
-from pipeline.utils import setup_logger, list_metadata_files, is_already_processed
+from pipeline.utils import (
+    setup_logger,
+    list_metadata_files,
+    is_already_processed,
+    METADATA_REQUIRED_COLUMNS,
+    extract_year_from_filename,
+    read_metadata_as_lists,
+)
 
 
 logger = setup_logger()
@@ -25,27 +32,28 @@ for file_name in input_files:
     t.tic() #Start timer
     logger.info(f"Starting file: {file_name}")
 
-    # Skip if already processed to support resume and avoid overwriting results
+    # Skip files with existing outputs (xlsx/csv/npy) to resume safely and avoid unnecessary reprocessing
     if is_already_processed(file_name, "outputs"):
       logger.info(f"Skipping file (already processed): {file_name}")
       continue
 
     # Read metadata table from Excel file
-    input_dir = f'metadata/{file_name}'
-    year = file_name[5:9]
-    logger.info(f"Loading metadata: {input_dir} (year={year})")
+    # Build the full path to the metadata Excel file
+    metadata_path = f"metadata/{file_name}"
+    
+    # Extract the year from the filename (e.g., "metadata_2022.xlsx" -> "2022")
+    year = extract_year_from_filename(file_name)
+    
+    # Read the Excel file and convert each column to a list of values
+    meta = read_metadata_as_lists(metadata_path)
 
-    xlrd.xlsx.ensure_elementtree_imported(False, None)
-    xlrd.xlsx.Element_has_iter = True
-    data_table = xlrd.open_workbook(input_dir).sheet_by_index(0)
-    mother = data_table.col_values(0, 1)
-    matgen = data_table.col_values(1, 1)
-    name = data_table.col_values(2, 1)
-    sex = data_table.col_values(3, 1)
-    pupgen = data_table.col_values(4, 1)
-    age = data_table.col_values(5, 1)
-    session = data_table.col_values(6, 1)
-    rec_num = data_table.col_values(7, 1)
+    # Unpack the metadata columns into separate variables for easier access
+    # Each variable contains a list of values for all rows in that column
+    mother, matgen, name, sex, pupgen, age, session, rec_num = (
+        meta[c] for c in METADATA_REQUIRED_COLUMNS
+    )
+
+    logger.info(f"Loaded metadata rows={len(mother)} from {metadata_path} (year={year})")
 
     # Load audio recordings for each entry in metadata
     SignalVec = []
