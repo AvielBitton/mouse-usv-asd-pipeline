@@ -13,11 +13,8 @@ from pipeline.utils import (
     setup_logger,
     list_metadata_files,
     is_already_processed,
-    METADATA_REQUIRED_COLUMNS,
-    extract_year_from_filename,
-    read_metadata_as_lists,
-    load_recordings_from_metadata,
 )
+from pipeline.steps import prepare_recording_metadata
 
 
 logger = setup_logger()
@@ -38,40 +35,20 @@ for file_name in input_files:
       logger.info(f"Skipping file (already processed): {file_name}")
       continue
 
-    # Read metadata table from Excel file
-    # Build the full path to the metadata Excel file
-    metadata_path = f"metadata/{file_name}"
-    
-    # Extract the year from the filename (e.g., "metadata_2022.xlsx" -> "2022")
-    year = extract_year_from_filename(file_name)
-    
-    # Read the Excel file and convert each column to a list of values
-    meta = read_metadata_as_lists(metadata_path)
-
-    # Unpack the metadata columns into separate variables for easier access
-    # Each variable contains a list of values for all rows in that column
-    mother, matgen, name, sex, pupgen, age, session, rec_num = (
-        meta[c] for c in METADATA_REQUIRED_COLUMNS
-    )
-
-    logger.info(f"Loaded metadata rows={len(mother)} from {metadata_path} (year={year})")
-
-    # Load audio recordings for each entry in metadata
-    SignalVec, signal_name, rate, missing_count = load_recordings_from_metadata(
-        year=year,
-        mother=mother,
-        matgen=matgen,
-        name=name,
-        pupgen=pupgen,
-        age=age,
-        session=session,
-        rec_num=rec_num,
-        sr=250000,
+    # Step 1: Prepare inputs (metadata + audio recordings)
+    (
+        year,
+        mother, matgen, name, sex, pupgen, age, session, rec_num,
+        SignalVec, signal_name, rate, missing_count,
+    ) = prepare_recording_metadata(
+        file_name=file_name,
+        metadata_dir="metadata",
         recordings_root="USV_Recordings",
+        sr=250000,
         logger=logger,
     )
 
-    logger.info(f"Segmentation started (recordings={len(SignalVec)})")
+    logger.info(f"Segmentation started (recordings={len(SignalVec)}, missing={missing_count})")
     from Segmentation import *
 
     Fs = rate
@@ -201,8 +178,6 @@ for file_name in input_files:
     logger.info(f"Classification finished (syllables={len(syl_num)})")
 
     logger.info("Feature extraction started")
-
-    from audio_feature_extraction_reduction_by_recording import *
 
     dataset = pd.read_excel(f'outputs/{file_name}')
 
