@@ -16,6 +16,7 @@ from pipeline.utils import (
     METADATA_REQUIRED_COLUMNS,
     extract_year_from_filename,
     read_metadata_as_lists,
+    load_recordings_from_metadata,
 )
 
 
@@ -56,21 +57,19 @@ for file_name in input_files:
     logger.info(f"Loaded metadata rows={len(mother)} from {metadata_path} (year={year})")
 
     # Load audio recordings for each entry in metadata
-    SignalVec = []
-    signal_name = []
-    sr = 250000
-    logger.info(f"Loading recordings (n={len(mother)})")
-    for i in range(len(mother)):
-      path = 'USV_Recordings/{}/{}_{}/{}_{}/day_{}/session{}/{}.wav'.format(year, mother[i], matgen[i], name[i], pupgen[i], int(age[i]), int(session[i]), rec_num[i]) #find path of each recording
-      if not os.path.exists('{}'.format(path)):
-        path = 'USV_Recordings/{}/{}_{}/{}_{}/day_{}/session{}/{}.WAV'.format(year, mother[i], matgen[i], name[i], pupgen[i], int(age[i]), int(session[i]), rec_num[i])
-        if not os.path.exists('{}'.format(path)):
-          logger.warning(f"Recording {i} not found for {mother[i]}_{name[i]}, skipping")
-          continue
-      logger.info(f"Loaded recording {i+1}/{len(mother)}: {path}")
-      signal_name.append(path)
-      rec, rate = librosa.load(path, sr) #opens recordings and sample rate
-      SignalVec.append(rec)
+    SignalVec, signal_name, rate, missing_count = load_recordings_from_metadata(
+        year=year,
+        mother=mother,
+        matgen=matgen,
+        name=name,
+        pupgen=pupgen,
+        age=age,
+        session=session,
+        rec_num=rec_num,
+        sr=250000,
+        recordings_root="USV_Recordings",
+        logger=logger,
+    )
 
     logger.info(f"Segmentation started (recordings={len(SignalVec)})")
     from Segmentation import *

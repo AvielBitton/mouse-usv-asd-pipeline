@@ -6,6 +6,8 @@ from pipeline.utils.io_utils import (
     extract_year_from_filename,
     read_metadata_as_lists,
 )
+from pipeline.utils.audio_paths import build_recording_base_path, resolve_wav_path
+from pipeline.utils.recordings_loader import load_recordings_from_metadata
 
 __all__ = [
     'setup_logger',
@@ -14,4 +16,7 @@ __all__ = [
     'METADATA_REQUIRED_COLUMNS',
     'extract_year_from_filename',
     'read_metadata_as_lists',
+    'build_recording_base_path',
+    'resolve_wav_path',
+    'load_recordings_from_metadata',
 ]
