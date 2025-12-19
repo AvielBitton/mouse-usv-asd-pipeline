@@ -8,7 +8,7 @@ This script validates that Step 1 of the pipeline works correctly by:
 
 How to run:
     source .venv/bin/activate
-    PYTHONPATH=ASD_Tool:$PYTHONPATH python check_step1_2015.py
+    PYTHONPATH=ASD_Tool:$PYTHONPATH python ASD_Tool/pipeline/tests/check_step1_2015.py
 
 What success looks like:
     - The script finds a 2015 metadata file
