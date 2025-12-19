@@ -7,4 +7,4 @@ COPY . .
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 
-CMD ["python", "ASD_Tool/ASD_tool.py"]
+CMD ["python", "ASD_Tool/asd_tool.py"]
