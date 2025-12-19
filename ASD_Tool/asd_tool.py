@@ -9,14 +9,15 @@ import openpyxl
 from openpyxl import Workbook
 from pytictoc import TicToc
 from audio_feature_extraction_reduction_by_recording import *
-from pipeline.utils import setup_logger
+from pipeline.utils import setup_logger, list_metadata_files
 
 
 logger = setup_logger()
 
 
-input_files = os.listdir('metadata')
-
+# Load metadata Excel files from the metadata directory (excludes temporary files)
+input_files = list_metadata_files("metadata")
+logger.info(input_files)
 for file_name in input_files:
   try:
     t = TicToc() #create instance of class
