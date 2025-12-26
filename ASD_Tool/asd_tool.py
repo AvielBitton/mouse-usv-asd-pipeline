@@ -16,16 +16,7 @@ from pipeline.utils import (
     parse_args,
     get_files_to_process,
 )
-from pipeline.steps import prepare_recording_metadata, create_segmentation_workbook, segment_single_recording, append_calls_to_sheet
-
-
-##################################################
-### consts
-##################################################
-FRAME_LENGTH = 0.006
-OVERLAP = 0.7
-THRESH = 20
-HARMONY_TH = 0.009
+from pipeline.steps import prepare_recording_metadata, run_segmentation
 
 
 ##################################################
@@ -70,40 +61,26 @@ for file_name in files_to_process:
         logger=logger,
     )
 
-    logger.info(f"Segmentation started (recordings={len(SignalVec)}, missing={missing_count})")
+    # Run segmentation: process recordings, detect syllables, save to Excel
+    output_xlsx = run_segmentation(
+        file_name=file_name,
+        SignalVec=SignalVec,
+        signal_name=signal_name,
+        rate=rate,
+        mother=mother,
+        matgen=matgen,
+        name=name,
+        sex=sex,
+        pupgen=pupgen,
+        age=age,
+        session=session,
+        rec_num=rec_num,
+        missing_count=missing_count,
+        logger=logger,
+    )
 
-    Fs = rate
+    # Define siz for use in subsequent steps (features/classification)
     siz = len(SignalVec)
-    book, sheet = create_segmentation_workbook()
-
-    # Process each recording: detect syllables and extract start/end times
-    for recording_idx in range(siz):
-      signal = SignalVec[recording_idx]
-      # Segment the recording: preprocess, detect syllables, validate segments
-      # Returns list of [start_time, end_time] pairs, or empty list if no syllables found
-      calls = segment_single_recording(signal, Fs, FRAME_LENGTH, OVERLAP, THRESH, HARMONY_TH, signal_name[recording_idx])
-
-      # Write detected syllables to Excel workbook
-      if calls:
-        append_calls_to_sheet(
-          sheet,
-          signal_name[recording_idx],
-          mother[recording_idx],
-          matgen[recording_idx],
-          name[recording_idx],
-          sex[recording_idx],
-          pupgen[recording_idx],
-          age[recording_idx],
-          session[recording_idx],
-          rec_num[recording_idx],
-          calls
-        )
-    
-    # Export segmentation results to Excel
-    output_xlsx = f'outputs/{file_name}'
-    book.save(output_xlsx)
-    logger.info(f"Segmentation finished (calls={siz}, exported to {output_xlsx})")
-
 
     ##################################################
     #### 3: basic features + classification

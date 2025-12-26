@@ -8,6 +8,15 @@ from ...Segmentation import (
 )
 
 
+##################################################
+### consts
+##################################################
+FRAME_LENGTH = 0.006
+OVERLAP = 0.7
+THRESH = 20
+HARMONY_TH = 0.009
+
+
 def create_segmentation_workbook():
     """Create and initialize Excel workbook for segmentation results."""
     book = Workbook()
@@ -121,3 +130,68 @@ def append_calls_to_sheet(sheet, signal_path, mother_value, matgen_value, name_v
       Duration = calls[i][1] - calls[i][0]
       new_row = [signal_path, mother_value, matgen_value, name_value, sex_value, pupgen_value, age_value, session_value, rec_num_value, calls[i][0], calls[i][1], Duration]
       sheet.append(new_row)
+
+
+def run_segmentation(file_name, SignalVec, signal_name, rate, mother, matgen, name, sex, pupgen, age, session, rec_num, missing_count, logger):
+    """
+    Run segmentation pipeline on recordings.
+    
+    Processes all recordings in SignalVec, detects syllables, and writes results
+    to an Excel workbook. The workbook is saved to outputs/{file_name}.
+    
+    Uses segmentation constants defined in this module: FRAME_LENGTH, OVERLAP, THRESH, HARMONY_TH.
+    
+    Args:
+        file_name: name of the metadata file (used for output filename)
+        SignalVec: list of audio signal arrays
+        signal_name: list of signal file names/paths
+        rate: sampling rate
+        mother: list of mother identifiers
+        matgen: list of mother genotype values
+        name: list of name identifiers
+        sex: list of sex values
+        pupgen: list of offspring genotype values
+        age: list of age values
+        session: list of session values
+        rec_num: list of recording number values
+        missing_count: number of missing recordings
+        logger: logger instance for logging
+        
+    Returns:
+        str: path to the saved Excel file (output_xlsx)
+    """
+    logger.info(f"Segmentation started (recordings={len(SignalVec)}, missing={missing_count})")
+    
+    Fs = rate
+    siz = len(SignalVec)
+    book, sheet = create_segmentation_workbook()
+    
+    # Process each recording: detect syllables and extract start/end times
+    for recording_idx in range(siz):
+      signal = SignalVec[recording_idx]
+      # Segment the recording: preprocess, detect syllables, validate segments
+      # Returns list of [start_time, end_time] pairs, or empty list if no syllables found
+      calls = segment_single_recording(signal, Fs, FRAME_LENGTH, OVERLAP, THRESH, HARMONY_TH, signal_name[recording_idx])
+      
+      # Write detected syllables to Excel workbook
+      if calls:
+        append_calls_to_sheet(
+          sheet,
+          signal_name[recording_idx],
+          mother[recording_idx],
+          matgen[recording_idx],
+          name[recording_idx],
+          sex[recording_idx],
+          pupgen[recording_idx],
+          age[recording_idx],
+          session[recording_idx],
+          rec_num[recording_idx],
+          calls
+        )
+    
+    # Export segmentation results to Excel
+    output_xlsx = f'outputs/{file_name}'
+    book.save(output_xlsx)
+    logger.info(f"Segmentation finished (calls={siz}, exported to {output_xlsx})")
+    
+    return output_xlsx
