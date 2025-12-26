@@ -17,8 +17,26 @@ from pipeline.utils import (
     get_files_to_process,
 )
 from pipeline.steps import prepare_recording_metadata
+from Segmentation import (
+    Preprocessing as preprocessing,
+    Syllables_Detection2 as syllablesDetection,
+    Rearrange_signal as rearrangeSignal,
+    Check_length_Call as checkLengthCall,
+)
 
 
+##################################################
+### consts
+##################################################
+FRAME_LENGTH = 0.006
+OVERLAP = 0.7
+THRESH = 20
+HARMONY_TH = 0.009
+
+
+##################################################
+#### 1: setup & file selection
+##################################################
 logger = setup_logger()
 
 input_files = list_metadata_files("metadata")
@@ -41,7 +59,11 @@ for file_name in files_to_process:
       logger.info(f"Skipping file (already processed): {file_name}")
       continue
 
-    # Step 1: Prepare inputs (metadata + audio recordings)
+
+    ##################################################
+    #### 2: segmentation
+    ##################################################
+    # load metadata + audio recordings
     (
         year,
         mother, matgen, name, sex, pupgen, age, session, rec_num,
@@ -55,14 +77,8 @@ for file_name in files_to_process:
     )
 
     logger.info(f"Segmentation started (recordings={len(SignalVec)}, missing={missing_count})")
-    from Segmentation import *
 
     Fs = rate
-    FrameLength = 0.006
-    Overlap = 0.7
-    thresh = 20
-    harmony_th = 0.009
-
     siz = len(SignalVec)
     book = Workbook()
     sheet = book.active
@@ -70,7 +86,7 @@ for file_name in files_to_process:
     sheet.append(title)
     for s2 in range(siz):
       signal = SignalVec[s2]
-      signal = Preprocessing(signal,Fs)
+      signal = preprocessing(signal,Fs)
       # if there is a 'silent' start (zeros), skipping to the "real" start:
       ind = np.where(signal == 0)
       is_empty = ind[0].size == 0
@@ -88,11 +104,11 @@ for file_name in files_to_process:
       else:
         ind2 = [[0],[0]]
 
-      _,_,_,_,ClassLPC,SyllabelVec,SignalPath = Syllables_Detection2(signal,Fs,FrameLength,Overlap, thresh, harmony_th, signal_name[s2], ind2)
+      _,_,_,_,ClassLPC,SyllabelVec,SignalPath = syllablesDetection(signal,Fs,FRAME_LENGTH,OVERLAP, THRESH, HARMONY_TH, signal_name[s2], ind2)
 
       if any(SyllabelVec):
-        StartEndNew = Rearrange_signal(signal,Fs,ClassLPC.time1) #StartEndNew - times vector
-        StEndMatF = Check_length_Call(StartEndNew)
+        StartEndNew = rearrangeSignal(signal,Fs,ClassLPC.time1) #StartEndNew - times vector
+        StEndMatF = checkLengthCall(StartEndNew)
         # logger.debug(StEndMatF)
 
 
@@ -106,7 +122,13 @@ for file_name in files_to_process:
     book.save(output_xlsx)
     logger.info(f"Segmentation finished (calls={siz}, exported to {output_xlsx})")
 
+
+    ##################################################
+    #### 3: basic features + classification
+    ##################################################
     logger.info("Features computed: ISI + start/end frequency")
+
+    # read columns from xlsx (segmentation output)
     data_table = xlrd.open_workbook(f'outputs/{file_name}').sheet_by_index(0)
     motherSyl = data_table.col_values(1, 1)
     matgenSyl = data_table.col_values(2, 1)
@@ -204,6 +226,9 @@ for file_name in files_to_process:
 
 
 
+##################################################
+#### 5: aggregation (all files)
+##################################################
 def extract_features(dir):
   try:
     logger.info("Aggregating features from all processed files")
