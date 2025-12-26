@@ -81,12 +81,12 @@ for file_name in files_to_process:
     Fs = rate
     siz = len(SignalVec)
     book, sheet = create_segmentation_workbook()
-    for s2 in range(siz):
-      signal = SignalVec[s2]
+    for recording_idx in range(siz):
+      signal = SignalVec[recording_idx]
       signal = preprocessing(signal,Fs)
       signal, ind2 = trim_leading_silence(signal)
 
-      _,_,_,_,ClassLPC,SyllabelVec,SignalPath = syllablesDetection(signal,Fs,FRAME_LENGTH,OVERLAP, THRESH, HARMONY_TH, signal_name[s2], ind2)
+      _,_,_,_,ClassLPC,SyllabelVec,SignalPath = syllablesDetection(signal,Fs,FRAME_LENGTH,OVERLAP, THRESH, HARMONY_TH, signal_name[recording_idx], ind2)
 
       if any(SyllabelVec):
         StartEndNew = rearrangeSignal(signal,Fs,ClassLPC.time1) #StartEndNew - times vector
@@ -96,7 +96,7 @@ for file_name in files_to_process:
 
         for i in range(len(StEndMatF)):
           Duration = StEndMatF[i][1] - StEndMatF[i][0]
-          new_row = [signal_name[s2],mother[s2],matgen[s2],name[s2],sex[s2],pupgen[s2],age[s2],session[s2],rec_num[s2],StEndMatF[i][0],StEndMatF[i][1],Duration]
+          new_row = [signal_name[recording_idx],mother[recording_idx],matgen[recording_idx],name[recording_idx],sex[recording_idx],pupgen[recording_idx],age[recording_idx],session[recording_idx],rec_num[recording_idx],StEndMatF[i][0],StEndMatF[i][1],Duration]
           sheet.append(new_row)
     
     # Export segmentation results to Excel
