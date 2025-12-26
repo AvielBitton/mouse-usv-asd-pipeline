@@ -1,4 +1,4 @@
 from .prepare_file_inputs import prepare_recording_metadata
-from .segmentation import create_segmentation_workbook, trim_leading_silence
+from .segmentation import create_segmentation_workbook, trim_leading_silence, segment_single_recording
 
 
