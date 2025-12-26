@@ -16,7 +16,7 @@ from pipeline.utils import (
     parse_args,
     get_files_to_process,
 )
-from pipeline.steps import prepare_recording_metadata
+from pipeline.steps import prepare_recording_metadata, create_segmentation_workbook
 from Segmentation import (
     Preprocessing as preprocessing,
     Syllables_Detection2 as syllablesDetection,
@@ -80,10 +80,7 @@ for file_name in files_to_process:
 
     Fs = rate
     siz = len(SignalVec)
-    book = Workbook()
-    sheet = book.active
-    title = ['Path','Mother','Mother Genotype','Name','Sex','Offspring Genotype','Day','Session','Recording Number','Start point(s)','End point(s)','Duration (time)']
-    sheet.append(title)
+    book, sheet = create_segmentation_workbook()
     for s2 in range(siz):
       signal = SignalVec[s2]
       signal = preprocessing(signal,Fs)
