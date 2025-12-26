@@ -95,3 +95,29 @@ def segment_single_recording(signal, Fs, frame_length, overlap, thresh, harmony_
       return StEndMatF
     else:
       return []
+
+
+def append_calls_to_sheet(sheet, signal_path, mother_value, matgen_value, name_value, sex_value, pupgen_value, age_value, session_value, rec_num_value, calls):
+    """
+    Append detected syllable calls to Excel sheet.
+    
+    For each call in the calls list, calculates the duration and appends a row
+    to the sheet with all metadata and timing information.
+    
+    Args:
+        sheet: openpyxl worksheet object to append rows to
+        signal_path: path/name of the signal file
+        mother_value: mother identifier value
+        matgen_value: mother genotype value
+        name_value: name identifier value
+        sex_value: sex value
+        pupgen_value: offspring genotype value
+        age_value: age value
+        session_value: session value
+        rec_num_value: recording number value
+        calls: list of [start_time, end_time] pairs (like StEndMatF)
+    """
+    for i in range(len(calls)):
+      Duration = calls[i][1] - calls[i][0]
+      new_row = [signal_path, mother_value, matgen_value, name_value, sex_value, pupgen_value, age_value, session_value, rec_num_value, calls[i][0], calls[i][1], Duration]
+      sheet.append(new_row)

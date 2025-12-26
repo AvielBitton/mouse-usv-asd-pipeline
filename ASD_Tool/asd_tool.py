@@ -16,7 +16,7 @@ from pipeline.utils import (
     parse_args,
     get_files_to_process,
 )
-from pipeline.steps import prepare_recording_metadata, create_segmentation_workbook, segment_single_recording
+from pipeline.steps import prepare_recording_metadata, create_segmentation_workbook, segment_single_recording, append_calls_to_sheet
 
 
 ##################################################
@@ -85,10 +85,19 @@ for file_name in files_to_process:
 
       # Write detected syllables to Excel workbook
       if calls:
-        for i in range(len(calls)):
-          Duration = calls[i][1] - calls[i][0]
-          new_row = [signal_name[recording_idx],mother[recording_idx],matgen[recording_idx],name[recording_idx],sex[recording_idx],pupgen[recording_idx],age[recording_idx],session[recording_idx],rec_num[recording_idx],calls[i][0],calls[i][1],Duration]
-          sheet.append(new_row)
+        append_calls_to_sheet(
+          sheet,
+          signal_name[recording_idx],
+          mother[recording_idx],
+          matgen[recording_idx],
+          name[recording_idx],
+          sex[recording_idx],
+          pupgen[recording_idx],
+          age[recording_idx],
+          session[recording_idx],
+          rec_num[recording_idx],
+          calls
+        )
     
     # Export segmentation results to Excel
     output_xlsx = f'outputs/{file_name}'
