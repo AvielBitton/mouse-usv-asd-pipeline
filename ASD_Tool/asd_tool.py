@@ -16,7 +16,7 @@ from pipeline.utils import (
     parse_args,
     get_files_to_process,
 )
-from pipeline.steps import prepare_recording_metadata, create_segmentation_workbook
+from pipeline.steps import prepare_recording_metadata, create_segmentation_workbook, trim_leading_silence
 from Segmentation import (
     Preprocessing as preprocessing,
     Syllables_Detection2 as syllablesDetection,
@@ -84,22 +84,7 @@ for file_name in files_to_process:
     for s2 in range(siz):
       signal = SignalVec[s2]
       signal = preprocessing(signal,Fs)
-      # if there is a 'silent' start (zeros), skipping to the "real" start:
-      ind = np.where(signal == 0)
-      is_empty = ind[0].size == 0
-      if not(is_empty) and ind[0][0] == 0:
-        DiffInd = np.diff(np.diff(ind))
-        ind2 = np.where(DiffInd != 0)
-        is_empty = ind2[0].size == 0
-        if not(is_empty):
-          for i in range(0,len(signal)-int(ind2[0])):
-            signal[i] = signal[i+int(ind2[0])]
-          i = range(len(signal)-int(ind2[0]),len(signal))
-          signal = np.delete(signal,i)
-        else:
-          ind2 = [[0],[0]]
-      else:
-        ind2 = [[0],[0]]
+      signal, ind2 = trim_leading_silence(signal)
 
       _,_,_,_,ClassLPC,SyllabelVec,SignalPath = syllablesDetection(signal,Fs,FRAME_LENGTH,OVERLAP, THRESH, HARMONY_TH, signal_name[s2], ind2)
 
