@@ -13,6 +13,7 @@ from pipeline.utils import (
     list_metadata_files,
     is_already_processed,
     is_segmentation_file_exist,
+    get_output_filename,
     parse_args,
     get_files_to_process,
 )
@@ -64,7 +65,8 @@ for file_name in files_to_process:
     # Check if segmentation already exists - if so, skip segmentation step
     if is_segmentation_file_exist(file_name, "outputs"):
       logger.info(f"Segmentation already exists for {file_name}, skipping segmentation step")
-      output_xlsx = f'outputs/{file_name}'
+      output_filename = get_output_filename(file_name)
+      output_xlsx = f'outputs/{output_filename}'
     else:
       # Run segmentation: process recordings, detect syllables, save to Excel
       output_xlsx = run_segmentation(
@@ -87,15 +89,18 @@ for file_name in files_to_process:
     ##################################################
     #### 3: basic features (ISI time + start/end frequencies)
     ##################################################
+    # Get output filename (different from metadata filename)
+    output_filename = get_output_filename(file_name)
+    
     # Read segmentation results from Excel file (using column names)
     (
         motherSyl, matgenSyl, nameSyl, sexSyl, pupgenSyl,
         ageSyl, sessionSyl, rec_numSyl, startSyl, endSyl,
-    ) = read_segmentation_results(f'outputs/{file_name}', logger=logger)
+    ) = read_segmentation_results(f'outputs/{output_filename}', logger=logger)
 
     # Compute basic features and add 3 columns to Excel: 'ISI_time', 'Start Point (Hz)', 'End Point (Hz)'
     compute_basic_features(
-        file_path=f'outputs/{file_name}',
+        file_path=f'outputs/{output_filename}',
         signal_vec=SignalVec,
         siz=siz,
         mother=mother,
@@ -126,7 +131,7 @@ for file_name in files_to_process:
 
     samples = Syl_Class_Vec(year, model,ageSyl,matgenSyl,pupgenSyl,motherSyl,nameSyl,sexSyl,sessionSyl,rec_numSyl,startSyl,endSyl)
     logger.debug(f"Samples: {samples}")
-    output_npy = f"outputs/{file_name.split('.')[0]}.npy"
+    output_npy = f"outputs/{output_filename.split('.')[0]}.npy"
     np.save(output_npy, samples)
 
     syl_num = []
@@ -143,7 +148,7 @@ for file_name in files_to_process:
 
 
     y = 2
-    workbook = openpyxl.load_workbook(f'outputs/{file_name}')
+    workbook = openpyxl.load_workbook(f'outputs/{output_filename}')
     worksheet = workbook.worksheets[0]
     worksheet.insert_cols(16)
     cell_title = worksheet.cell(row=1, column=16)
@@ -152,19 +157,19 @@ for file_name in files_to_process:
         cell_to_write = worksheet.cell(row=y, column=16)
         cell_to_write.value = syl_num[x]
         y += 1
-    workbook.save(f'outputs/{file_name}')
+    workbook.save(f'outputs/{output_filename}')
     logger.info(f"Classification finished (syllables={len(syl_num)})")
 
     logger.info("Feature extraction started")
 
-    dataset = pd.read_excel(f'outputs/{file_name}')
+    dataset = pd.read_excel(f'outputs/{output_filename}')
 
     # Extract only the relevant columns / features
     X = dataset[["Name", "Day", "Session", "Start Point (Hz)", "End Point (Hz)", "Duration (time)", "Syllable number", "Recording Number", "Mother Genotype", "Sex", "ISI_time", "Offspring Genotype"]]
 
     mouse_final_data = feature_extraction(X)
     # Export data to CSV file for further use
-    output_csv = f"outputs/{file_name.split('.')[0]}.csv"
+    output_csv = f"outputs/{output_filename.split('.')[0]}.csv"
     np.savetxt(output_csv, X=mouse_final_data, delimiter=",")
 
     logger.info(f"Exported: {output_xlsx}, {output_csv}, {output_npy}")

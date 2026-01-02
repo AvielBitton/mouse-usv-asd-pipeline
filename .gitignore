@@ -7,9 +7,12 @@ token.json
 __pycache__/
 *.pyc
 dump/
-outputs/
+# Ignore log and txt files in outputs, but keep other files
+outputs/*.log
+outputs/*.txt
 # Temporary files (Excel lock files, etc.)
 ~$*
 ~lock*
+**/.~lock*
 *.lock
 *~
