@@ -13,6 +13,7 @@ from pipeline.utils import (
     setup_logger,
     list_metadata_files,
     is_already_processed,
+    is_segmentation_file_exist,
     parse_args,
     get_files_to_process,
 )
@@ -44,11 +45,10 @@ for file_name in files_to_process:
       logger.info(f"Skipping file (already processed): {file_name}")
       continue
 
-
     ##################################################
     #### 2: segmentation
     ##################################################
-    # load metadata + audio recordings
+    # Load metadata + audio recordings
     (
         year,
         mother, matgen, name, sex, pupgen, age, session, rec_num,
@@ -60,27 +60,30 @@ for file_name in files_to_process:
         sr=250000,
         logger=logger,
     )
-
-    # Run segmentation: process recordings, detect syllables, save to Excel
-    output_xlsx = run_segmentation(
-        file_name=file_name,
-        SignalVec=SignalVec,
-        signal_name=signal_name,
-        rate=rate,
-        mother=mother,
-        matgen=matgen,
-        name=name,
-        sex=sex,
-        pupgen=pupgen,
-        age=age,
-        session=session,
-        rec_num=rec_num,
-        missing_count=missing_count,
-        logger=logger,
-    )
-
-    # Define siz for use in subsequent steps (features/classification)
     siz = len(SignalVec)
+
+    # Check if segmentation already exists - if so, skip segmentation step
+    if is_segmentation_file_exist(file_name, "outputs"):
+      logger.info(f"Segmentation already exists for {file_name}, skipping segmentation step")
+      output_xlsx = f'outputs/{file_name}'
+    else:
+      # Run segmentation: process recordings, detect syllables, save to Excel
+      output_xlsx = run_segmentation(
+          file_name=file_name,
+          SignalVec=SignalVec,
+          signal_name=signal_name,
+          rate=rate,
+          mother=mother,
+          matgen=matgen,
+          name=name,
+          sex=sex,
+          pupgen=pupgen,
+          age=age,
+          session=session,
+          rec_num=rec_num,
+          missing_count=missing_count,
+          logger=logger,
+      )
 
     ##################################################
     #### 3: basic features + classification

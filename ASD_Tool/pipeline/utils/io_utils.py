@@ -31,6 +31,22 @@ def list_metadata_files(metadata_dir: str = "metadata") -> List[str]:
     return sorted(excel_files)
 
 
+def is_segmentation_file_exist(file_name: str, outputs_dir: str = "outputs") -> bool:
+    """
+    Check if segmentation Excel file exists for a metadata file.
+    
+    Args:
+        file_name: Name of the metadata file (e.g., "Data 2015 For Syl Segmentation_1.xlsx")
+        outputs_dir: Path to the outputs directory (default: "outputs")
+    
+    Returns:
+        True if the segmentation Excel file exists, False otherwise
+    """
+    outputs_path = Path(outputs_dir)
+    xlsx_file = outputs_path / file_name
+    return xlsx_file.exists()
+
+
 def is_already_processed(file_name: str, outputs_dir: str = "outputs") -> bool:
     """
     Check if a metadata file has already been fully processed.
@@ -112,3 +128,4 @@ def read_metadata_as_lists(metadata_path: str) -> Dict[str, List]:
         raise ValueError(f"No metadata rows found in {metadata_path}")
 
     return {c: df[c].tolist() for c in METADATA_REQUIRED_COLUMNS}
+
