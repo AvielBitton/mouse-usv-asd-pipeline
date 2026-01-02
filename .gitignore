@@ -1,2 +1,6 @@
 .idea/
 /USV_Recordings/
+.venv/
+dumps/
+credentials.json
+token.json

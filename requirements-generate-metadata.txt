@@ -1,0 +1,14 @@
+# Requirements for generate_metadata.py script
+# This is a minimal requirements file for the metadata generation script only
+# Works with Python 3.7+
+
+# Core dependencies for metadata generation (required)
+pandas>=1.3.0
+openpyxl>=3.0.0
+
+# Google Drive support (required if using --drive mode)
+# Install these if you want to use Google Drive functionality:
+google-api-python-client>=2.0.0
+google-auth-httplib2>=0.1.0
+google-auth-oauthlib>=1.0.0
+

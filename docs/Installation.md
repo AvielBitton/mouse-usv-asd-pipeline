@@ -44,10 +44,7 @@ Columns include:
 * ISI_time
 * Offspring Genotype
 
-**TODO:**
-
-* Create an automated script to generate files like those in `running_files`.
-* Create "קובץ עכברים" for year 2023.
+**Note:** An automated script (`generate_metadata.py`) is now available to generate metadata files automatically from WAV file paths. See `GENERATE_METADATA_README.md` for details.
 
 ### 2. Audio recordings
 
