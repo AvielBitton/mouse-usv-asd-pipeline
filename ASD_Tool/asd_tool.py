@@ -85,7 +85,7 @@ for file_name in files_to_process:
       )
 
     ##################################################
-    #### 3: basic features + classification
+    #### 3: basic features
     ##################################################
     logger.info("Features computed: ISI + start/end frequency")
 
@@ -120,7 +120,9 @@ for file_name in files_to_process:
         y += 1
     workbook.save(f'outputs/{file_name}')
 
-
+    ##################################################
+    #### 4: classification
+    ##################################################
     logger.info("Classification started")
     from statistics_generator import *
 
