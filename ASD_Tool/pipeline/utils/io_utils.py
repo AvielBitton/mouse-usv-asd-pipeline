@@ -96,6 +96,13 @@ METADATA_REQUIRED_COLUMNS = [
     "Recording Number",
 ]
 
+# Column names for segmentation results Excel file
+# These are the metadata columns plus segmentation-specific columns
+SEGMENTATION_RESULT_COLUMNS = METADATA_REQUIRED_COLUMNS + [
+    "Start point(s)",
+    "End point(s)",
+]
+
 
 # Regular expression pattern to extract 4-digit year (1900-2099) from filenames
 # Used to identify the year from metadata file names (e.g., "metadata_2022.xlsx" -> "2022")

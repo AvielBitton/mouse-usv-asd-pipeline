@@ -1,6 +1,5 @@
 import numpy as np
 import pandas as pd
-import xlrd
 import os
 import librosa
 import logging
@@ -17,7 +16,7 @@ from pipeline.utils import (
     parse_args,
     get_files_to_process,
 )
-from pipeline.steps import prepare_recording_metadata, run_segmentation
+from pipeline.steps import prepare_recording_metadata, run_segmentation, read_segmentation_results
 
 
 ##################################################
@@ -90,18 +89,11 @@ for file_name in files_to_process:
     ##################################################
     logger.info("Features computed: ISI + start/end frequency")
 
-    # read columns from xlsx (segmentation output)
-    data_table = xlrd.open_workbook(f'outputs/{file_name}').sheet_by_index(0)
-    motherSyl = data_table.col_values(1, 1)
-    matgenSyl = data_table.col_values(2, 1)
-    nameSyl = data_table.col_values(3, 1)
-    sexSyl = data_table.col_values(4, 1)
-    pupgenSyl = data_table.col_values(5, 1)
-    ageSyl = data_table.col_values(6, 1)
-    sessionSyl = data_table.col_values(7, 1)
-    rec_numSyl = data_table.col_values(8, 1)
-    startSyl = data_table.col_values(9, 1)
-    endSyl = data_table.col_values(10, 1)
+    # Read segmentation results from Excel file (using column names)
+    (
+        motherSyl, matgenSyl, nameSyl, sexSyl, pupgenSyl,
+        ageSyl, sessionSyl, rec_numSyl, startSyl, endSyl,
+    ) = read_segmentation_results(f'outputs/{file_name}', logger=logger)
 
     from Features import *
 

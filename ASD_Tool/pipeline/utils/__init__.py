@@ -4,6 +4,7 @@ from pipeline.utils.io_utils import (
     is_already_processed,
     is_segmentation_file_exist,
     METADATA_REQUIRED_COLUMNS,
+    SEGMENTATION_RESULT_COLUMNS,
     extract_year_from_filename,
     read_metadata_as_lists,
 )
@@ -17,6 +18,7 @@ __all__ = [
     'is_already_processed',
     'is_segmentation_file_exist',
     'METADATA_REQUIRED_COLUMNS',
+    'SEGMENTATION_RESULT_COLUMNS',
     'extract_year_from_filename',
     'read_metadata_as_lists',
     'build_recording_base_path',

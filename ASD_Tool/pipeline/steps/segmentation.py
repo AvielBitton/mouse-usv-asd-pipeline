@@ -6,6 +6,7 @@ from Segmentation import (
     Rearrange_signal as rearrangeSignal,
     Check_length_Call as checkLengthCall,
 )
+from pipeline.utils import SEGMENTATION_RESULT_COLUMNS
 
 
 ##################################################
@@ -21,7 +22,8 @@ def create_segmentation_workbook():
     """Create and initialize Excel workbook for segmentation results."""
     book = Workbook()
     sheet = book.active
-    title = ['Path','Mother','Mother Genotype','Name','Sex','Offspring Genotype','Day','Session','Recording Number','Start point(s)','End point(s)','Duration (time)']
+    # Full column list: Path + metadata columns + segmentation-specific columns + Duration
+    title = ['Path'] + SEGMENTATION_RESULT_COLUMNS + ['Duration (time)']
     sheet.append(title)
     return (book, sheet)
 
