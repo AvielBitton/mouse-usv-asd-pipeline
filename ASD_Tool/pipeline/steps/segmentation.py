@@ -1,6 +1,6 @@
 import numpy as np
 from openpyxl import Workbook
-from ...Segmentation import (
+from Segmentation import (
     Preprocessing as preprocessing,
     Syllables_Detection2 as syllablesDetection,
     Rearrange_signal as rearrangeSignal,
@@ -167,6 +167,7 @@ def run_segmentation(file_name, SignalVec, signal_name, rate, mother, matgen, na
     book, sheet = create_segmentation_workbook()
     
     # Process each recording: detect syllables and extract start/end times
+    total_calls = 0
     for recording_idx in range(siz):
       signal = SignalVec[recording_idx]
       # Segment the recording: preprocess, detect syllables, validate segments
@@ -175,6 +176,7 @@ def run_segmentation(file_name, SignalVec, signal_name, rate, mother, matgen, na
       
       # Write detected syllables to Excel workbook
       if calls:
+        total_calls += len(calls)
         append_calls_to_sheet(
           sheet,
           signal_name[recording_idx],
@@ -188,6 +190,11 @@ def run_segmentation(file_name, SignalVec, signal_name, rate, mother, matgen, na
           rec_num[recording_idx],
           calls
         )
+      
+      # Log progress every 50 recordings or at the end
+      if (recording_idx + 1) % 50 == 0 or (recording_idx + 1) == siz:
+        progress_pct = ((recording_idx + 1) / siz) * 100
+        logger.info(f"Segmentation progress: {recording_idx + 1}/{siz} recordings ({progress_pct:.1f}%) | Total syllables detected: {total_calls}")
     
     # Export segmentation results to Excel
     output_xlsx = f'outputs/{file_name}'
@@ -195,3 +202,4 @@ def run_segmentation(file_name, SignalVec, signal_name, rate, mother, matgen, na
     logger.info(f"Segmentation finished (calls={siz}, exported to {output_xlsx})")
     
     return output_xlsx
+
