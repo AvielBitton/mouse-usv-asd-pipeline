@@ -16,7 +16,7 @@ from pipeline.utils import (
     parse_args,
     get_files_to_process,
 )
-from pipeline.steps import prepare_recording_metadata, run_segmentation, read_segmentation_results
+from pipeline.steps import prepare_recording_metadata, run_segmentation, read_segmentation_results, compute_basic_features
 
 
 ##################################################
@@ -85,40 +85,34 @@ for file_name in files_to_process:
       )
 
     ##################################################
-    #### 3: basic features
+    #### 3: basic features (ISI time + start/end frequencies)
     ##################################################
-    logger.info("Features computed: ISI + start/end frequency")
-
     # Read segmentation results from Excel file (using column names)
     (
         motherSyl, matgenSyl, nameSyl, sexSyl, pupgenSyl,
         ageSyl, sessionSyl, rec_numSyl, startSyl, endSyl,
     ) = read_segmentation_results(f'outputs/{file_name}', logger=logger)
 
-    from Features import *
-
-    ISI = ISI_time(rec_numSyl,startSyl,endSyl)
-    startF,endF = StartEndFreq(SignalVec,siz,mother,name,age,session,rec_num,motherSyl,nameSyl,ageSyl,sessionSyl,rec_numSyl,startSyl,endSyl,rate)
-
-    y = 2
-    workbook = openpyxl.load_workbook(f'outputs/{file_name}')
-    worksheet = workbook.worksheets[0]
-    worksheet.insert_cols(13,15)
-    cell_title1 = worksheet.cell(row=1, column=13)
-    cell_title1.value = 'ISI_time'
-    cell_title2 = worksheet.cell(row=1, column=14)
-    cell_title2.value = 'Start Point (Hz)'
-    cell_title3 = worksheet.cell(row=1, column=15)
-    cell_title3.value = 'End Point (Hz)'
-    for x in range(len(ISI)):
-        cell_to_write = worksheet.cell(row=y, column=13)
-        cell_to_write.value = ISI[x]
-        cell_to_write = worksheet.cell(row=y, column=14)
-        cell_to_write.value = startF[x]
-        cell_to_write = worksheet.cell(row=y, column=15)
-        cell_to_write.value = endF[x]
-        y += 1
-    workbook.save(f'outputs/{file_name}')
+    # Compute basic features and add 3 columns to Excel: 'ISI_time', 'Start Point (Hz)', 'End Point (Hz)'
+    compute_basic_features(
+        file_path=f'outputs/{file_name}',
+        signal_vec=SignalVec,
+        siz=siz,
+        mother=mother,
+        name=name,
+        age=age,
+        session=session,
+        rec_num=rec_num,
+        mother_syl=motherSyl,
+        name_syl=nameSyl,
+        age_syl=ageSyl,
+        session_syl=sessionSyl,
+        rec_num_syl=rec_numSyl,
+        start_syl=startSyl,
+        end_syl=endSyl,
+        rate=rate,
+        logger=logger,
+    )
 
     ##################################################
     #### 4: classification

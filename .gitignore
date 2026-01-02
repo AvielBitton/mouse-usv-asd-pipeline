@@ -4,3 +4,12 @@
 dumps/
 credentials.json
 token.json
+__pycache__/
+*.pyc
+dump/
+outputs/
+# Temporary files (Excel lock files, etc.)
+~$*
+~lock*
+*.lock
+*~
