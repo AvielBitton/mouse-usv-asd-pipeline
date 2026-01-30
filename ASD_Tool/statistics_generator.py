@@ -26,6 +26,7 @@ from scipy.signal import butter, lfilter, freqz
 import librosa
 import librosa.display
 import cv2
+import logging
 
 def butter_highpass_filter(cutoff_H, fs, order):
   nyq = 0.5*fs
@@ -45,7 +46,7 @@ class sample:
     self.syls = syls
     self.time_between = time_between
 
-def Syl_Class_Vec(year, model,age,matgen,pupgen,mother,name,sex,session,rec_num,start,finish):
+def Syl_Class_Vec(year, model,age,matgen,pupgen,mother,name,sex,session,rec_num,start,finish,logger=None):
   # Commented out IPython magic to ensure Python compatibility.
 
   fs = 250000
@@ -63,18 +64,44 @@ def Syl_Class_Vec(year, model,age,matgen,pupgen,mother,name,sex,session,rec_num,
   start_arr = np.array(start) #converting to array
   finish_arr = np.array(finish)
   time_diff = np.subtract(finish_arr, start_arr) #calculating each syllable length
+  
+  # First pass: count unique recordings that actually exist
+  existing_recordings = set()
+  for j in range(len(mother)):
+    path = 'USV_Recordings/{}/{}_{}/{}_{}/day_{}/session{}/{}.wav'.format(year, mother[j], matgen[j], name[j], pupgen[j], int(age[j]), int(session[j]), rec_num[j])
+    if not os.path.exists('{}'.format(path)):
+      path = 'USV_Recordings/{}/{}_{}/{}_{}/day_{}/session{}/{}.WAV'.format(year, mother[j], matgen[j], name[j], pupgen[j], int(age[j]), int(session[j]), rec_num[j])
+      if os.path.exists('{}'.format(path)):
+        existing_recordings.add((name[j], rec_num[j]))
+    else:
+      existing_recordings.add((name[j], rec_num[j]))
+  
+  total_recordings = len(existing_recordings)
+  processed_recordings = set()
+  processed_count = 0
+  
   for i in range(len(mother)):
     path = 'USV_Recordings/{}/{}_{}/{}_{}/day_{}/session{}/{}.wav'.format(year, mother[i], matgen[i], name[i], pupgen[i], int(age[i]), int(session[i]), rec_num[i]) #find path of each recording
     if not os.path.exists('{}'.format(path)):
       path = 'USV_Recordings/{}/{}_{}/{}_{}/day_{}/session{}/{}.WAV'.format(year, mother[i], matgen[i], name[i], pupgen[i], int(age[i]), int(session[i]), rec_num[i])
       if not os.path.exists('{}'.format(path)):
-        print(i)
+        if logger:
+          logger.warning(f"Recording file not found: {name[i]}, rec_num {rec_num[i]}, skipping syllable")
         continue
     if i>0 and (rec_num[i] != rec_num[i-1] or name[i] != name[i-1]):
       recording = sample(mother[i-1], name[i-1], sex[i-1], age[i-1], matgen[i-1], pupgen[i-1], rec_num[i-1], pred, timeB)
       samples.append(recording)
       pred = []
       timeB = []
+    
+    # Log when we start processing a new recording
+    rec_key = (name[i], rec_num[i])
+    if rec_key not in processed_recordings:
+      processed_recordings.add(rec_key)
+      processed_count = len(processed_recordings)
+      if logger:
+        percentage = (processed_count / total_recordings * 100) if total_recordings > 0 else 0
+        logger.info(f"Processing recording {processed_count}/{total_recordings} ({percentage:.1f}%): {name[i]}, rec_num {rec_num[i]}")
     if time_diff[i] < max_time:
       rec, rate = librosa.load(path, sr) #opens recordings and sample rate, add sample rate of USVs
       temp = (max_time - time_diff[i])/2
@@ -96,11 +123,25 @@ def Syl_Class_Vec(year, model,age,matgen,pupgen,mother,name,sex,session,rec_num,
     D = D/255
     D = image.img_to_array(D)
     D = np.expand_dims(D, axis=0)
-    predict = model.predict(D)
+    predict = model.predict(D, verbose=0)
     pred.append(predict)
     if len(pred) > 1:
       timeB.append(start[i] - finish[i-1])
 
+  # Don't forget the last recording
+  if len(pred) > 0:
+    recording = sample(mother[-1], name[-1], sex[-1], age[-1], matgen[-1], pupgen[-1], rec_num[-1], pred, timeB)
+    samples.append(recording)
+    # Add last recording to processed set if not already there
+    last_rec_key = (name[-1], rec_num[-1])
+    if last_rec_key not in processed_recordings:
+      processed_recordings.add(last_rec_key)
+      processed_count = len(processed_recordings)
+      if logger:
+        total_estimated = len(set((name[j], rec_num[j]) for j in range(len(mother))))
+        percentage = (processed_count / total_estimated * 100) if total_estimated > 0 else 0
+        logger.info(f"Processing recording {processed_count}/{total_estimated} ({percentage:.1f}%): {name[-1]}, rec_num {rec_num[-1]}")
+  
   samples = np.array(samples)
   return samples
 

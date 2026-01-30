@@ -30,3 +30,4 @@ def setup_logger(log_path="outputs/output.log"):
     logger.addHandler(file_handler)
     
     return logger
+

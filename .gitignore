@@ -16,3 +16,5 @@ outputs/*.txt
 **/.~lock*
 *.lock
 *~
+# Model weights data file (too large for git)
+ASD_Tool/model_weights.h6/variables/variables.data-00000-of-00001

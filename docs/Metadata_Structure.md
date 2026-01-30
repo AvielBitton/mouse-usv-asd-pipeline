@@ -93,3 +93,4 @@ The pipeline processes each metadata file independently:
 - Extracts year from filename (characters 5-9)
 - Processes all recordings listed in the file
 - Generates output files in `outputs/` directory
+

@@ -125,11 +125,11 @@ for file_name in files_to_process:
     logger.info("Classification started")
     from statistics_generator import *
 
-    model_path = 'ASD_tool/model_weights.h6'
+    model_path = 'ASD_Tool/model_weights.h6'
     # model = keras.models.load_model(model_path, custom_objects={'KerasLayer':hub.KerasLayer})
     model = keras.models.load_model(model_path)
 
-    samples = Syl_Class_Vec(year, model,ageSyl,matgenSyl,pupgenSyl,motherSyl,nameSyl,sexSyl,sessionSyl,rec_numSyl,startSyl,endSyl)
+    samples = Syl_Class_Vec(year, model,ageSyl,matgenSyl,pupgenSyl,motherSyl,nameSyl,sexSyl,sessionSyl,rec_numSyl,startSyl,endSyl,logger=logger)
     logger.debug(f"Samples: {samples}")
     output_npy = f"outputs/{output_filename.split('.')[0]}.npy"
     np.save(output_npy, samples)

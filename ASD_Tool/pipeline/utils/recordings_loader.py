@@ -88,3 +88,4 @@ def load_recordings_from_metadata(
         logger.info(f"Recordings loaded: {len(signals)}/{n} (missing={missing_count})")
 
     return signals, paths, rate, missing_count
+
