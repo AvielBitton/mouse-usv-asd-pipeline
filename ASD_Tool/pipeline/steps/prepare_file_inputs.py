@@ -67,3 +67,4 @@ def prepare_recording_metadata(
         mother, matgen, name, sex, pupgen, age, session, rec_num,
         SignalVec, signal_name, rate, missing_count,
     )
+

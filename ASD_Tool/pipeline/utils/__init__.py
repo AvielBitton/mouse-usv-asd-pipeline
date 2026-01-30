@@ -2,7 +2,10 @@ from pipeline.utils.logging_utils import setup_logger
 from pipeline.utils.io_utils import (
     list_metadata_files,
     is_already_processed,
+    is_segmentation_file_exist,
+    get_output_filename,
     METADATA_REQUIRED_COLUMNS,
+    SEGMENTATION_RESULT_COLUMNS,
     extract_year_from_filename,
     read_metadata_as_lists,
 )
@@ -14,7 +17,10 @@ __all__ = [
     'setup_logger',
     'list_metadata_files',
     'is_already_processed',
+    'is_segmentation_file_exist',
+    'get_output_filename',
     'METADATA_REQUIRED_COLUMNS',
+    'SEGMENTATION_RESULT_COLUMNS',
     'extract_year_from_filename',
     'read_metadata_as_lists',
     'build_recording_base_path',

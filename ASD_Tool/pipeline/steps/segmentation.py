@@ -6,6 +6,7 @@ from Segmentation import (
     Rearrange_signal as rearrangeSignal,
     Check_length_Call as checkLengthCall,
 )
+from pipeline.utils import SEGMENTATION_RESULT_COLUMNS, get_output_filename
 
 
 ##################################################
@@ -21,7 +22,8 @@ def create_segmentation_workbook():
     """Create and initialize Excel workbook for segmentation results."""
     book = Workbook()
     sheet = book.active
-    title = ['Path','Mother','Mother Genotype','Name','Sex','Offspring Genotype','Day','Session','Recording Number','Start point(s)','End point(s)','Duration (time)']
+    # Full column list: Path + metadata columns + segmentation-specific columns + Duration
+    title = ['Path'] + SEGMENTATION_RESULT_COLUMNS + ['Duration (time)']
     sheet.append(title)
     return (book, sheet)
 
@@ -197,7 +199,8 @@ def run_segmentation(file_name, SignalVec, signal_name, rate, mother, matgen, na
         logger.info(f"Segmentation progress: {recording_idx + 1}/{siz} recordings ({progress_pct:.1f}%) | Total syllables detected: {total_calls}")
     
     # Export segmentation results to Excel
-    output_xlsx = f'outputs/{file_name}'
+    output_filename = get_output_filename(file_name)
+    output_xlsx = f'outputs/{output_filename}'
     book.save(output_xlsx)
     logger.info(f"Segmentation finished (calls={siz}, exported to {output_xlsx})")
     

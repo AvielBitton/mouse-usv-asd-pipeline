@@ -45,3 +45,4 @@ def get_files_to_process(
     
     logger.info("Will process %d metadata file(s): %s", len(files_to_process), files_to_process)
     return files_to_process
+

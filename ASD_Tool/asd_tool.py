@@ -1,6 +1,5 @@
 import numpy as np
 import pandas as pd
-import xlrd
 import os
 import librosa
 import logging
@@ -13,10 +12,12 @@ from pipeline.utils import (
     setup_logger,
     list_metadata_files,
     is_already_processed,
+    is_segmentation_file_exist,
+    get_output_filename,
     parse_args,
     get_files_to_process,
 )
-from pipeline.steps import prepare_recording_metadata, run_segmentation
+from pipeline.steps import prepare_recording_metadata, run_segmentation, read_segmentation_results, compute_basic_features
 
 
 ##################################################
@@ -44,11 +45,10 @@ for file_name in files_to_process:
       logger.info(f"Skipping file (already processed): {file_name}")
       continue
 
-
     ##################################################
     #### 2: segmentation
     ##################################################
-    # load metadata + audio recordings
+    # Load metadata + audio recordings
     (
         year,
         mother, matgen, name, sex, pupgen, age, session, rec_num,
@@ -60,82 +60,78 @@ for file_name in files_to_process:
         sr=250000,
         logger=logger,
     )
+    siz = len(SignalVec)
 
-    # Run segmentation: process recordings, detect syllables, save to Excel
-    output_xlsx = run_segmentation(
-        file_name=file_name,
-        SignalVec=SignalVec,
-        signal_name=signal_name,
-        rate=rate,
+    # Check if segmentation already exists - if so, skip segmentation step
+    if is_segmentation_file_exist(file_name, "outputs"):
+      logger.info(f"Segmentation already exists for {file_name}, skipping segmentation step")
+      output_filename = get_output_filename(file_name)
+      output_xlsx = f'outputs/{output_filename}'
+    else:
+      # Run segmentation: process recordings, detect syllables, save to Excel
+      output_xlsx = run_segmentation(
+          file_name=file_name,
+          SignalVec=SignalVec,
+          signal_name=signal_name,
+          rate=rate,
+          mother=mother,
+          matgen=matgen,
+          name=name,
+          sex=sex,
+          pupgen=pupgen,
+          age=age,
+          session=session,
+          rec_num=rec_num,
+          missing_count=missing_count,
+          logger=logger,
+      )
+
+    ##################################################
+    #### 3: basic features (ISI time + start/end frequencies)
+    ##################################################
+    # Get output filename (different from metadata filename)
+    output_filename = get_output_filename(file_name)
+    
+    # Read segmentation results from Excel file (using column names)
+    (
+        motherSyl, matgenSyl, nameSyl, sexSyl, pupgenSyl,
+        ageSyl, sessionSyl, rec_numSyl, startSyl, endSyl,
+    ) = read_segmentation_results(f'outputs/{output_filename}', logger=logger)
+
+    # Compute basic features and add 3 columns to Excel: 'ISI_time', 'Start Point (Hz)', 'End Point (Hz)'
+    compute_basic_features(
+        file_path=f'outputs/{output_filename}',
+        signal_vec=SignalVec,
+        siz=siz,
         mother=mother,
-        matgen=matgen,
         name=name,
-        sex=sex,
-        pupgen=pupgen,
         age=age,
         session=session,
         rec_num=rec_num,
-        missing_count=missing_count,
+        mother_syl=motherSyl,
+        name_syl=nameSyl,
+        age_syl=ageSyl,
+        session_syl=sessionSyl,
+        rec_num_syl=rec_numSyl,
+        start_syl=startSyl,
+        end_syl=endSyl,
+        rate=rate,
         logger=logger,
     )
 
-    # Define siz for use in subsequent steps (features/classification)
-    siz = len(SignalVec)
-
     ##################################################
-    #### 3: basic features + classification
+    #### 4: classification
     ##################################################
-    logger.info("Features computed: ISI + start/end frequency")
-
-    # read columns from xlsx (segmentation output)
-    data_table = xlrd.open_workbook(f'outputs/{file_name}').sheet_by_index(0)
-    motherSyl = data_table.col_values(1, 1)
-    matgenSyl = data_table.col_values(2, 1)
-    nameSyl = data_table.col_values(3, 1)
-    sexSyl = data_table.col_values(4, 1)
-    pupgenSyl = data_table.col_values(5, 1)
-    ageSyl = data_table.col_values(6, 1)
-    sessionSyl = data_table.col_values(7, 1)
-    rec_numSyl = data_table.col_values(8, 1)
-    startSyl = data_table.col_values(9, 1)
-    endSyl = data_table.col_values(10, 1)
-
-    from Features import *
-
-    ISI = ISI_time(rec_numSyl,startSyl,endSyl)
-    startF,endF = StartEndFreq(SignalVec,siz,mother,name,age,session,rec_num,motherSyl,nameSyl,ageSyl,sessionSyl,rec_numSyl,startSyl,endSyl,rate)
-
-    y = 2
-    workbook = openpyxl.load_workbook(f'outputs/{file_name}')
-    worksheet = workbook.worksheets[0]
-    worksheet.insert_cols(13,15)
-    cell_title1 = worksheet.cell(row=1, column=13)
-    cell_title1.value = 'ISI_time'
-    cell_title2 = worksheet.cell(row=1, column=14)
-    cell_title2.value = 'Start Point (Hz)'
-    cell_title3 = worksheet.cell(row=1, column=15)
-    cell_title3.value = 'End Point (Hz)'
-    for x in range(len(ISI)):
-        cell_to_write = worksheet.cell(row=y, column=13)
-        cell_to_write.value = ISI[x]
-        cell_to_write = worksheet.cell(row=y, column=14)
-        cell_to_write.value = startF[x]
-        cell_to_write = worksheet.cell(row=y, column=15)
-        cell_to_write.value = endF[x]
-        y += 1
-    workbook.save(f'outputs/{file_name}')
-
-
     logger.info("Classification started")
     from statistics_generator import *
 
-    model_path = 'ASD_tool/model_weights.h6'
+    model_path = 'ASD_Tool/model_weights.h6'
     # model = keras.models.load_model(model_path, custom_objects={'KerasLayer':hub.KerasLayer})
     model = keras.models.load_model(model_path)
 
-    samples = Syl_Class_Vec(year, model,ageSyl,matgenSyl,pupgenSyl,motherSyl,nameSyl,sexSyl,sessionSyl,rec_numSyl,startSyl,endSyl)
+    samples = Syl_Class_Vec(year, model,ageSyl,matgenSyl,pupgenSyl,motherSyl,nameSyl,sexSyl,sessionSyl,rec_numSyl,startSyl,endSyl,logger=logger)
     logger.debug(f"Samples: {samples}")
-    output_npy = f"outputs/{file_name.split('.')[0]}.npy"
+    output_npy = f"outputs/{output_filename.split('.')[0]}.npy"
     np.save(output_npy, samples)
 
     syl_num = []
@@ -152,7 +148,7 @@ for file_name in files_to_process:
 
 
     y = 2
-    workbook = openpyxl.load_workbook(f'outputs/{file_name}')
+    workbook = openpyxl.load_workbook(f'outputs/{output_filename}')
     worksheet = workbook.worksheets[0]
     worksheet.insert_cols(16)
     cell_title = worksheet.cell(row=1, column=16)
@@ -161,19 +157,19 @@ for file_name in files_to_process:
         cell_to_write = worksheet.cell(row=y, column=16)
         cell_to_write.value = syl_num[x]
         y += 1
-    workbook.save(f'outputs/{file_name}')
+    workbook.save(f'outputs/{output_filename}')
     logger.info(f"Classification finished (syllables={len(syl_num)})")
 
     logger.info("Feature extraction started")
 
-    dataset = pd.read_excel(f'outputs/{file_name}')
+    dataset = pd.read_excel(f'outputs/{output_filename}')
 
     # Extract only the relevant columns / features
     X = dataset[["Name", "Day", "Session", "Start Point (Hz)", "End Point (Hz)", "Duration (time)", "Syllable number", "Recording Number", "Mother Genotype", "Sex", "ISI_time", "Offspring Genotype"]]
 
     mouse_final_data = feature_extraction(X)
     # Export data to CSV file for further use
-    output_csv = f"outputs/{file_name.split('.')[0]}.csv"
+    output_csv = f"outputs/{output_filename.split('.')[0]}.csv"
     np.savetxt(output_csv, X=mouse_final_data, delimiter=",")
 
     logger.info(f"Exported: {output_xlsx}, {output_csv}, {output_npy}")

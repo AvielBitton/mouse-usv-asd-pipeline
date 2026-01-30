@@ -4,3 +4,17 @@
 dumps/
 credentials.json
 token.json
+__pycache__/
+*.pyc
+dump/
+# Ignore log and txt files in outputs, but keep other files
+outputs/*.log
+outputs/*.txt
+# Temporary files (Excel lock files, etc.)
+~$*
+~lock*
+**/.~lock*
+*.lock
+*~
+# Model weights data file (too large for git)
+ASD_Tool/model_weights.h6/variables/variables.data-00000-of-00001

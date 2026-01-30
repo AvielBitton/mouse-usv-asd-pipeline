@@ -31,6 +31,23 @@ def list_metadata_files(metadata_dir: str = "metadata") -> List[str]:
     return sorted(excel_files)
 
 
+def is_segmentation_file_exist(file_name: str, outputs_dir: str = "outputs") -> bool:
+    """
+    Check if segmentation Excel file exists for a metadata file.
+    
+    Args:
+        file_name: Name of the metadata file (e.g., "Data 2015 For Syl Segmentation_1.xlsx")
+        outputs_dir: Path to the outputs directory (default: "outputs")
+    
+    Returns:
+        True if the segmentation Excel file exists, False otherwise
+    """
+    outputs_path = Path(outputs_dir)
+    output_filename = get_output_filename(file_name)
+    xlsx_file = outputs_path / output_filename
+    return xlsx_file.exists()
+
+
 def is_already_processed(file_name: str, outputs_dir: str = "outputs") -> bool:
     """
     Check if a metadata file has already been fully processed.
@@ -48,12 +65,13 @@ def is_already_processed(file_name: str, outputs_dir: str = "outputs") -> bool:
         True if all expected output files exist, False otherwise
     """
     outputs_path = Path(outputs_dir)
-    file_stem = Path(file_name).stem
+    output_filename = get_output_filename(file_name)
+    output_stem = Path(output_filename).stem
     
     # Expected output files
-    xlsx_file = outputs_path / file_name
-    csv_file = outputs_path / f"{file_stem}.csv"
-    npy_file = outputs_path / f"{file_stem}.npy"
+    xlsx_file = outputs_path / output_filename
+    csv_file = outputs_path / f"{output_stem}.csv"
+    npy_file = outputs_path / f"{output_stem}.npy"
     
     # Check if all files exist
     return xlsx_file.exists() and csv_file.exists() and npy_file.exists()
@@ -80,6 +98,13 @@ METADATA_REQUIRED_COLUMNS = [
     "Recording Number",
 ]
 
+# Column names for segmentation results Excel file
+# These are the metadata columns plus segmentation-specific columns
+SEGMENTATION_RESULT_COLUMNS = METADATA_REQUIRED_COLUMNS + [
+    "Start point(s)",
+    "End point(s)",
+]
+
 
 # Regular expression pattern to extract 4-digit year (1900-2099) from filenames
 # Used to identify the year from metadata file names (e.g., "metadata_2022.xlsx" -> "2022")
@@ -92,6 +117,35 @@ def extract_year_from_filename(file_name: str) -> str:
     if not m:
         raise ValueError(f"Could not extract year from filename: {file_name}")
     return m.group(0)
+
+
+def get_output_filename(metadata_file_name: str) -> str:
+    """
+    Generate output filename from metadata file name.
+    
+    Converts metadata filename like "Data 2015 For Syl Segmentation_1.xlsx"
+    to output filename like "segmentation_2015_1.xlsx"
+    
+    Args:
+        metadata_file_name: Name of the metadata file
+    
+    Returns:
+        Output filename for segmentation/features/classification results
+    """
+    year = extract_year_from_filename(metadata_file_name)
+    
+    # Extract the number from the filename (e.g., "_1" from "Segmentation_1.xlsx")
+    import re
+    number_match = re.search(r'_(\d+)\.xlsx$', metadata_file_name)
+    if number_match:
+        number = number_match.group(1)
+    else:
+        # Fallback: use the whole filename stem if no number found
+        from pathlib import Path
+        stem = Path(metadata_file_name).stem
+        number = stem.replace(' ', '_').lower()
+    
+    return f"segmentation_{year}_{number}.xlsx"
 
 
 def read_metadata_as_lists(metadata_path: str) -> Dict[str, List]:
@@ -112,3 +166,4 @@ def read_metadata_as_lists(metadata_path: str) -> Dict[str, List]:
         raise ValueError(f"No metadata rows found in {metadata_path}")
 
     return {c: df[c].tolist() for c in METADATA_REQUIRED_COLUMNS}
+
