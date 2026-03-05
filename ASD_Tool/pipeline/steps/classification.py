@@ -86,11 +86,24 @@ def postprocess_predictions(
     return syl_num
 
 
+def _find_column(worksheet, name: str) -> Optional[int]:
+    """Return the 1-based column index for *name* in row 1, or None."""
+    for col in range(1, worksheet.max_column + 1):
+        if worksheet.cell(row=1, column=col).value == name:
+            return col
+    return None
+
+
 def write_syllable_numbers(file_path: str, syl_num: List[int]) -> None:
-    """Append a 'Syllable number' column to the segmentation Excel file."""
+    """Write 'Syllable number' column to the segmentation Excel file.
+
+    Idempotent: if the column already exists it is overwritten in place.
+    """
     workbook = openpyxl.load_workbook(file_path)
     worksheet = workbook.worksheets[0]
-    col = worksheet.max_column + 1
+    col = _find_column(worksheet, "Syllable number")
+    if col is None:
+        col = worksheet.max_column + 1
     worksheet.cell(row=1, column=col).value = "Syllable number"
     for idx, syl_val in enumerate(syl_num, start=2):
         worksheet.cell(row=idx, column=col).value = syl_val

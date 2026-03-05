@@ -8,6 +8,14 @@ import logging
 from features import ISI_time, StartEndFreq
 
 
+def _find_column(worksheet, name: str) -> Optional[int]:
+    """Return the 1-based column index for *name* in row 1, or None."""
+    for col in range(1, worksheet.max_column + 1):
+        if worksheet.cell(row=1, column=col).value == name:
+            return col
+    return None
+
+
 def compute_basic_features(
     file_path: str,
     signal_vec: List,
@@ -35,6 +43,8 @@ def compute_basic_features(
     2. Computes start and end frequencies for each syllable
     3. Writes the results to the Excel file as new columns
     
+    Idempotent: if the columns already exist they are overwritten in place.
+    
     Args:
         file_path: Path to the segmentation Excel file (will be updated)
         signal_vec: List of audio signal arrays
@@ -51,7 +61,6 @@ def compute_basic_features(
     if logger:
         logger.info("Computing basic features: ISI time and start/end frequencies")
     
-    # Compute features using original functions
     ISI = ISI_time(rec_num_syl, start_syl, end_syl)
     startF, endF = StartEndFreq(
         signal_vec, siz, mother, name, age, session, rec_num,
@@ -59,27 +68,21 @@ def compute_basic_features(
         start_syl, end_syl, rate
     )
     
-    # Write to Excel file
     workbook = openpyxl.load_workbook(file_path)
     worksheet = workbook.worksheets[0]
     
-    # Find the last column and insert 3 new columns after it
-    last_column = worksheet.max_column
-    first_new_column = last_column + 1
-    worksheet.insert_cols(first_new_column, 3)
-    
-    # Column names for the new columns
     column_names = ['ISI_time', 'Start Point (Hz)', 'End Point (Hz)']
+    data_lists = [ISI, startF, endF]
     
-    # Write column headers
-    for col_idx, col_name in enumerate(column_names, start=first_new_column):
-        worksheet.cell(row=1, column=col_idx).value = col_name
-    
-    # Write values (starting from row 2, row 1 is headers)
-    for row_idx in range(len(ISI)):
-        worksheet.cell(row=row_idx + 2, column=first_new_column).value = ISI[row_idx]
-        worksheet.cell(row=row_idx + 2, column=first_new_column + 1).value = startF[row_idx]
-        worksheet.cell(row=row_idx + 2, column=first_new_column + 2).value = endF[row_idx]
+    next_new = worksheet.max_column + 1
+    for col_name, data in zip(column_names, data_lists):
+        col = _find_column(worksheet, col_name)
+        if col is None:
+            col = next_new
+            next_new += 1
+        worksheet.cell(row=1, column=col).value = col_name
+        for row_idx, value in enumerate(data, start=2):
+            worksheet.cell(row=row_idx, column=col).value = value
     
     workbook.save(file_path)
     
