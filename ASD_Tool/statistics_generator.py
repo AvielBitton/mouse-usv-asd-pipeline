@@ -17,8 +17,8 @@ from tensorflow import keras
 import tensorflow_hub as hub
 from tensorflow.keras.preprocessing import image
 import pandas as pd
-import os
 import xlrd
+from pipeline.utils.audio_paths import build_recording_base_path, resolve_wav_path
 import math
 import scipy
 import scipy.io.wavfile as wavfile
@@ -68,12 +68,8 @@ def Syl_Class_Vec(year, model,age,matgen,pupgen,mother,name,sex,session,rec_num,
   # First pass: count unique recordings that actually exist
   existing_recordings = set()
   for j in range(len(mother)):
-    path = 'USV_Recordings/{}/{}_{}/{}_{}/day_{}/session{}/{}.wav'.format(year, mother[j], matgen[j], name[j], pupgen[j], int(age[j]), int(session[j]), rec_num[j])
-    if not os.path.exists('{}'.format(path)):
-      path = 'USV_Recordings/{}/{}_{}/{}_{}/day_{}/session{}/{}.WAV'.format(year, mother[j], matgen[j], name[j], pupgen[j], int(age[j]), int(session[j]), rec_num[j])
-      if os.path.exists('{}'.format(path)):
-        existing_recordings.add((name[j], rec_num[j]))
-    else:
+    base = build_recording_base_path('USV_Recordings', year, mother[j], matgen[j], name[j], pupgen[j], age[j], session[j], rec_num[j])
+    if resolve_wav_path(base) is not None:
       existing_recordings.add((name[j], rec_num[j]))
   
   total_recordings = len(existing_recordings)
@@ -81,13 +77,13 @@ def Syl_Class_Vec(year, model,age,matgen,pupgen,mother,name,sex,session,rec_num,
   processed_count = 0
   
   for i in range(len(mother)):
-    path = 'USV_Recordings/{}/{}_{}/{}_{}/day_{}/session{}/{}.wav'.format(year, mother[i], matgen[i], name[i], pupgen[i], int(age[i]), int(session[i]), rec_num[i]) #find path of each recording
-    if not os.path.exists('{}'.format(path)):
-      path = 'USV_Recordings/{}/{}_{}/{}_{}/day_{}/session{}/{}.WAV'.format(year, mother[i], matgen[i], name[i], pupgen[i], int(age[i]), int(session[i]), rec_num[i])
-      if not os.path.exists('{}'.format(path)):
-        if logger:
-          logger.warning(f"Recording file not found: {name[i]}, rec_num {rec_num[i]}, skipping syllable")
-        continue
+    base = build_recording_base_path('USV_Recordings', year, mother[i], matgen[i], name[i], pupgen[i], age[i], session[i], rec_num[i])
+    resolved = resolve_wav_path(base)
+    if resolved is None:
+      if logger:
+        logger.warning(f"Recording file not found: {name[i]}, rec_num {rec_num[i]}, skipping syllable")
+      continue
+    path = str(resolved)
     if i>0 and (rec_num[i] != rec_num[i-1] or name[i] != name[i-1]):
       recording = sample(mother[i-1], name[i-1], sex[i-1], age[i-1], matgen[i-1], pupgen[i-1], rec_num[i-1], pred, timeB)
       samples.append(recording)
