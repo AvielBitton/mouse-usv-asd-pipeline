@@ -1,3 +1,4 @@
+import os
 import re
 from pathlib import Path
 from typing import Dict, List
@@ -104,6 +105,35 @@ SEGMENTATION_RESULT_COLUMNS = METADATA_REQUIRED_COLUMNS + [
     "Start point(s)",
     "End point(s)",
 ]
+
+# Column names used by the feature extraction step
+FEATURE_COLUMNS = [
+    "Name", "Day", "Session",
+    "Start Point (Hz)", "End Point (Hz)", "Duration (time)",
+    "Syllable number", "Recording Number",
+    "Mother Genotype", "Sex", "ISI_time", "Offspring Genotype",
+    "Strain",
+]
+
+# Year-to-strain mapping: 2022 recordings are strain 1, all others strain 2
+STRAIN_YEAR = 2022
+
+
+def strain_from_year(year) -> int:
+    """Return the strain identifier (1 or 2) for a given recording year."""
+    return 1 if int(year) == STRAIN_YEAR else 2
+
+
+def replace_extension(file_path: str, new_ext: str) -> str:
+    """Return *file_path* with its extension replaced by *new_ext*.
+
+    >>> replace_extension("outputs/segmentation_2015_1.xlsx", ".csv")
+    'outputs/segmentation_2015_1.csv'
+    """
+    base, _ = os.path.splitext(file_path)
+    if not new_ext.startswith('.'):
+        new_ext = f'.{new_ext}'
+    return base + new_ext
 
 
 # Regular expression pattern to extract 4-digit year (1900-2099) from filenames

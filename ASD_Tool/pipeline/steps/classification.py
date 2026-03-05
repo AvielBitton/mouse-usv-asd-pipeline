@@ -9,6 +9,7 @@ import openpyxl
 from tensorflow import keras
 
 from statistics_generator import Syl_Class_Vec
+from pipeline.utils import replace_extension
 
 LOW_CONFIDENCE_CLASS = 10
 CONFIDENCE_THRESHOLD = 0.5
@@ -55,9 +56,7 @@ def save_raw_predictions(file_path: str, samples: np.ndarray) -> str:
 
     Returns the path to the saved .npy file.
     """
-    base_name = os.path.splitext(os.path.basename(file_path))[0]
-    output_dir = os.path.dirname(file_path)
-    output_npy = os.path.join(output_dir, f"{base_name}.npy")
+    output_npy = replace_extension(file_path, ".npy")
     np.save(output_npy, samples)
     return output_npy
 

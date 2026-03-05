@@ -1,9 +1,5 @@
-import numpy as np
-import pandas as pd
 import os
-import glob
 from pytictoc import TicToc
-from audio_feature_extraction_reduction_by_recording import *
 from pipeline.utils import (
     setup_logger,
     list_metadata_files,
@@ -13,7 +9,15 @@ from pipeline.utils import (
     parse_args,
     get_files_to_process,
 )
-from pipeline.steps import prepare_recording_metadata, run_segmentation, read_segmentation_results, compute_basic_features, run_classification
+from pipeline.steps import (
+    prepare_recording_metadata,
+    run_segmentation,
+    read_segmentation_results,
+    compute_basic_features,
+    run_classification,
+    run_feature_extraction,
+    run_aggregated_feature_extraction,
+)
 
 
 ##################################################
@@ -135,18 +139,14 @@ for file_name in files_to_process:
         logger=logger,
     )
 
-    logger.info("Feature extraction started")
-
-    dataset = pd.read_excel(f'outputs/{output_filename}')
-    dataset["Strain"] = 1 if int(year) == 2022 else 2
-
-    # Extract only the relevant columns / features
-    X = dataset[["Name", "Day", "Session", "Start Point (Hz)", "End Point (Hz)", "Duration (time)", "Syllable number", "Recording Number", "Mother Genotype", "Sex", "ISI_time", "Offspring Genotype", "Strain"]]
-
-    mouse_final_data = feature_extraction(X)
-    # Export data to CSV file for further use
-    output_csv = f"outputs/{output_filename.split('.')[0]}.csv"
-    np.savetxt(output_csv, X=mouse_final_data, delimiter=",")
+    ##################################################
+    #### 5: feature extraction (per file)
+    ##################################################
+    output_csv = run_feature_extraction(
+        file_path=f'outputs/{output_filename}',
+        year=year,
+        logger=logger,
+    )
 
     logger.info(f"Exported: {output_xlsx}, {output_csv}, {output_npy}")
     logger.info(f"Finished processing file: {file_name}")
@@ -156,32 +156,8 @@ for file_name in files_to_process:
     raise
 
 
-
 ##################################################
-#### 5: aggregation (all files)
+#### 6: aggregation (all files)
 ##################################################
-def extract_features(dir):
-  try:
-    logger.info("Aggregating features from all processed files")
-    # Extract all files with xlsx extension
-    all_files = glob.glob(os.path.join('outputs' , "*.xlsx"))
-    logger.info(f"Found {len(all_files)} processed file(s)")
-    # Read and combine all input files
-    dataset = pd.concat((pd.read_excel(f) for f in all_files), ignore_index=True)
-    # Add Strain column based on year in path
-    dataset["Strain"] = [1 if int(x.split('/')[1]) == 2022 else 2 for x in dataset['Path']]
-    dataset.to_excel(f"{dir}/all_data.xlsx")
-    # Extract only the relevant columns / features
-    dataset = dataset[["Name", "Day", "Session", "Start Point (Hz)", "End Point (Hz)", "Duration (time)", "Syllable number", "Recording Number", "Mother Genotype", "Sex", "ISI_time", "Offspring Genotype", "Strain"]]
-    # Extract features
-    mouse_final_data = feature_extraction(dataset)
-    # Save the output file
-    output_path = f"{dir}/all_data.csv"
-    np.savetxt(output_path, X=mouse_final_data, delimiter=",")
-    logger.info(f"Finished aggregating features: {dir}/all_data.xlsx, {output_path}")
-  except Exception as e:
-    logger.exception(f"Error in extract_features: {e}")
-    raise
-
 if __name__ == "__main__":
-  extract_features(dir='outputs')
+  run_aggregated_feature_extraction(outputs_dir='outputs', logger=logger)
