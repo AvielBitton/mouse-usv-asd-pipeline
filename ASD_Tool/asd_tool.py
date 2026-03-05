@@ -15,6 +15,7 @@ from pipeline.steps import (
     read_segmentation_results,
     compute_basic_features,
     run_classification,
+    enrich_segmentation_columns,
     run_feature_extraction,
     run_aggregated_feature_extraction,
 )
@@ -140,7 +141,16 @@ for file_name in files_to_process:
     )
 
     ##################################################
-    #### 5: feature extraction (per file)
+    #### 5: enrich segmentation columns
+    ##################################################
+    enrich_segmentation_columns(
+        file_path=f'outputs/{output_filename}',
+        year=year,
+        logger=logger,
+    )
+
+    ##################################################
+    #### 6: feature extraction (per file)
     ##################################################
     output_csv = run_feature_extraction(
         file_path=f'outputs/{output_filename}',
@@ -157,7 +167,7 @@ for file_name in files_to_process:
 
 
 ##################################################
-#### 6: aggregation (all files)
+#### 7: aggregation (all files)
 ##################################################
 if __name__ == "__main__":
   run_aggregated_feature_extraction(outputs_dir='outputs', logger=logger)

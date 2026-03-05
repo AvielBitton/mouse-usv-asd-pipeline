@@ -140,14 +140,17 @@ The `generate_metadata.py` script supports scanning WAV files directly from Goog
    Extracts syllables (USVs) from raw audio.  
    **Important:** The original segmentation script from the lab is missing and must be obtained to reproduce the results fully.
 
-4. **Feature Extraction**  
+4. **Classification**  
+   Uses the original ASD classifier to categorize each syllable type (0–10).
+
+5. **Column Enrichment**  
+   Adds derived columns to the segmentation Excel: row index, year, genotype binary flags, syllable order within recording, noise indicator, supplement flags, syllable type English labels, and complexity levels. See `docs/Running_the_Pipeline.md` for the full column list.
+
+6. **Feature Extraction**  
    Derives acoustic and spectral features from each syllable.
 
-5. **Classification**  
-   Uses the original ASD classifier to categorize each pup as healthy or ASD-related.
-
-6. **Output**  
-   Generates per-pup predictions, processed data files, and logs.
+7. **Aggregation**  
+   Combines all per-file outputs into `all_data.xlsx` and `all_data.csv`.
 
 ---
 

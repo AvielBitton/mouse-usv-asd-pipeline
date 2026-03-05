@@ -89,7 +89,7 @@ def save_aggregated_excel(dataset: pd.DataFrame, outputs_dir: str) -> str:
     Returns the path to the saved Excel file.
     """
     output_path = os.path.join(outputs_dir, "all_data.xlsx")
-    dataset.to_excel(output_path)
+    dataset.to_excel(output_path, index=False)
     return output_path
 
 
