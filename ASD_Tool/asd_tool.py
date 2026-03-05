@@ -1,11 +1,7 @@
 import numpy as np
 import pandas as pd
 import os
-import librosa
-import logging
 import glob
-import openpyxl
-from openpyxl import Workbook
 from pytictoc import TicToc
 from audio_feature_extraction_reduction_by_recording import *
 from pipeline.utils import (
@@ -17,7 +13,7 @@ from pipeline.utils import (
     parse_args,
     get_files_to_process,
 )
-from pipeline.steps import prepare_recording_metadata, run_segmentation, read_segmentation_results, compute_basic_features
+from pipeline.steps import prepare_recording_metadata, run_segmentation, read_segmentation_results, compute_basic_features, run_classification
 
 
 ##################################################
@@ -122,50 +118,30 @@ for file_name in files_to_process:
     ##################################################
     #### 4: classification
     ##################################################
-    logger.info("Classification started")
-    from statistics_generator import *
-
-    model_path = 'ASD_Tool/model_weights.h6'
-    # model = keras.models.load_model(model_path, custom_objects={'KerasLayer':hub.KerasLayer})
-    model = keras.models.load_model(model_path)
-
-    samples = Syl_Class_Vec(year, model,ageSyl,matgenSyl,pupgenSyl,motherSyl,nameSyl,sexSyl,sessionSyl,rec_numSyl,startSyl,endSyl,logger=logger)
-    logger.debug(f"Samples: {samples}")
-    output_npy = f"outputs/{output_filename.split('.')[0]}.npy"
-    np.save(output_npy, samples)
-
-    syl_num = []
-    for i in range(len(samples)):
-      for j in range(len(samples[i].syls)):
-        if np.max(samples[i].syls[j])<0.5:
-          temp = 10
-        else:
-          temp = np.argmax(samples[i].syls[j])
-        samples[i].syls[j] = []
-        samples[i].syls[j] = temp
-        syl_num.append(samples[i].syls[j])
-        logger.debug(f"Syllable number: {samples[i].syls[j]}")
-
-
-    y = 2
-    workbook = openpyxl.load_workbook(f'outputs/{output_filename}')
-    worksheet = workbook.worksheets[0]
-    worksheet.insert_cols(16)
-    cell_title = worksheet.cell(row=1, column=16)
-    cell_title.value = 'Syllable number'
-    for x in range(len(syl_num)):
-        cell_to_write = worksheet.cell(row=y, column=16)
-        cell_to_write.value = syl_num[x]
-        y += 1
-    workbook.save(f'outputs/{output_filename}')
-    logger.info(f"Classification finished (syllables={len(syl_num)})")
+    output_xlsx, output_npy = run_classification(
+        file_path=f'outputs/{output_filename}',
+        year=year,
+        model_path='ASD_Tool/model_weights.h6',
+        age_syl=ageSyl,
+        matgen_syl=matgenSyl,
+        pupgen_syl=pupgenSyl,
+        mother_syl=motherSyl,
+        name_syl=nameSyl,
+        sex_syl=sexSyl,
+        session_syl=sessionSyl,
+        rec_num_syl=rec_numSyl,
+        start_syl=startSyl,
+        end_syl=endSyl,
+        logger=logger,
+    )
 
     logger.info("Feature extraction started")
 
     dataset = pd.read_excel(f'outputs/{output_filename}')
+    dataset["Strain"] = 1 if int(year) == 2022 else 2
 
     # Extract only the relevant columns / features
-    X = dataset[["Name", "Day", "Session", "Start Point (Hz)", "End Point (Hz)", "Duration (time)", "Syllable number", "Recording Number", "Mother Genotype", "Sex", "ISI_time", "Offspring Genotype"]]
+    X = dataset[["Name", "Day", "Session", "Start Point (Hz)", "End Point (Hz)", "Duration (time)", "Syllable number", "Recording Number", "Mother Genotype", "Sex", "ISI_time", "Offspring Genotype", "Strain"]]
 
     mouse_final_data = feature_extraction(X)
     # Export data to CSV file for further use
