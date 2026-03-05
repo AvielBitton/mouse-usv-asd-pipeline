@@ -138,9 +138,10 @@ for file_name in files_to_process:
     logger.info("Feature extraction started")
 
     dataset = pd.read_excel(f'outputs/{output_filename}')
+    dataset["Strain"] = 1 if int(year) == 2022 else 2
 
     # Extract only the relevant columns / features
-    X = dataset[["Name", "Day", "Session", "Start Point (Hz)", "End Point (Hz)", "Duration (time)", "Syllable number", "Recording Number", "Mother Genotype", "Sex", "ISI_time", "Offspring Genotype"]]
+    X = dataset[["Name", "Day", "Session", "Start Point (Hz)", "End Point (Hz)", "Duration (time)", "Syllable number", "Recording Number", "Mother Genotype", "Sex", "ISI_time", "Offspring Genotype", "Strain"]]
 
     mouse_final_data = feature_extraction(X)
     # Export data to CSV file for further use
