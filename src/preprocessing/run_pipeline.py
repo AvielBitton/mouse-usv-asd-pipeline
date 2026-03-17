@@ -130,7 +130,7 @@ for file_name in files_to_process:
     output_xlsx, output_npy = run_classification(
         file_path=f'outputs/{output_filename}',
         year=year,
-        model_path='models/model_weights.h6',
+        model_path='src/models/model_weights.h6',
         age_syl=ageSyl,
         matgen_syl=matgenSyl,
         pupgen_syl=pupgenSyl,

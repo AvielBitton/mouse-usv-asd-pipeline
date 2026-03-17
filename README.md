@@ -8,24 +8,21 @@ The system covers the full pipeline: loading recordings and metadata, extracting
 
 ## Repository Structure
 
-### **preprocessing/**
-Main preprocessing pipeline — from raw audio to per-recording features:
+### **src/**
+All source code lives here:
 
-- `run_pipeline.py` — orchestrator script (formerly `ASD_Tool/asd_tool.py`)
-- `steps/` — pipeline step modules (segmentation, basic features, classification, enrichment, feature extraction)
-- `utils/` — shared helpers (I/O, logging, CLI, audio paths)
-- `legacy/` — original research scripts used as library code (Segmentation, features, statistics_generator, audio_feature_extraction)
-- `tests/` — smoke tests
+- **`src/preprocessing/`** — main preprocessing pipeline (raw audio to per-recording features)
+  - `run_pipeline.py` — orchestrator script
+  - `steps/` — pipeline step modules (segmentation, basic features, classification, enrichment, feature extraction)
+  - `utils/` — shared helpers (I/O, logging, CLI, audio paths)
+  - `legacy/` — original research scripts used as library code (Segmentation, features, statistics_generator, audio_feature_extraction)
+  - `tests/` — smoke tests
 
-### **classification/**
-ASD classification — trains an XGBoost model to classify pups as healthy or ASD:
+- **`src/classification/`** — ASD classification
+  - `train_classifier.py` — reads `outputs/all_data.csv`, trains XGBoost model, generates evaluation plots (confusion matrix, AUC-ROC, feature importance)
 
-- `train_classifier.py` — reads `outputs/all_data.csv`, trains model, generates evaluation plots (confusion matrix, AUC-ROC, feature importance)
-
-### **models/**
-Pre-trained model weights:
-
-- `model_weights.h6` — CNN weights for syllable type classification (used by the preprocessing pipeline)
+- **`src/models/`** — pre-trained model weights
+  - `model_weights.h6` — CNN weights for syllable type classification (used by the preprocessing pipeline)
 
 ### **archive/**
 Archived legacy code kept for reference only:
@@ -174,8 +171,8 @@ The `generate_metadata.py` script supports scanning WAV files directly from Goog
   - Supports Google Drive integration
   - Automatically extracts metadata from folder structure
   - Handles sex information from Excel tables
-- ✅ **Preprocessing pipeline** (`preprocessing/run_pipeline.py`) is fully functional — segmentation, basic features, CNN classification, column enrichment, and feature extraction
-- ✅ **ASD classification** (`classification/train_classifier.py`) — XGBoost-based sick/healthy classifier
+- ✅ **Preprocessing pipeline** (`src/preprocessing/run_pipeline.py`) is fully functional — segmentation, basic features, CNN classification, column enrichment, and feature extraction
+- ✅ **ASD classification** (`src/classification/train_classifier.py`) — XGBoost-based sick/healthy classifier
 - ⚠️ The available data is partial. Full dataset access requires access to the BGU lab servers.
 
 ---

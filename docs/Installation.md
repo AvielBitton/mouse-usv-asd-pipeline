@@ -59,7 +59,7 @@ Assigned manually based on year:
 
 ---
 
-## Pipeline Steps (`preprocessing/run_pipeline.py`)
+## Pipeline Steps (`src/preprocessing/run_pipeline.py`)
 
 ### 1. Load Metadata & Audio
 
@@ -67,15 +67,15 @@ Reads metadata Excel file and loads WAV recordings.
 
 ### 2. Segmentation
 
-Detects syllables (USVs) from raw audio using `preprocessing/legacy/Segmentation.py`.
+Detects syllables (USVs) from raw audio using `src/preprocessing/legacy/Segmentation.py`.
 
 ### 3. Basic Features
 
-Adds ISI time, start/end frequencies using `preprocessing/legacy/features.py`.
+Adds ISI time, start/end frequencies using `src/preprocessing/legacy/features.py`.
 
 ### 4. Syllable Classification
 
-Classifies each syllable (types 0–10) using a CNN model (`models/model_weights.h6`) via `preprocessing/legacy/statistics_generator.py`.
+Classifies each syllable (types 0–10) using a CNN model (`src/models/model_weights.h6`) via `src/preprocessing/legacy/statistics_generator.py`.
 
 ### 5. Column Enrichment
 
@@ -83,7 +83,7 @@ Adds derived columns (index, year, genotype binary flags, syllable order, noise 
 
 ### 6. Feature Extraction
 
-Extracts per-recording acoustic features using `preprocessing/legacy/audio_feature_extraction_reduction_by_recording.py`.
+Extracts per-recording acoustic features using `src/preprocessing/legacy/audio_feature_extraction_reduction_by_recording.py`.
 
 ### 7. Aggregation
 
@@ -104,7 +104,7 @@ Combines all per-file outputs into `all_data.xlsx` and `all_data.csv`.
 * Pup Gen: WT → 1, HT → 0
 * idx_mouse — mouse ID
 
-### ASD Classification (`classification/train_classifier.py`)
+### ASD Classification (`src/classification/train_classifier.py`)
 
 Reads `outputs/all_data.csv`, trains an XGBoost model, and generates:
 
