@@ -8,16 +8,29 @@ The system covers the full pipeline: loading recordings and metadata, extracting
 
 ## Repository Structure
 
-### **ASD_Tool/**
-Main implementation of the project:
+### **preprocessing/**
+Main preprocessing pipeline — from raw audio to per-recording features:
 
-- End-to-end pipeline scripts
-- Feature extraction functions
-- Segmentation logic (based on the original research flow)
-- Classification models and utilities
-- Evaluation helpers
+- `run_pipeline.py` — orchestrator script (formerly `ASD_Tool/asd_tool.py`)
+- `steps/` — pipeline step modules (segmentation, basic features, classification, enrichment, feature extraction)
+- `utils/` — shared helpers (I/O, logging, CLI, audio paths)
+- `legacy/` — original research scripts used as library code (Segmentation, features, statistics_generator, audio_feature_extraction)
+- `tests/` — smoke tests
 
-This is the core folder containing the actual algorithmic work.
+### **classification/**
+ASD classification — trains an XGBoost model to classify pups as healthy or ASD:
+
+- `train_classifier.py` — reads `outputs/all_data.csv`, trains model, generates evaluation plots (confusion matrix, AUC-ROC, feature importance)
+
+### **models/**
+Pre-trained model weights:
+
+- `model_weights.h6` — CNN weights for syllable type classification (used by the preprocessing pipeline)
+
+### **archive/**
+Archived legacy code kept for reference only:
+
+- `statistics_tests.py` — old Colab notebook export with hardcoded paths (not functional)
 
 ---
 
@@ -161,8 +174,8 @@ The `generate_metadata.py` script supports scanning WAV files directly from Goog
   - Supports Google Drive integration
   - Automatically extracts metadata from folder structure
   - Handles sex information from Excel tables
-- ✅ Feature extraction and classification modules are included in the repository.
-- ⚠️ The segmentation module used in the original research is **not included** and is required to complete the full pipeline.
+- ✅ **Preprocessing pipeline** (`preprocessing/run_pipeline.py`) is fully functional — segmentation, basic features, CNN classification, column enrichment, and feature extraction
+- ✅ **ASD classification** (`classification/train_classifier.py`) — XGBoost-based sick/healthy classifier
 - ⚠️ The available data is partial. Full dataset access requires access to the BGU lab servers.
 
 ---

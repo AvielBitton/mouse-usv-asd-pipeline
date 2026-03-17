@@ -1,12 +1,12 @@
 import numpy as np
 from openpyxl import Workbook
-from Segmentation import (
+from legacy.Segmentation import (
     Preprocessing as preprocessing,
     Syllables_Detection2 as syllablesDetection,
     Rearrange_signal as rearrangeSignal,
     Check_length_Call as checkLengthCall,
 )
-from pipeline.utils import SEGMENTATION_RESULT_COLUMNS, get_output_filename
+from utils import SEGMENTATION_RESULT_COLUMNS, get_output_filename
 
 
 ##################################################

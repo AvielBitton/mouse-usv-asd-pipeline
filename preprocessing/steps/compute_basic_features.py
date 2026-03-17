@@ -5,7 +5,7 @@ import openpyxl
 import logging
 
 # Import functions from the original Features.py file (renamed to features.py)
-from features import ISI_time, StartEndFreq
+from legacy.features import ISI_time, StartEndFreq
 
 
 def _find_column(worksheet, name: str) -> Optional[int]:

@@ -18,7 +18,7 @@ import tensorflow_hub as hub
 from tensorflow.keras.preprocessing import image
 import pandas as pd
 import xlrd
-from pipeline.utils.audio_paths import build_recording_base_path, resolve_wav_path
+from utils.audio_paths import build_recording_base_path, resolve_wav_path
 import math
 import scipy
 import scipy.io.wavfile as wavfile

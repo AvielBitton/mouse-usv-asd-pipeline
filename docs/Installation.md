@@ -59,31 +59,38 @@ Assigned manually based on year:
 
 ---
 
-## Steps in `asd_tool.py`
+## Pipeline Steps (`preprocessing/run_pipeline.py`)
 
-### 1. Syllable Classification
+### 1. Load Metadata & Audio
 
-* `statistics_generator.py` — extracts features
-* `statistics_tests.py` — filters out results below 50% accuracy
+Reads metadata Excel file and loads WAV recordings.
 
-### 2. Audio Feature Extraction
+### 2. Segmentation
 
-* `audio_feature_extraction_reduction_by_recording.py`
-  (converted from `audio_feature_extraction_REDUCTION_BY_RECORDING_new.ipynb`)
-  → generates features
-* `Features.py`
-  (converted from `StartEndFrequency.ipynb`)
-  → extracts start and end frequencies
+Detects syllables (USVs) from raw audio using `preprocessing/legacy/Segmentation.py`.
 
-### 3. Add Strain
+### 3. Basic Features
 
-Adds the strain value by year.
+Adds ISI time, start/end frequencies using `preprocessing/legacy/features.py`.
 
-### 4. Feature Definitions
+### 4. Syllable Classification
 
-* Mother — mother's name
-* Name — pup's name
-* Recording Number — ID
+Classifies each syllable (types 0–10) using a CNN model (`models/model_weights.h6`) via `preprocessing/legacy/statistics_generator.py`.
+
+### 5. Column Enrichment
+
+Adds derived columns (index, year, genotype binary flags, syllable order, noise indicator, supplement flags, syllable type labels, complexity levels).
+
+### 6. Feature Extraction
+
+Extracts per-recording acoustic features using `preprocessing/legacy/audio_feature_extraction_reduction_by_recording.py`.
+
+### 7. Aggregation
+
+Combines all per-file outputs into `all_data.xlsx` and `all_data.csv`.
+
+### Feature Definitions
+
 * freq_s_0syll … freq_s_9syll — average start frequency per syllable
 * freq_e_0syll … freq_e_9syll — average end frequency per syllable
 * dist_0syll … dist_9syll — syllable distribution
@@ -97,20 +104,14 @@ Adds the strain value by year.
 * Pup Gen: WT → 1, HT → 0
 * idx_mouse — mouse ID
 
-### 5. Final Classification (`final_classification.py`)
+### ASD Classification (`classification/train_classifier.py`)
 
-Generates:
+Reads `outputs/all_data.csv`, trains an XGBoost model, and generates:
 
 * confusion matrix
-* model statistics
-* final predictions 
-
-Inputs include all syllable features:
-`syl1_s_freq` … `syl10_s_freq`
-`syl1_e_freq` … `syl10_e_freq`
-`syl1_dist` … `syl10_dist`
-`syl1_dur` … `syl10_dur`
-plus: `mother_gen`, `pup_sex`, `avg_ISI_time`, `pup_age`, `session`, `pup_strain`, `pup_gen`, `mouse_idx`
+* AUC-ROC curve
+* feature importance plot
+* saved model file
 
 ---
 

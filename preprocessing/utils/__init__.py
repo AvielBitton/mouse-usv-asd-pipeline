@@ -1,5 +1,5 @@
-from pipeline.utils.logging_utils import setup_logger
-from pipeline.utils.io_utils import (
+from .logging_utils import setup_logger
+from .io_utils import (
     list_metadata_files,
     is_already_processed,
     is_segmentation_file_exist,
@@ -13,9 +13,9 @@ from pipeline.utils.io_utils import (
     extract_year_from_filename,
     read_metadata_as_lists,
 )
-from pipeline.utils.audio_paths import build_recording_base_path, resolve_wav_path
-from pipeline.utils.recordings_loader import load_recordings_from_metadata
-from pipeline.utils.cli_utils import parse_args, get_files_to_process
+from .audio_paths import build_recording_base_path, resolve_wav_path
+from .recordings_loader import load_recordings_from_metadata
+from .cli_utils import parse_args, get_files_to_process
 
 __all__ = [
     'setup_logger',

@@ -22,19 +22,19 @@ This creates `Metadata Recording Mapping ({year}).xlsx` files in the `metadata/`
 ## Process All Files
 
 ```bash
-python ASD_Tool/asd_tool.py
+python preprocessing/run_pipeline.py
 ```
 
 ## Process Single File
 
 **New format:**
 ```bash
-python ASD_Tool/asd_tool.py --metadata-file "Metadata Recording Mapping (2015).xlsx"
+python preprocessing/run_pipeline.py --metadata-file "Metadata Recording Mapping (2015).xlsx"
 ```
 
 **Old format (legacy):**
 ```bash
-python ASD_Tool/asd_tool.py --metadata-file "Data 2015 For Syl Segmentation_1.xlsx"
+python preprocessing/run_pipeline.py --metadata-file "Data 2015 For Syl Segmentation_1.xlsx"
 ```
 
 The file must exist in the `metadata/` directory. If not found, a `FileNotFoundError` is raised with available files.

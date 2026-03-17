@@ -6,7 +6,7 @@ import logging
 
 import os
 
-from pipeline.utils import (
+from utils import (
     METADATA_REQUIRED_COLUMNS,
     extract_year_from_filename,
     read_metadata_as_lists,

@@ -8,7 +8,7 @@ This script validates that Step 1 of the pipeline works correctly by:
 
 How to run:
     source .venv/bin/activate
-    PYTHONPATH=ASD_Tool:$PYTHONPATH python ASD_Tool/pipeline/tests/check_step1_2015.py
+    python preprocessing/tests/check_step1_2015.py
 
 What success looks like:
     - The script finds a 2015 metadata file
@@ -23,13 +23,16 @@ Note: It's normal to see warnings about missing recordings - not all recordings
       in the metadata file may exist in the file system.
 """
 
-from pipeline.utils import (
+import os, sys
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+
+from utils import (
     setup_logger,
     list_metadata_files,
     is_already_processed,
     extract_year_from_filename,
 )
-from pipeline.steps import prepare_recording_metadata
+from steps import prepare_recording_metadata
 
 # Only test metadata files that match this year
 TARGET_METADATA_YEAR = "2015"

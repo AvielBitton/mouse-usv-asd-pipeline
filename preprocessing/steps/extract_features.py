@@ -8,8 +8,8 @@ from typing import List, Optional
 import numpy as np
 import pandas as pd
 
-from audio_feature_extraction_reduction_by_recording import feature_extraction
-from pipeline.utils import FEATURE_COLUMNS, strain_from_year, replace_extension
+from legacy.audio_feature_extraction_reduction_by_recording import feature_extraction
+from utils import FEATURE_COLUMNS, strain_from_year, replace_extension
 
 
 def read_segmentation_data(file_path: str) -> pd.DataFrame:

@@ -8,8 +8,8 @@ import numpy as np
 import openpyxl
 from tensorflow import keras
 
-from statistics_generator import Syl_Class_Vec
-from pipeline.utils import replace_extension
+from legacy.statistics_generator import Syl_Class_Vec
+from utils import replace_extension
 
 LOW_CONFIDENCE_CLASS = 10
 CONFIDENCE_THRESHOLD = 0.5

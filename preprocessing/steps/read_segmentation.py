@@ -4,7 +4,7 @@ from typing import List, Optional, Tuple
 import pandas as pd
 import logging
 
-from pipeline.utils import SEGMENTATION_RESULT_COLUMNS
+from utils import SEGMENTATION_RESULT_COLUMNS
 
 
 def read_segmentation_results(

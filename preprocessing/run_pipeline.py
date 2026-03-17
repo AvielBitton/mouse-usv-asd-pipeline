@@ -1,6 +1,10 @@
 import os
+import sys
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
 from pytictoc import TicToc
-from pipeline.utils import (
+from utils import (
     setup_logger,
     list_metadata_files,
     is_already_processed,
@@ -9,7 +13,7 @@ from pipeline.utils import (
     parse_args,
     get_files_to_process,
 )
-from pipeline.steps import (
+from steps import (
     prepare_recording_metadata,
     run_segmentation,
     read_segmentation_results,
@@ -126,7 +130,7 @@ for file_name in files_to_process:
     output_xlsx, output_npy = run_classification(
         file_path=f'outputs/{output_filename}',
         year=year,
-        model_path='ASD_Tool/model_weights.h6',
+        model_path='models/model_weights.h6',
         age_syl=ageSyl,
         matgen_syl=matgenSyl,
         pupgen_syl=pupgenSyl,
