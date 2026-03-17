@@ -17,6 +17,7 @@ from sklearn.linear_model import Ridge, Lasso
 from sklearn.model_selection import GridSearchCV
 
 
+os.makedirs('results', exist_ok=True)
 orig_stdout = sys.stdout
 f = open('results/out.txt', 'w')
 sys.stdout = f
@@ -209,10 +210,15 @@ y_test_A = np.array(y_test)
 
 from sklearn.metrics import confusion_matrix
 print('\n Confusion Matrix - New pup:')
-# print(confusion_matrix(y_test,pred_test))
-plot_confusion_matrix(confusion_matrix(y_test_A[strain1[0]],pred_test[strain1[0]]), numbers_type='numbers_and_percentage_new_pup')
+if len(strain1[0]) > 0:
+    plot_confusion_matrix(confusion_matrix(y_test_A[strain1[0]],pred_test[strain1[0]]), numbers_type='numbers_and_percentage', file_name='confusionmatrix_strain1.png')
+else:
+    print('No strain 1 data in test set, skipping.')
 print('\n Confusion Matrix - Old pup:')
-plot_confusion_matrix(confusion_matrix(y_test_A[strain2[0]],pred_test[strain2[0]]), numbers_type='numbers_and_percentage_old_pup')
+if len(strain2[0]) > 0:
+    plot_confusion_matrix(confusion_matrix(y_test_A[strain2[0]],pred_test[strain2[0]]), numbers_type='numbers_and_percentage', file_name='confusionmatrix_strain2.png')
+else:
+    print('No strain 2 data in test set, skipping.')
 
 
 from sklearn.metrics import confusion_matrix
