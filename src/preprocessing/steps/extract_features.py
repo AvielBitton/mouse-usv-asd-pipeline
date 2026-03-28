@@ -11,6 +11,11 @@ import pandas as pd
 from legacy.audio_feature_extraction_reduction_by_recording import feature_extraction
 from utils import FEATURE_COLUMNS, strain_from_year, replace_extension
 
+# Combined pipeline outputs (per-run); avoids mixing with per-file segmentation_*.xlsx in outputs root.
+AGGREGATED_SUBDIR = "aggregated"
+ALL_DATA_XLSX_NAME = "all_data.xlsx"
+ALL_DATA_CSV_NAME = "all_data.csv"
+
 
 def read_segmentation_data(file_path: str) -> pd.DataFrame:
     """Read a segmentation Excel file into a DataFrame."""
@@ -72,8 +77,13 @@ def save_features_csv(
 
 
 def load_all_segmentation_files(outputs_dir: str) -> List[str]:
-    """Return a list of all segmentation Excel files in the outputs directory."""
-    return glob.glob(os.path.join(outputs_dir, "*.xlsx"))
+    """Return paths to per-file segmentation workbooks (``segmentation_*.xlsx``) in *outputs_dir* root.
+
+    Only the flat ``outputs_dir`` is scanned; ``aggregated/`` and other subfolders are ignored.
+    This avoids picking up ``all_data.xlsx`` or other unrelated Excel files.
+    """
+    pattern = os.path.join(outputs_dir, "segmentation_*.xlsx")
+    return sorted(glob.glob(pattern))
 
 
 def concat_segmentation_files(file_paths: List[str]) -> pd.DataFrame:
@@ -83,12 +93,20 @@ def concat_segmentation_files(file_paths: List[str]) -> pd.DataFrame:
     )
 
 
-def save_aggregated_excel(dataset: pd.DataFrame, outputs_dir: str) -> str:
-    """Save the combined dataset (all files) as ``all_data.xlsx``.
+def save_aggregated_excel(
+    dataset: pd.DataFrame,
+    aggregated_dir: str,
+    logger: Optional[logging.Logger] = None,
+) -> str:
+    """Save the combined dataset as ``all_data.xlsx`` under *aggregated_dir*.
 
-    Returns the path to the saved Excel file.
+    Overwrites an existing file at the same path. Returns the path written.
     """
-    output_path = os.path.join(outputs_dir, "all_data.xlsx")
+    os.makedirs(aggregated_dir, exist_ok=True)
+    output_path = os.path.join(aggregated_dir, ALL_DATA_XLSX_NAME)
+    if logger:
+        if os.path.isfile(output_path):
+            logger.info(f"Overwriting existing file: {output_path}")
     dataset.to_excel(output_path, index=False)
     return output_path
 
@@ -140,12 +158,14 @@ def run_aggregated_feature_extraction(
     1. Find all segmentation Excel files in the outputs directory
     2. Concatenate them into a single DataFrame
     3. Add a Strain column derived from the year in each recording Path
-    4. Save the combined dataset as ``all_data.xlsx``
+    4. Save the combined dataset as ``aggregated/all_data.xlsx``
     5. Select the feature columns and compute per-recording features
-    6. Save the aggregated feature matrix as ``all_data.csv``
+    6. Save the aggregated feature matrix as ``aggregated/all_data.csv``
+
+    Existing ``all_data.*`` files in that subdirectory are overwritten.
 
     Args:
-        outputs_dir: Directory containing the per-file segmentation Excel files
+        outputs_dir: Directory containing the per-file ``segmentation_*.xlsx`` workbooks
         logger: Optional logger instance
 
     Returns:
@@ -154,18 +174,23 @@ def run_aggregated_feature_extraction(
     if logger:
         logger.info("Aggregating features from all processed files")
 
+    aggregated_dir = os.path.join(outputs_dir, AGGREGATED_SUBDIR)
+    os.makedirs(aggregated_dir, exist_ok=True)
+
     all_files = load_all_segmentation_files(outputs_dir)
     if logger:
         logger.info(f"Found {len(all_files)} processed file(s)")
 
     dataset = concat_segmentation_files(all_files)
     dataset = add_strain_from_path(dataset)
-    save_aggregated_excel(dataset, outputs_dir)
+    save_aggregated_excel(dataset, aggregated_dir, logger=logger)
 
     X = select_feature_columns(dataset)
     mouse_final_data = compute_features(X)
 
-    output_csv = os.path.join(outputs_dir, "all_data.csv")
+    output_csv = os.path.join(aggregated_dir, ALL_DATA_CSV_NAME)
+    if logger and os.path.isfile(output_csv):
+        logger.info(f"Overwriting existing file: {output_csv}")
     np.savetxt(output_csv, X=mouse_final_data, delimiter=",")
 
     if logger:

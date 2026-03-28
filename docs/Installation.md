@@ -87,7 +87,7 @@ Extracts per-recording acoustic features using `src/preprocessing/legacy/audio_f
 
 ### 7. Aggregation
 
-Combines all per-file outputs into `all_data.xlsx` and `all_data.csv`.
+Combines all per-file outputs into `outputs/aggregated/all_data.xlsx` and `outputs/aggregated/all_data.csv` (overwrites on re-run).
 
 ### Feature Definitions
 
@@ -106,7 +106,7 @@ Combines all per-file outputs into `all_data.xlsx` and `all_data.csv`.
 
 ### ASD Classification (`src/classification/train_classifier.py`)
 
-Reads `outputs/all_data.csv`, trains an XGBoost model, and generates:
+Reads `outputs/aggregated/all_data.csv`, trains an XGBoost model, and generates:
 
 * confusion matrix
 * AUC-ROC curve

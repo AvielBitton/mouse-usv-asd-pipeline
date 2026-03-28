@@ -18,6 +18,9 @@ from sklearn.model_selection import GridSearchCV
 
 
 os.makedirs('results', exist_ok=True)
+
+ALL_DATA_CSV = os.path.join("outputs", "aggregated", "all_data.csv")
+
 orig_stdout = sys.stdout
 f = open('results/out.txt', 'w')
 sys.stdout = f
@@ -87,7 +90,7 @@ col_names = ['syll1_s_freq','syll2_s_freq','syll3_s_freq','syll4_s_freq','syll5_
             'mouse_idx'
 ]
 
-dataset = pd.read_csv("outputs/all_data.csv", header=None, names=col_names)
+dataset = pd.read_csv(ALL_DATA_CSV, header=None, names=col_names)
 # dataset = pd.read_csv("/content/drive/MyDrive/final_project/final_classification/ALL_DATA/processed_data_for_final_classification_REDUCTION_BY_RECORDING_ALLDATA.csv", header=None, names=col_names)
 # dataset.info()
 X = dataset.iloc[:,:-2]

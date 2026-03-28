@@ -19,7 +19,7 @@ All source code lives here:
   - `tests/` — smoke tests
 
 - **`src/classification/`** — ASD classification
-  - `train_classifier.py` — reads `outputs/all_data.csv`, trains XGBoost model, generates evaluation plots (confusion matrix, AUC-ROC, feature importance)
+  - `train_classifier.py` — reads `outputs/aggregated/all_data.csv`, trains XGBoost model, generates evaluation plots (confusion matrix, AUC-ROC, feature importance)
 
 - **`src/models/`** — pre-trained model weights
   - `model_weights.h6` — CNN weights for syllable type classification (used by the preprocessing pipeline)
@@ -159,7 +159,7 @@ The `generate_metadata.py` script supports scanning WAV files directly from Goog
    Derives acoustic and spectral features from each syllable.
 
 7. **Aggregation**  
-   Combines all per-file outputs into `all_data.xlsx` and `all_data.csv`.
+   Combines all per-file outputs into `outputs/aggregated/all_data.xlsx` and `outputs/aggregated/all_data.csv` (overwrites if they already exist).
 
 ---
 

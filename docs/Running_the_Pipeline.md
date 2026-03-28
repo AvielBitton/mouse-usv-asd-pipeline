@@ -44,9 +44,9 @@ For each processed file in `outputs/`:
 - `{filename}.csv` - Extracted per-recording features
 - `{filename}.npy` - Classification samples (raw model predictions)
 
-After all files are processed, the pipeline also produces:
-- `all_data.xlsx` - Combined data from all segmentation files
-- `all_data.csv` - Combined per-recording features
+After all files are processed, the pipeline also writes under `outputs/aggregated/` (overwrites if already present):
+- `outputs/aggregated/all_data.xlsx` - Combined data from all segmentation files
+- `outputs/aggregated/all_data.csv` - Combined per-recording features
 
 The script skips already processed files (if outputs exist) for safe resumption.
 
