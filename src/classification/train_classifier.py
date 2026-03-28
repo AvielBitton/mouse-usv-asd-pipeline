@@ -17,12 +17,17 @@ from sklearn.linear_model import Ridge, Lasso
 from sklearn.model_selection import GridSearchCV
 
 
-os.makedirs('results', exist_ok=True)
+RESULTS_DIR = 'results'
+PLOTS_DIR = os.path.join(RESULTS_DIR, 'plots')
+MODEL_DIR = os.path.join(RESULTS_DIR, 'model')
+LOGS_DIR = os.path.join(RESULTS_DIR, 'logs')
+for d in [PLOTS_DIR, MODEL_DIR, LOGS_DIR]:
+    os.makedirs(d, exist_ok=True)
 
 ALL_DATA_CSV = os.path.join("outputs", "aggregated", "all_data.csv")
 
 orig_stdout = sys.stdout
-f = open('results/out.txt', 'w')
+f = open(os.path.join(LOGS_DIR, 'out.txt'), 'w')
 sys.stdout = f
 
 
@@ -75,7 +80,7 @@ def plot_confusion_matrix(cnf_matrix, numbers_type='normalized', class_names=[],
     plt.ylabel('True label',fontsize=18)
     plt.xlabel('Predicted label',fontsize=18)
     #fig = plt.gcf()
-    plt.savefig(f'results/{file_name}')
+    plt.savefig(os.path.join(PLOTS_DIR, file_name))
 
     return
 
@@ -179,7 +184,7 @@ ax[1].set_ylabel('Classification Error', fontsize=20)
 ax[1].set_xlabel('N estimators', fontsize=20)
 ax[1].tick_params(axis='both', which='major', labelsize=16)
 ax[1].legend(fontsize=16) 
-plt.savefig('results/AUC_error.png', dpi=200)
+plt.savefig(os.path.join(PLOTS_DIR, 'AUC_error.png'), dpi=200)
 plt.show()
 
 plt.tight_layout()
@@ -203,7 +208,7 @@ plt.rcParams['figure.figsize'] = [15, 10]
 # SAVE MODEL TO FILE
 import pickle
 # save
-pickle.dump(model, open("results/XGBmodel_051221.pkl", "wb"))
+pickle.dump(model, open(os.path.join(MODEL_DIR, "XGBmodel.pkl"), "wb"))
 
 #result acording strain:
 ##########################
@@ -243,7 +248,7 @@ ax.yaxis.set_ticklabels(['0','1'])
 ax.tick_params(axis='both', which='major', labelsize=16)
 
 ## Display the visualization of the Confusion Matrix.
-plt.savefig('results/conf_matrix.png', dpi=300)
+plt.savefig(os.path.join(PLOTS_DIR, 'conf_matrix.png'), dpi=300)
 plt.show()
 
 
@@ -254,7 +259,7 @@ import matplotlib.pyplot as plt
 # plot
 plt.bar(range(len(model.feature_importances_)), model.feature_importances_)
 plt.xticks(range(len(model.feature_importances_)), col_names[:-2], rotation=45, ha="right")
-plt.savefig('results/feature_importances_0.png', dpi=300)
+plt.savefig(os.path.join(PLOTS_DIR, 'feature_importances_0.png'), dpi=300)
 # plt.show()
 
 # PLOT FEATURE IMPORTANCE:
@@ -302,5 +307,5 @@ ax[2].set_xlabel('F score', fontsize=20)
 ax[2].set_title('Sample Coverage', fontsize=24)
 ax[2].tick_params(axis='both', which='major', labelsize=16)
 plt.tight_layout()
-plt.savefig('results/feature_importance_1.png', dpi=300)
+plt.savefig(os.path.join(PLOTS_DIR, 'feature_importance_1.png'), dpi=300)
 plt.show()
