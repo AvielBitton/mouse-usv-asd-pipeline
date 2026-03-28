@@ -117,18 +117,18 @@ from sklearn.utils.class_weight import compute_sample_weight
 #                      subsample= 0.8, reg_lambda = 0.1, reg_alpha = 0.1, min_child_weight = 0.1, scale_pos_weight = 1/2.08, colsample_bytree = 0.6, tree_method = 'exact')
 
 # ARCHIVE: 88% accuracy was reached with: 
-model = XGBClassifier(n_estimators=50, random_state=seed, learning_rate=0.1, max_depth=5, objective='binary:logistic', booster='gbtree', feval='rmsle',
-                      reg_lambda = 1.5, reg_alpha = 0.05, min_child_weight = 0.1, scale_pos_weight = 0.8, colsample_bytree = 0.6)
+model = XGBClassifier(n_estimators=50, random_state=seed, learning_rate=0.1, max_depth=5, objective='binary:logistic', booster='gbtree',
+                      reg_lambda = 1.5, reg_alpha = 0.05, min_child_weight = 0.1, scale_pos_weight = 0.8, colsample_bytree = 0.6,
+                      eval_metric=["auc", "error"])
 
 
     
 # define the eval set and metric
 eval_set = [(X_train, y_train), (X_val, y_val)]
-eval_metric = ["auc","error"]
 
 # fit the model
 sample_weights = compute_sample_weight(class_weight='balanced', y=y_train)
-model.fit(X_train, y_train, sample_weight=sample_weights, eval_metric=eval_metric, eval_set=eval_set, verbose=False)
+model.fit(X_train, y_train, sample_weight=sample_weights, eval_set=eval_set, verbose=False)
 
 
 
