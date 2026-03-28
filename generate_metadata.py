@@ -5,10 +5,11 @@ This script:
 1. Scans a directory (local or Google Drive) recursively for all WAV files
 2. Extracts metadata from the folder path structure
 3. Groups records by year
-4. Creates Excel files in the metadata folder with the naming pattern:
-   "Data {year} For Syl Segmentation_1.xlsx"
-   
-Each year gets a single metadata file containing all WAV files found for that year.
+4. Creates full-year index Excel files under ``metadata/mapping/`` named
+   ``Metadata Recording Mapping ({year}).xlsx`` (reference listing; not used by
+   ``run_pipeline`` discovery).
+
+Each scanned year can produce one such mapping file (see script logic for skips).
 
 Usage:
     # Local mode
@@ -25,6 +26,9 @@ from pathlib import Path
 from typing import List, Dict, Tuple, Optional, Union
 import pandas as pd
 from collections import defaultdict
+
+# Full cross-year index files written here (not scanned by run_pipeline; see list_metadata_files).
+MAPPING_SUBDIR = "mapping"
 
 try:
     from drive_scanner import GoogleDriveScanner, DriveFile
@@ -444,7 +448,9 @@ def generate_metadata_files_local(
         return
     
     metadata_path.mkdir(exist_ok=True)
-    
+    mapping_path = metadata_path / MAPPING_SUBDIR
+    mapping_path.mkdir(parents=True, exist_ok=True)
+
     # Find Excel files in year folders (for Sex mapping)
     print("Searching for Excel files in year folders...")
     year_excel_files = {}
@@ -471,9 +477,9 @@ def generate_metadata_files_local(
         except Exception as e:
             print(f"  Warning: Could not load sex data for year {year}: {e}")
     
-    # Check which years already have metadata files
+    # Check which years already have mapping index files
     existing_years = set()
-    for existing_file in metadata_path.glob("Metadata Recording Mapping (*).xlsx"):
+    for existing_file in mapping_path.glob("Metadata Recording Mapping (*).xlsx"):
         # Extract year from filename: "Metadata Recording Mapping (2015).xlsx" -> "2015"
         try:
             year_str = existing_file.stem.split('(')[1].split(')')[0]
@@ -482,7 +488,7 @@ def generate_metadata_files_local(
             continue
     
     if existing_years:
-        print(f"Found existing metadata files for years: {sorted(existing_years)}")
+        print(f"Found existing mapping files for years: {sorted(existing_years)}")
         print("These years will be skipped during scanning.")
     
     # Find all WAV files
@@ -589,10 +595,12 @@ def generate_metadata_files_drive(
     
     metadata_path = Path(metadata_dir)
     metadata_path.mkdir(exist_ok=True)
-    
-    # Check which years already have metadata files
+    mapping_path = metadata_path / MAPPING_SUBDIR
+    mapping_path.mkdir(parents=True, exist_ok=True)
+
+    # Check which years already have mapping index files
     existing_years = set()
-    for existing_file in metadata_path.glob("Metadata Recording Mapping (*).xlsx"):
+    for existing_file in mapping_path.glob("Metadata Recording Mapping (*).xlsx"):
         # Extract year from filename: "Metadata Recording Mapping (2015).xlsx" -> "2015"
         try:
             year_str = existing_file.stem.split('(')[1].split(')')[0]
@@ -601,7 +609,7 @@ def generate_metadata_files_drive(
             continue
     
     if existing_years:
-        print(f"Found existing metadata files for years: {sorted(existing_years)}")
+        print(f"Found existing mapping files for years: {sorted(existing_years)}")
         print("These years will be skipped during scanning.")
     
     # Find all year folders in Google Drive
@@ -726,12 +734,15 @@ def generate_metadata_files_drive(
 
 def _generate_excel_files(records: List[Dict], metadata_path: Path):
     """Generate Excel files from records grouped by year."""
+    mapping_path = metadata_path / MAPPING_SUBDIR
+    mapping_path.mkdir(parents=True, exist_ok=True)
+
     records_by_year = group_records_by_year(records)
     
     for year, year_records in records_by_year.items():
         # Check if file already exists
         filename = f"Metadata Recording Mapping ({year}).xlsx"
-        output_path = metadata_path / filename
+        output_path = mapping_path / filename
         
         if output_path.exists():
             print(f"\nSkipping year {year}: File already exists ({filename})")

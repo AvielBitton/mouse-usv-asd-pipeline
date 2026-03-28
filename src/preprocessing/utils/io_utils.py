@@ -8,10 +8,14 @@ import pandas as pd
 def list_metadata_files(metadata_dir: str = "metadata") -> List[str]:
     """
     Returns a sorted list of Excel filenames in the specified directory.
-    
+
+    Only the top level of ``metadata_dir`` is scanned; subdirectories (e.g.
+    ``metadata/mapping/``) are ignored so reference index files are not picked
+    up by the preprocessing pipeline.
+
     Args:
         metadata_dir: Path to the metadata directory (default: "metadata")
-    
+
     Returns:
         Sorted list of .xlsx/.xls filenames, excluding temporary Excel files
         (those starting with "~$")

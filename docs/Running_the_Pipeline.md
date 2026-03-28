@@ -14,7 +14,7 @@ python generate_metadata.py --local --source-dir dumps
 python generate_metadata.py --drive --drive-folder-url "https://drive.google.com/drive/folders/YOUR_FOLDER_ID"
 ```
 
-This creates `Metadata Recording Mapping ({year}).xlsx` files in the `metadata/` directory.
+This creates `Metadata Recording Mapping ({year}).xlsx` files under `metadata/mapping/` (full cross-year index; not scanned by `run_pipeline`).
 
 **📖 For detailed instructions:** See `GENERATE_METADATA_README.md`  
 **☁️ For Google Drive setup:** See `GOOGLE_DRIVE_SETUP.md`
@@ -27,17 +27,15 @@ python src/preprocessing/run_pipeline.py
 
 ## Process Single File
 
-**New format:**
-```bash
-python src/preprocessing/run_pipeline.py --metadata-file "Metadata Recording Mapping (2015).xlsx"
-```
+Use a **`Data {year} For Syl Segmentation_*.xlsx`** file at the top level of `metadata/` (these are what the pipeline is designed to run on):
 
-**Old format (legacy):**
 ```bash
 python src/preprocessing/run_pipeline.py --metadata-file "Data 2015 For Syl Segmentation_1.xlsx"
 ```
 
-The file must exist in the `metadata/` directory. If not found, a `FileNotFoundError` is raised with available files.
+The file must exist in the `metadata/` directory (not in subfolders). If not found, a `FileNotFoundError` is raised with available files.
+
+**Note:** `Metadata Recording Mapping ({year}).xlsx` files live under `metadata/mapping/` as a generated **reference index** (all recordings per year). They are **not** listed for batch runs and should not be passed to `run_pipeline` unless you intentionally want to reprocess the entire year in one job (heavy memory use).
 
 ## Output
 

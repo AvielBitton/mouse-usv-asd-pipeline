@@ -101,7 +101,7 @@ Example:
 
 ## Output Files
 
-The script creates Excel files in the `metadata` directory with the name:
+The script creates Excel files under `metadata/mapping/` with the name:
 - `Metadata Recording Mapping ({year}).xlsx`
 
 Each year gets a single file containing all its records.
