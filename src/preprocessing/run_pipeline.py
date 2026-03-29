@@ -2,8 +2,12 @@ import os
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+# Allow imports from the project scripts directory
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'scripts'))
 
 from pytictoc import TicToc
+from normalize_folder_structure import normalize_year
+from pathlib import Path
 from utils import (
     setup_logger,
     list_metadata_files,
@@ -29,6 +33,18 @@ from steps import (
 #### 1: setup & file selection
 ##################################################
 logger = setup_logger()
+
+# Normalize folder structure (day/session/ch dirs) before processing.
+# Only needed for 2023+ data which arrives with non-standard naming
+# (e.g. "DAY 6" instead of "day_6", "SESSION 1" instead of "session1",
+# extra "ch1/" sub-directories). Pre-2023 data already uses canonical names.
+# Idempotent: already-correct names are skipped.
+NORMALIZE_FROM_YEAR = 2023
+recordings_root = Path("USV_Recordings")
+for year_dir in sorted(recordings_root.iterdir()):
+    if year_dir.is_dir() and year_dir.name.isdigit() and len(year_dir.name) == 4:
+        if int(year_dir.name) >= NORMALIZE_FROM_YEAR:
+            normalize_year(year_dir)
 
 input_files = list_metadata_files("metadata")
 logger.info(f"Found {len(input_files)} metadata file(s): {input_files}")

@@ -42,6 +42,82 @@ except ImportError:
         pass
 
 
+_KNOWN_GENOTYPES = {'WT', 'HET', 'HT'}
+
+# Matches the pup number part: one digit followed by one letter (e.g. 1A, 2B, 3D)
+_PUP_NUM_RE = re.compile(r'\b(\d[A-Za-z])\b')
+
+
+def _parse_mother_folder(folder_name: str):
+    """Parse a mother folder name into (mother_id, genotype).
+
+    Supports both underscore-separated ("22731O_HT") and space-separated
+    ("13128K WT", "13130I HET SUPP", "24277J WT - litter 2 (2.7.24)").
+
+    Returns (mother, matgen) or (None, None) on failure.
+    """
+    if '_' in folder_name:
+        mother, matgen = folder_name.rsplit('_', 1)
+        return mother, matgen
+
+    tokens = folder_name.split()
+    if len(tokens) >= 2:
+        mother = tokens[0]
+        matgen = tokens[1].upper()
+        if matgen in _KNOWN_GENOTYPES or matgen in ('HOM',):
+            return mother, matgen
+        return mother, matgen
+
+    return None, None
+
+
+def _parse_pup_folder(folder_name: str, mother_genotype: str):
+    """Parse a pup folder name into (name, offspring_genotype).
+
+    Supports underscore-separated ("22731O_1A_BLUE_HT") and the
+    space/dash-separated variants found in 2023/2024 data:
+      "13128K 1A WT-WT-WT RED"
+      "14120P-1A RED"
+      "13131J Het SUP 1A red"
+      "24229L-1B (RED) WT-WT-WT"
+
+    Falls back to *mother_genotype* when the offspring genotype cannot be
+    determined from the folder name.
+
+    Returns (name, pupgen) or (None, None) on failure.
+    """
+    if '_' in folder_name:
+        name, pupgen = folder_name.rsplit('_', 1)
+        return name, pupgen
+
+    # Extract the mother-id prefix: sequence of digits followed by letter(s)
+    id_match = re.match(r'^(\d+[A-Za-z]+)', folder_name)
+    if not id_match:
+        return None, None
+    mother_id = id_match.group(1)
+
+    # Find the pup number (e.g. "1A", "2B") after the mother-id
+    remainder = folder_name[len(mother_id):]
+    pup_match = _PUP_NUM_RE.search(remainder)
+    if not pup_match:
+        return None, None
+
+    pup_num = pup_match.group(1).upper()
+    name = f"{mother_id.upper()}-{pup_num}"
+
+    # Try to determine offspring genotype from the remaining text
+    text_after_pup = remainder[pup_match.end():]
+    pupgen = None
+    for token in text_after_pup.replace('-', ' ').split():
+        if token.upper() in _KNOWN_GENOTYPES:
+            pupgen = token.upper()
+            break
+    if pupgen is None:
+        pupgen = mother_genotype
+
+    return name, pupgen
+
+
 def parse_path_to_metadata(
     path_str: str, 
     root_path_str: str,
@@ -160,20 +236,19 @@ def parse_path_to_metadata(
             return None
         
         # Parse mother and genotype: e.g., "22731O_HT" -> mother="22731O", matgen="HT"
+        # Also supports space-separated: "13128K WT", "13130I HET SUPP",
+        # "24277J WT - litter 2 (2.7.24)"
         mother_full = parts[mother_idx]
-        if '_' in mother_full:
-            mother, matgen = mother_full.rsplit('_', 1)
-        else:
+        mother, matgen = _parse_mother_folder(mother_full)
+        if mother is None:
             return None
         
         # Parse name and pup genotype: e.g., "22731O_1A_BLUE_HT" -> name="22731O_1A_BLUE", pupgen="HT"
+        # Also supports space-separated: "13128K 1A WT-WT-WT RED", "14120P-1A RED",
+        # "13131J Het SUP 1A red", "24229L-1B (RED) WT-WT-WT"
         name_full = parts[name_idx]
-        if '_' in name_full:
-            # Split from the right to get the last part as genotype
-            name_parts = name_full.rsplit('_', 1)
-            name = name_parts[0]
-            pupgen = name_parts[1]
-        else:
+        name, pupgen = _parse_pup_folder(name_full, matgen)
+        if name is None:
             return None
         
         # Parse day: e.g., "day_4" -> day="4"
@@ -502,17 +577,16 @@ def generate_metadata_files_local(
     for file_path, path_str in wav_files:
         metadata = parse_path_to_metadata(path_str, str(dumps_path), is_drive=False)
         if metadata:
-            # Extract year from path
+            # Extract year from path: find the source dir in the path
+            # parts, then the next component is the year folder.
             path_obj = Path(file_path)
             parts = path_obj.parts
-            if 'dumps' in parts:
-                year_idx = parts.index('dumps') + 1
-                if year_idx < len(parts):
-                    year = parts[year_idx]
-                else:
-                    year = 'Unknown'
+            source_dir_name = dumps_path.resolve().name
+            if source_dir_name in parts:
+                year_idx = parts.index(source_dir_name) + 1
+                year = parts[year_idx] if year_idx < len(parts) else 'Unknown'
             else:
-                year = parts[0] if parts else 'Unknown'
+                year = 'Unknown'
             
             # Skip if file already exists for this year
             if year in existing_years:

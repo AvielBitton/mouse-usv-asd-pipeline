@@ -24,6 +24,12 @@ All source code lives here:
 - **`src/models/`** — pre-trained model weights
   - `model_weights.h6` — CNN weights for syllable type classification (used by the preprocessing pipeline)
 
+### **scripts/**
+Data preparation utilities — run these before the main pipeline:
+
+- **`normalize_folder_structure.py`** — Normalizes `USV_Recordings/` folder naming to the canonical layout. Relevant for 2023+ data which arrives with non-standard naming (`DAY 6` → `day_6`, `SESSION 1` → `session1`, removes extra `ch1/` sub-directories). Idempotent: safe to run multiple times. Also called automatically at the start of the preprocessing pipeline.
+- **`split_mapping_to_segmentation.py`** — Splits the full mapping files (`metadata/mapping/`) into batch segmentation files (`metadata/Data {year} For Syl Segmentation_{n}.xlsx`) that the pipeline consumes. Filters out rows without a valid Session, drops the Channel column, and splits into batches of ~1200 rows.
+
 ### **archive/**
 Archived legacy code kept for reference only:
 
@@ -47,28 +53,8 @@ Documentation and notes, including:
 
 ---
 
-### **generate_metadata.py**
-Standalone script to generate metadata Excel files from WAV files:
-
-- **Local mode:** Scans local directories for WAV files and extracts metadata from folder structure
-- **Google Drive mode:** Connects to Google Drive folders and scans remotely
-- Automatically extracts: Mother, Name, Day, Session, Channel, Recording Number
-- Loads sex information from Excel tables in year folders
-- Generates one Excel file per year: `metadata/mapping/Metadata Recording Mapping ({year}).xlsx`
-
-**📖 Documentation:** See `GENERATE_METADATA_README.md` for detailed usage
-
-**🔧 Setup:** See `SETUP_GENERATE_METADATA.md` for installation
-
-**☁️ Google Drive:** See `GOOGLE_DRIVE_SETUP.md` for Google Drive authentication setup
-
-### **drive_scanner.py**
-Google Drive integration module for `generate_metadata.py`:
-
-- Handles Google Drive API authentication
-- Recursively scans Drive folders for WAV files
-- Downloads Excel files for sex data extraction
-- Supports folder ID and URL input
+### **generate_metadata.py** / **drive_scanner.py**
+Metadata generation from WAV recordings (local or Google Drive). Generates one mapping file per year under `metadata/mapping/`. See `GENERATE_METADATA_README.md` for usage.
 
 ### **requirements.txt**
 Dependency list for the original project, including TensorFlow, librosa, numpy, pandas, and all required Python packages.
@@ -85,30 +71,81 @@ Project overview and description.
 
 ## Pipeline Overview
 
-### Step 0: Generate Metadata (New)
+### Step 0: Data Preparation
 
-Before running the main pipeline, you need to generate metadata files from your WAV recordings:
+Before running the main pipeline, the recording data needs to be prepared. This is especially important when adding new data (2023+), which may arrive with a different folder structure than the original 2015/2018/2022 data.
 
-**Option A: Local Directory**
-```bash
-python generate_metadata.py --local --source-dir dumps
+#### 0.1 — Place recordings in `USV_Recordings/`
+
+Extract or download the WAV recordings so that each year has its own folder:
+
+```
+USV_Recordings/
+├── 2015/
+├── 2018/
+├── 2022/
+├── 2023/   ← new data
+└── 2024/   ← new data
 ```
 
-**Option B: Google Drive**
+#### 0.2 — Normalize folder structure
+
+Data from 2023+ arrives with non-standard folder naming (e.g. `DAY 6` instead of `day_6`, `SESSION 1` instead of `session1`, extra `ch1/` sub-directories). This script renames them to the canonical layout expected by the pipeline.
+
 ```bash
+python scripts/normalize_folder_structure.py
+```
+
+This step is **idempotent** — running it again on already-normalized data does nothing. It is also called **automatically** at the start of the preprocessing pipeline, so it's safe to skip if you're about to run the pipeline anyway.
+
+> **Note:** Pre-2023 data already uses the canonical naming and is unaffected.
+
+#### 0.3 — Generate metadata mapping files
+
+Scan the WAV recordings and extract metadata (mother, name, day, session, genotype, etc.) into Excel mapping files:
+
+```bash
+# Local directory
+python generate_metadata.py --local --source-dir USV_Recordings --metadata-dir metadata
+
+# Or from Google Drive
 python generate_metadata.py --drive --drive-folder-url "https://drive.google.com/drive/folders/YOUR_FOLDER_ID"
 ```
 
-**What it does:**
-- Scans WAV files in local directories or Google Drive folders
-- Extracts metadata from folder structure (year, mother, name, day, session, channel)
-- Loads sex information from Excel tables in year folders
-- Generates `Metadata Recording Mapping ({year}).xlsx` under `metadata/mapping/`
-- Skips years that already have metadata files (incremental updates)
+This creates one file per year under `metadata/mapping/`:
+`Metadata Recording Mapping ({year}).xlsx`
+
+Years that already have a mapping file are skipped automatically.
 
 **📖 For detailed instructions:** See `GENERATE_METADATA_README.md`
 
 **☁️ For Google Drive setup:** See `GOOGLE_DRIVE_SETUP.md`
+
+#### 0.4 — Split mapping files into pipeline inputs
+
+The preprocessing pipeline reads segmentation batch files from `metadata/`. This script splits the full mapping files into batches:
+
+```bash
+python scripts/split_mapping_to_segmentation.py
+```
+
+This creates files like `metadata/Data 2023 For Syl Segmentation_1.xlsx` (up to ~1200 rows each). Years that already have segmentation files are skipped.
+
+#### Folder structure conventions
+
+The pipeline expects WAV recordings in this layout:
+
+```
+USV_Recordings/{year}/{mother_folder}/{pup_folder}/day_{day}/session{session}/{recording}.wav
+```
+
+**Pre-2023 data** uses underscore-separated names:
+`22731O_HT/22731O_1A_BLUE_HT/day_6/session1/T0000001.wav`
+
+**2023+ data** uses space/dash-separated names:
+`13128K WT/13128K 1A WT-WT-WT RED/day_6/session1/T0000001.wav`
+
+Both formats are supported. The pipeline resolves the correct directory automatically using fuzzy matching (case-insensitive, dash/space interchangeable). Mothers with multiple litters in separate folders (e.g. `24277J WT` and `24277J WT - litter 2 (2.7.24)`) are also handled.
 
 ### Google Drive Integration
 
@@ -165,13 +202,11 @@ The `generate_metadata.py` script supports scanning WAV files directly from Goog
 
 ## Current Status
 
-- ✅ **Metadata generation script** (`generate_metadata.py`) is fully functional
-  - Supports local directory scanning
-  - Supports Google Drive integration
-  - Automatically extracts metadata from folder structure
-  - Handles sex information from Excel tables
-- ✅ **Preprocessing pipeline** (`src/preprocessing/run_pipeline.py`) is fully functional — segmentation, basic features, CNN classification, column enrichment, and feature extraction
+- ✅ **Data preparation scripts** (`scripts/`) — folder normalization and metadata splitting
+- ✅ **Metadata generation** (`generate_metadata.py`) — supports local and Google Drive scanning, handles both old (underscore) and new (space/dash) folder naming
+- ✅ **Preprocessing pipeline** (`src/preprocessing/run_pipeline.py`) — segmentation, basic features, CNN classification, column enrichment, and feature extraction. Automatically normalizes folder structure on startup.
 - ✅ **ASD classification** (`src/classification/train_classifier.py`) — XGBoost-based sick/healthy classifier
+- ✅ **Supported data:** 2015, 2018, 2022, 2023, 2024
 - ⚠️ The available data is partial. Full dataset access requires access to the BGU lab servers.
 
 ---
