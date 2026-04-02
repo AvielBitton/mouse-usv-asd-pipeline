@@ -82,6 +82,10 @@ def feature_extraction(X):
   # print(X)
 
 
+  # Normalise genotype labels: old data uses "HT", new data uses "HET"
+  X["Mother Genotype"] = X["Mother Genotype"].replace("HT", "HET")
+  X["Offspring Genotype"] = X["Offspring Genotype"].replace("HT", "HET")
+
   # encode binary feature - mother genotype
   y = X[["Mother Genotype"]]
   # print(y)
