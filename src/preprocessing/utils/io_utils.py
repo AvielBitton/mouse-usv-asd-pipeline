@@ -119,13 +119,13 @@ FEATURE_COLUMNS = [
     "Strain",
 ]
 
-# Year-to-strain mapping: 2022 recordings are strain 1, all others strain 2
-STRAIN_YEAR = 2022
+# Year-to-strain mapping: 2022+ recordings are strain 1, 2015/2018 are strain 2
+STRAIN_1_YEARS = {2022, 2023, 2024}
 
 
 def strain_from_year(year) -> int:
     """Return the strain identifier (1 or 2) for a given recording year."""
-    return 1 if int(year) == STRAIN_YEAR else 2
+    return 1 if int(year) in STRAIN_1_YEARS else 2
 
 
 def replace_extension(file_path: str, new_ext: str) -> str:

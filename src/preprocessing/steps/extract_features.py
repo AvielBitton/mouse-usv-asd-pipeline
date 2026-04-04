@@ -26,7 +26,7 @@ def add_strain_column(dataset: pd.DataFrame, year: str) -> pd.DataFrame:
     """Add a Strain column to the DataFrame based on the recording year.
 
     Uses `strain_from_year` to map the year to a strain identifier
-    (1 for 2022 recordings, 2 for all others).
+    (1 for 2022+ recordings, 2 for 2015/2018).
     """
     dataset["Strain"] = strain_from_year(year)
     return dataset
