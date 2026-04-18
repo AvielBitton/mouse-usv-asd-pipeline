@@ -26,9 +26,6 @@
   .highlight { color: #e63946; font-weight: 600; }
   .good { color: #2a9d8f; font-weight: 600; }
   .banner { border-radius: 8px; padding: 20px 24px; margin: 16px 0; }
-  .banner-warn { background: linear-gradient(135deg, #e63946 0%, #c1121f 100%); color: #fff; }
-  .banner-warn p { color: #fde8e8; }
-  .banner-warn h3 { color: #fff; margin-top: 0; }
   .banner-info { background: linear-gradient(135deg, #457b9d 0%, #1d3557 100%); color: #fff; }
   .banner-info p { color: #d4e4f0; }
   .banner-info h3 { color: #fff; margin-top: 0; }
@@ -44,102 +41,39 @@
 
   <div class="header">
     <h1>Group-Aware Split &mdash; External Data &mdash; Executive Summary</h1>
-    <p>XGBoost Binary Classifier &nbsp;|&nbsp; Group Split + External Data &nbsp;|&nbsp; April 18, 2026</p>
+    <p>XGBoost Binary Classifier &nbsp;|&nbsp; <code>--external --group-split</code> &nbsp;|&nbsp; April 2026</p>
   </div>
 
   <div class="body">
 
-    <h2>Objective</h2>
-    <p>Evaluate the XGBoost ASD classifier using the <strong>external data</strong> (correct genotype labels)
-    with a <strong>group-aware split</strong> (no mouse appears in both train and test).
-    This is the most rigorous evaluation: correct labels + no data leakage.</p>
-
     <h2>Configuration</h2>
     <table>
       <tr><th></th><th>Value</th></tr>
-      <tr><td>Data source</td><td>External (<code>all_data_external.csv</code>)</td></tr>
-      <tr><td>Split strategy</td><td>Group-aware (by mouse_idx &mdash; no mouse overlap)</td></tr>
-      <tr><td>Flags</td><td><code>--external --group-split</code></td></tr>
+      <tr><td>Data source</td><td>External (<code>all_data_external.csv</code>) &mdash; correct individual genotyping</td></tr>
+      <tr><td>Split strategy</td><td>Group-aware by mouse (no mouse overlap between train/test)</td></tr>
       <tr><td>Total feature rows</td><td>13,081</td></tr>
-      <tr><td>Unique mice</td><td>115</td></tr>
-      <tr><td>HET / WT ratio</td><td class="highlight">24% / 76%</td></tr>
+      <tr><td>Unique mice</td><td>115 (27 HET / 88 WT)</td></tr>
     </table>
 
-    <h2>Data Split</h2>
+    <h2>Results &mdash; External Random vs Group Split</h2>
     <table>
-      <tr><th>Set</th><th>Rows</th><th>Mice</th><th>HET (class 0)</th><th>WT (class 1)</th></tr>
-      <tr><td>Train</td><td>8,562</td><td>69</td><td>2,090 (24.4%)</td><td>6,472 (75.6%)</td></tr>
-      <tr><td>Validation</td><td>2,360</td><td>23</td><td>732 (31.0%)</td><td>1,628 (69.0%)</td></tr>
-      <tr><td>Test</td><td>2,159</td><td>23</td><td>392 (18.2%)</td><td>1,767 (81.8%)</td></tr>
-    </table>
-    <p>No mouse appears in more than one set &mdash; all recordings from a given mouse are kept together.</p>
-
-    <h2>Results &mdash; External Data: Random vs Group Split</h2>
-    <p>Comparing split strategies within the external (correct) data:</p>
-    <table>
-      <tr><th>Metric</th><th>External + Random</th><th>External + Group</th><th>Delta</th></tr>
-      <tr><td>Test Accuracy</td><td>71.3%</td><td>54.6%</td><td class="highlight">&minus;16.7%</td></tr>
-      <tr><td>Train Accuracy</td><td>72.1%</td><td>74.7%</td><td>+2.6%</td></tr>
-      <tr><td>Weighted F1</td><td>0.73</td><td>0.59</td><td class="highlight">&minus;0.14</td></tr>
-      <tr><td>HET Precision</td><td>0.47</td><td>0.27</td><td class="highlight">&minus;0.20</td></tr>
-      <tr><td>HET Recall</td><td class="good">0.97</td><td>0.86</td><td class="highlight">&minus;0.11</td></tr>
-      <tr><td>HET F1</td><td>0.63</td><td>0.41</td><td class="highlight">&minus;0.22</td></tr>
-      <tr><td>WT Precision</td><td class="good">0.98</td><td>0.94</td><td>&minus;0.04</td></tr>
-      <tr><td>WT Recall</td><td>0.62</td><td>0.48</td><td class="highlight">&minus;0.14</td></tr>
-      <tr><td>WT F1</td><td>0.76</td><td>0.63</td><td class="highlight">&minus;0.13</td></tr>
+      <tr><th>Metric</th><th>External Random</th><th>External Group</th><th>Delta</th></tr>
+      <tr><td>Test Accuracy</td><td class="good">70.7%</td><td>56.1%</td><td class="highlight">&minus;14.6%</td></tr>
+      <tr><td>Weighted F1</td><td class="good">0.73</td><td>0.60</td><td class="highlight">&minus;0.13</td></tr>
+      <tr><td>HET F1</td><td>0.62</td><td>0.45</td><td class="highlight">&minus;0.17</td></tr>
+      <tr><td>WT F1</td><td class="good">0.76</td><td>0.63</td><td class="highlight">&minus;0.13</td></tr>
+      <tr><td>HET Recall</td><td class="good">0.97</td><td class="good">0.90</td><td>&minus;0.07</td></tr>
+      <tr><td>HET Precision</td><td>0.46</td><td class="highlight">0.30</td><td class="highlight">&minus;0.16</td></tr>
     </table>
 
-    <div class="banner banner-warn">
-      <h3>Key Finding: Group Split Reveals True Generalization Gap</h3>
-      <p>The random split achieves 71.3% accuracy with external data, but the group-aware split
-      drops to <strong>54.6%</strong> &mdash; barely above chance for an 18/82% class ratio. This confirms
-      the model heavily relies on <strong>mouse-level features</strong> (mother genotype, strain) rather
-      than learning acoustic patterns that generalize to unseen mice.</p>
-    </div>
-
-    <h2>Analysis</h2>
-
-    <h3>Why Group Split Hurts More with External Data</h3>
-    <ul>
-      <li><strong>Severe class imbalance in test set.</strong> The test set has only 18.2% HET (392 rows)
-      vs 81.8% WT (1,767 rows). With so few HET samples, the model struggles to learn a reliable
-      decision boundary.</li>
-      <li><strong>mother_gen dominance.</strong> Feature importance shows mother_gen at 62.7%.
-      In group split, entire litters go to one set &mdash; the model cannot memorize mother-level
-      patterns from train and apply them to the same mother in test.</li>
-      <li><strong>Correct labels make mother_gen less predictive.</strong> With correct genotyping,
-      only ~42% of pups from HET mothers are actually HET (vs 61% in pipeline data).
-      When this weaker signal is also split by group, it becomes nearly useless.</li>
-    </ul>
-
-    <h3>Confusion Matrix Breakdown</h3>
-    <table>
-      <tr><th></th><th>Predicted HET</th><th>Predicted WT</th></tr>
-      <tr><td><strong>Actual HET</strong> (392)</td><td class="good">337 (86%)</td><td>55 (14%)</td></tr>
-      <tr><td><strong>Actual WT</strong> (1,767)</td><td class="highlight">926 (52%)</td><td>841 (48%)</td></tr>
-    </table>
-    <p>The model correctly identifies 86% of HET mice but falsely labels 52% of WT mice as HET.
-    This high false-positive rate makes the classifier unreliable for clinical use.</p>
-
-    <h2>Summary</h2>
-    <table>
-      <tr><th>Configuration</th><th>Test Acc</th><th>F1 (wtd)</th><th>HET F1</th><th>WT F1</th></tr>
-      <tr><td>External, random split</td><td>71.3%</td><td>0.73</td><td>0.63</td><td>0.76</td></tr>
-      <tr><td>External, group split</td><td class="highlight">54.6%</td><td class="highlight">0.59</td><td class="highlight">0.41</td><td class="highlight">0.63</td></tr>
-    </table>
+    <p>The 14.6% accuracy drop from random to group split confirms the model relies on
+    mouse-level features rather than acoustic patterns that generalize to unseen mice.</p>
 
     <div class="banner banner-info">
       <h3>Conclusion</h3>
-      <p>The combination of correct genotype labels + group-aware split produces the most
-      <strong>honest evaluation</strong> of the model. At 54.6% accuracy with 0.41 HET F1,
-      the current XGBoost approach does not generalize well to unseen mice.</p>
-      <p style="margin-top:12px;"><strong>Recommended next steps:</strong></p>
-      <ul style="margin-top:8px;">
-        <li>Address class imbalance (oversampling HET, SMOTE, or class weights in XGBoost)</li>
-        <li>Reduce reliance on mother_gen &mdash; explore acoustic-only feature sets</li>
-        <li>Collect more HET samples (currently only 27 mice)</li>
-        <li>Investigate alternative model architectures that better capture acoustic patterns</li>
-      </ul>
+      <p>At 56.1% accuracy with group-aware split, the model does not generalize well to unseen mice.
+      The comprehensive comparison across all 4 configurations is available in
+      <code>results_external/summary/executive_summary.html</code>.</p>
     </div>
 
   </div>
