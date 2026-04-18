@@ -74,22 +74,6 @@
     </table>
     <p>No mouse appears in more than one set &mdash; all recordings from a given mouse are kept together.</p>
 
-    <h2>Results &mdash; Group-Aware Split Comparison</h2>
-    <p>Comparing group-aware split across both data sources:</p>
-    <table>
-      <tr><th>Metric</th><th>Pipeline + Group</th><th>External + Group</th><th>Delta</th></tr>
-      <tr><td>Test Accuracy</td><td>72.1%</td><td>54.6%</td><td class="highlight">&minus;17.5%</td></tr>
-      <tr><td>Train Accuracy</td><td>88.3%</td><td>74.7%</td><td class="highlight">&minus;13.6%</td></tr>
-      <tr><td>Weighted F1</td><td>0.73</td><td>0.59</td><td class="highlight">&minus;0.14</td></tr>
-      <tr><td>HET Precision</td><td>0.53</td><td>0.27</td><td class="highlight">&minus;0.26</td></tr>
-      <tr><td>HET Recall</td><td>0.80</td><td class="good">0.86</td><td class="good">+0.06</td></tr>
-      <tr><td>HET F1</td><td>0.64</td><td>0.41</td><td class="highlight">&minus;0.23</td></tr>
-      <tr><td>WT Precision</td><td>0.88</td><td class="good">0.94</td><td class="good">+0.06</td></tr>
-      <tr><td>WT Recall</td><td>0.69</td><td>0.48</td><td class="highlight">&minus;0.21</td></tr>
-      <tr><td>WT F1</td><td>0.77</td><td>0.63</td><td class="highlight">&minus;0.14</td></tr>
-      <tr><td>Test Samples</td><td>1,902</td><td>2,159</td><td>+257</td></tr>
-    </table>
-
     <h2>Results &mdash; External Data: Random vs Group Split</h2>
     <p>Comparing split strategies within the external (correct) data:</p>
     <table>
@@ -137,11 +121,9 @@
     <p>The model correctly identifies 86% of HET mice but falsely labels 52% of WT mice as HET.
     This high false-positive rate makes the classifier unreliable for clinical use.</p>
 
-    <h2>All Configurations Summary</h2>
+    <h2>Summary</h2>
     <table>
       <tr><th>Configuration</th><th>Test Acc</th><th>F1 (wtd)</th><th>HET F1</th><th>WT F1</th></tr>
-      <tr><td>Pipeline, random split</td><td>82.9%</td><td>0.83</td><td>0.81</td><td>0.84</td></tr>
-      <tr><td>Pipeline, group split</td><td>72.1%</td><td>0.73</td><td>0.64</td><td>0.77</td></tr>
       <tr><td>External, random split</td><td>71.3%</td><td>0.73</td><td>0.63</td><td>0.76</td></tr>
       <tr><td>External, group split</td><td class="highlight">54.6%</td><td class="highlight">0.59</td><td class="highlight">0.41</td><td class="highlight">0.63</td></tr>
     </table>
