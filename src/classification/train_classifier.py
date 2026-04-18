@@ -17,6 +17,7 @@ from xgboost import XGBClassifier
 from report import generate_comparison
 
 ALL_DATA_CSV = os.path.join("outputs", "aggregated", "all_data.csv")
+ALL_DATA_EXTERNAL_CSV = os.path.join("outputs", "aggregated_external", "all_data_external.csv")
 
 COL_NAMES = [
     'syll1_s_freq', 'syll2_s_freq', 'syll3_s_freq', 'syll4_s_freq', 'syll5_s_freq',
@@ -44,6 +45,11 @@ def parse_args():
         action='store_true',
         help='Use group-aware train/val/test split based on mouse identity. '
              'Prevents data leakage by ensuring no mouse appears in more than one set.',
+    )
+    parser.add_argument(
+        '--external',
+        action='store_true',
+        help='Use external aggregated data (all_data_external.csv) instead of the default.',
     )
     parser.add_argument(
         '--results-dir',
@@ -188,10 +194,12 @@ def main():
     # --- results directory ---------------------------------------------------
     if args.results_dir:
         results_dir = args.results_dir
-    elif args.group_split:
-        results_dir = 'results_group_split'
     else:
         results_dir = 'results'
+        if args.group_split:
+            results_dir += '_group_split'
+        if args.external:
+            results_dir += '_external'
 
     plots_dir = os.path.join(results_dir, 'plots')
     model_dir = os.path.join(results_dir, 'model')
@@ -207,11 +215,15 @@ def main():
     active_flags = []
     if args.group_split:
         active_flags.append('--group-split')
+    if args.external:
+        active_flags.append('--external')
     print(f'Active flags: {active_flags if active_flags else "none (baseline)"}')
     print(f'Results directory: {results_dir}')
 
     # --- load data -----------------------------------------------------------
-    dataset = pd.read_csv(ALL_DATA_CSV, header=None, names=COL_NAMES)
+    data_csv = ALL_DATA_EXTERNAL_CSV if args.external else ALL_DATA_CSV
+    print(f'Data source: {data_csv}')
+    dataset = pd.read_csv(data_csv, header=None, names=COL_NAMES)
     X = dataset.iloc[:, :-2]
     y = dataset.iloc[:, -2]
     groups = dataset.iloc[:, -1]
@@ -377,6 +389,7 @@ def main():
     # --- restore stdout ------------------------------------------------------
     sys.stdout = orig_stdout
     log_file.close()
+
     print(f'Done. Results saved to {results_dir}/')
 
 

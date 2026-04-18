@@ -197,3 +197,92 @@ def run_aggregated_feature_extraction(
         logger.info(f"Finished aggregating features: {output_csv}")
 
     return output_csv
+
+
+AGGREGATED_EXTERNAL_SUBDIR = "aggregated_external"
+ALL_DATA_EXTERNAL_XLSX_NAME = "all_data_external.xlsx"
+ALL_DATA_EXTERNAL_CSV_NAME = "all_data_external.csv"
+
+
+def run_external_aggregated_feature_extraction(
+    external_file: str,
+    output_dir: str = "",
+    logger: Optional[logging.Logger] = None,
+) -> str:
+    """Run feature extraction on a single external Excel file containing all segmentation data.
+
+    Same pipeline as ``run_aggregated_feature_extraction`` but reads one
+    pre-concatenated workbook instead of globbing individual per-file
+    segmentation workbooks.
+
+    Args:
+        external_file: Path to the external Excel file
+            (e.g. ``outputs/external/segmentation_classification_all_data.xlsx``).
+        output_dir: Directory to write ``all_data.xlsx`` and ``all_data.csv``.
+            Defaults to ``outputs/aggregated_external``.
+        logger: Optional logger instance.
+
+    Returns:
+        Path to the aggregated CSV file.
+    """
+    if not output_dir:
+        output_dir = os.path.join(
+            os.path.dirname(os.path.dirname(external_file)),
+            AGGREGATED_EXTERNAL_SUBDIR,
+        )
+
+    if logger:
+        logger.info(
+            f"Aggregating features from external file: {external_file} -> {output_dir}"
+        )
+
+    os.makedirs(output_dir, exist_ok=True)
+
+    dataset = pd.read_excel(external_file)
+    if logger:
+        logger.info(f"Loaded {len(dataset)} rows from {external_file}")
+
+    invalid_labels = {"UNK", "NAN"}
+    valid_sex = {"M", "F"}
+    mask = (
+        dataset["Offspring Genotype"].isin(invalid_labels)
+        | dataset["Mother Genotype"].isin(invalid_labels)
+        | ~dataset["Sex"].isin(valid_sex)
+    )
+    if mask.any():
+        dataset = dataset[~mask].reset_index(drop=True)
+        if logger:
+            logger.info(
+                f"Filtered {mask.sum()} rows with invalid genotype labels "
+                f"(UNK/NAN) or unknown sex, {len(dataset)} rows remaining"
+            )
+
+    # Session 0 means no session subfolder existed (single session) -- treat as 1
+    zero_sessions = dataset["Session"] == 0
+    if zero_sessions.any():
+        dataset.loc[zero_sessions, "Session"] = 1
+        if logger:
+            logger.info(
+                f"Replaced {zero_sessions.sum()} Session=0 values with 1"
+            )
+
+    dataset = add_strain_from_path(dataset)
+
+    os.makedirs(output_dir, exist_ok=True)
+    output_xlsx = os.path.join(output_dir, ALL_DATA_EXTERNAL_XLSX_NAME)
+    if logger and os.path.isfile(output_xlsx):
+        logger.info(f"Overwriting existing file: {output_xlsx}")
+    dataset.to_excel(output_xlsx, index=False)
+
+    X = select_feature_columns(dataset)
+    mouse_final_data = compute_features(X)
+
+    output_csv = os.path.join(output_dir, ALL_DATA_EXTERNAL_CSV_NAME)
+    if logger and os.path.isfile(output_csv):
+        logger.info(f"Overwriting existing file: {output_csv}")
+    np.savetxt(output_csv, X=mouse_final_data, delimiter=",")
+
+    if logger:
+        logger.info(f"Finished external aggregation: {output_csv}")
+
+    return output_csv
