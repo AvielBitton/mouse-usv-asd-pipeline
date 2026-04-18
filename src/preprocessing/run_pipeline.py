@@ -26,6 +26,7 @@ from steps import (
     enrich_segmentation_columns,
     run_feature_extraction,
     run_aggregated_feature_extraction,
+    run_external_aggregated_feature_extraction,
 )
 
 
@@ -191,3 +192,7 @@ for file_name in files_to_process:
 ##################################################
 if __name__ == "__main__":
   run_aggregated_feature_extraction(outputs_dir='outputs', logger=logger)
+  run_external_aggregated_feature_extraction(
+      external_file="outputs/external/segmentation_classification_all_data.xlsx",
+      logger=logger,
+  )

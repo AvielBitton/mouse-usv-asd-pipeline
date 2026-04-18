@@ -4,4 +4,4 @@ from .read_segmentation import read_segmentation_results
 from .compute_basic_features import compute_basic_features
 from .classification import run_classification
 from .enrich_columns import enrich_segmentation_columns
-from .extract_features import run_feature_extraction, run_aggregated_feature_extraction
+from .extract_features import run_feature_extraction, run_aggregated_feature_extraction, run_external_aggregated_feature_extraction

@@ -1,0 +1,44 @@
+Active flags: ['--external']
+Results directory: results_external
+Data source: outputs/aggregated_external/all_data_external.csv
+
+=== Split Info ===
+Strategy: random (row-level)
+Train: 7848 rows | Val: 2616 rows | Test: 2617 rows
+WARNING: mouse overlap -- train/val: 114, train/test: 115, val/test: 114 shared mice
+  Train labels: class 0=1885 (24.0%), class 1=5963 (76.0%)
+  Val labels: class 0=654 (25.0%), class 1=1962 (75.0%)
+  Test labels: class 0=675 (25.8%), class 1=1942 (74.2%)
+==================
+
+Train Accuracy:  0.720565749235474
+Test Accuracy:  0.7126480703095147
+Classification Report:
+              precision    recall  f1-score   support
+
+         0.0       0.47      0.97      0.63       675
+         1.0       0.98      0.62      0.76      1942
+
+    accuracy                           0.71      2617
+   macro avg       0.73      0.80      0.70      2617
+weighted avg       0.85      0.71      0.73      2617
+
+
+ Confusion Matrix:
+Confusion matrix, without normalization
+
+ Confusion Matrix - New pup:
+Confusion matrix, without normalization
+
+ Confusion Matrix - Old pup:
+Confusion matrix, without normalization
+[[ 653   22]
+ [ 730 1212]]
+[0.0069234  0.00613296 0.01012806 0.00849578 0.01412797 0.01082915
+ 0.00533989 0.00943777 0.00933629 0.00394889 0.00921385 0.00576119
+ 0.00985856 0.00451712 0.01406822 0.00608506 0.0060021  0.00588325
+ 0.00657661 0.00674204 0.00908621 0.01105721 0.00909246 0.00432922
+ 0.00839915 0.01633961 0.00482953 0.01042629 0.00549918 0.00901838
+ 0.00762599 0.01058774 0.00610563 0.00788621 0.00197513 0.00543188
+ 0.00896076 0.00709041 0.00533975 0.00671735 0.60444623 0.02324604
+ 0.0074799  0.01293689 0.00746422 0.02922039]
