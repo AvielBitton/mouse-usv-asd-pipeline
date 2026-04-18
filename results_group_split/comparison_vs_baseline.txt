@@ -3,18 +3,18 @@ COMPARISON VS BASELINE
 ============================================================
 Active flags: --group-split
 
-Test Accuracy:   0.721  (baseline: 0.829, delta: -0.108)
-Train Accuracy:  0.883  (baseline: 0.880, delta: +0.003)
-Weighted F1:     0.732  (baseline: 0.830, delta: -0.098)
+Test Accuracy:   0.583  (baseline: 0.829, delta: -0.246)
+Train Accuracy:  0.824  (baseline: 0.880, delta: -0.056)
+Weighted F1:     0.604  (baseline: 0.830, delta: -0.226)
 
 --- HET (class 0) ---
-  Precision: 0.531  (baseline: 0.730, delta: -0.199)
-  Recall:    0.798  (baseline: 0.900, delta: -0.102)
-  F1:        0.637  (baseline: 0.810, delta: -0.173)
+  Precision: 0.370  (baseline: 0.730, delta: -0.360)
+  Recall:    0.696  (baseline: 0.900, delta: -0.204)
+  F1:        0.484  (baseline: 0.810, delta: -0.326)
 
 --- WT (class 1) ---
-  Precision: 0.885  (baseline: 0.920, delta: -0.035)
-  Recall:    0.687  (baseline: 0.780, delta: -0.093)
-  F1:        0.774  (baseline: 0.840, delta: -0.066)
+  Precision: 0.820  (baseline: 0.920, delta: -0.100)
+  Recall:    0.539  (baseline: 0.780, delta: -0.241)
+  F1:        0.651  (baseline: 0.840, delta: -0.189)
 
 ============================================================

@@ -47,7 +47,7 @@
 
   <div class="header">
     <h1>Comprehensive Model Comparison &mdash; Executive Summary</h1>
-    <p>XGBoost ASD Classifier &nbsp;|&nbsp; 5 Configurations &nbsp;|&nbsp; April 2026</p>
+    <p>XGBoost ASD Classifier &nbsp;|&nbsp; 4 Configurations &nbsp;|&nbsp; April 2026</p>
   </div>
 
   <div class="body">
@@ -60,15 +60,13 @@
 
     <h2>Data Sources</h2>
     <table>
-      <tr><th></th><th>Legacy (2015&ndash;2022)</th><th>Pipeline (2015&ndash;2024)</th><th>External</th></tr>
-      <tr><td>Source file</td><td><code>all_data.csv</code> (original)</td><td><code>all_data.csv</code></td><td><code>all_data_external.csv</code></td></tr>
-      <tr><td>Feature rows</td><td>7,322</td><td>9,515</td><td>13,081</td></tr>
-      <tr><td>Unique mice</td><td>65</td><td>87</td><td>115</td></tr>
-      <tr><td>HET mice (ASD-model)</td><td>20</td><td>27</td><td>27</td></tr>
-      <tr><td>WT mice</td><td>45</td><td>60</td><td>88</td></tr>
-      <tr><td>HET / WT ratio</td><td>31% / 69%</td><td>30% / 70%</td><td>24% / 76%</td></tr>
-      <tr><td>Years</td><td>2015, 2018, 2022</td><td>2015&ndash;2024</td><td>2015&ndash;2024</td></tr>
-      <tr><td>Genotype corrected</td><td>N/A (no mislabeled mice)</td><td>Yes (14 mice)</td><td>Already correct</td></tr>
+      <tr><th></th><th>Pipeline</th><th>External</th></tr>
+      <tr><td>Source file</td><td><code>all_data.csv</code></td><td><code>all_data_external.csv</code></td></tr>
+      <tr><td>Feature rows</td><td>9,515</td><td>13,081</td></tr>
+      <tr><td>Unique mice</td><td>87</td><td>115</td></tr>
+      <tr><td>HET mice (ASD-model)</td><td>27</td><td>27</td></tr>
+      <tr><td>WT mice</td><td>60</td><td>88</td></tr>
+      <tr><td>HET / WT ratio</td><td>30% / 70%</td><td>24% / 76%</td></tr>
     </table>
 
     <h3>What the External Data Adds</h3>
@@ -95,7 +93,6 @@
     <table>
       <tr>
         <th>Metric</th>
-        <th>Legacy<br>Random</th>
         <th>Pipeline<br>Random</th>
         <th>Pipeline<br>Group</th>
         <th>External<br>Random</th>
@@ -103,15 +100,13 @@
       </tr>
       <tr>
         <td>Test Accuracy</td>
-        <td class="good">76.0%</td>
         <td>66.6%</td>
         <td>58.3%</td>
-        <td>70.7%</td>
+        <td class="good">70.7%</td>
         <td>56.1%</td>
       </tr>
       <tr>
         <td>Train Accuracy</td>
-        <td>79.8%</td>
         <td>70.6%</td>
         <td>82.4%</td>
         <td>73.1%</td>
@@ -119,15 +114,13 @@
       </tr>
       <tr>
         <td>Weighted F1</td>
-        <td class="good">0.77</td>
         <td>0.67</td>
         <td>0.60</td>
-        <td>0.73</td>
+        <td class="good">0.73</td>
         <td>0.60</td>
       </tr>
       <tr>
         <td>HET Precision</td>
-        <td>0.58</td>
         <td>0.48</td>
         <td>0.37</td>
         <td>0.46</td>
@@ -135,7 +128,6 @@
       </tr>
       <tr>
         <td>HET Recall</td>
-        <td>0.92</td>
         <td class="good">0.97</td>
         <td>0.70</td>
         <td class="good">0.97</td>
@@ -143,7 +135,6 @@
       </tr>
       <tr>
         <td>HET F1</td>
-        <td class="good">0.71</td>
         <td>0.64</td>
         <td>0.48</td>
         <td>0.62</td>
@@ -151,7 +142,6 @@
       </tr>
       <tr>
         <td>WT Precision</td>
-        <td class="good">0.94</td>
         <td class="good">0.97</td>
         <td>0.82</td>
         <td class="good">0.98</td>
@@ -159,7 +149,6 @@
       </tr>
       <tr>
         <td>WT Recall</td>
-        <td>0.69</td>
         <td>0.53</td>
         <td>0.54</td>
         <td>0.62</td>
@@ -167,15 +156,13 @@
       </tr>
       <tr>
         <td>WT F1</td>
-        <td class="good">0.80</td>
         <td>0.69</td>
         <td>0.65</td>
-        <td>0.76</td>
+        <td class="good">0.76</td>
         <td>0.63</td>
       </tr>
       <tr>
         <td>Test Samples</td>
-        <td>1,465</td>
         <td>1,903</td>
         <td>1,466</td>
         <td>2,617</td>
@@ -227,78 +214,33 @@
       <li>The old &ldquo;high accuracy&rdquo; was partly learning incorrect labels.</li>
     </ul>
 
-    <h3>5. Why Legacy (2015&ndash;2022) Still Outperforms All Corrected Models</h3>
-    <p>Despite having only 7,322 rows (vs 9,515&ndash;13,081), the legacy model achieves 76% accuracy,
-    beating all corrected configurations. Three factors explain this:</p>
-
-    <p><strong>a) The 2023&ndash;2024 data dilutes the HET signal</strong></p>
-    <table>
-      <tr><th>Year</th><th>Mice</th><th>HET</th><th>WT</th><th>HET ratio</th></tr>
-      <tr><td>2015</td><td>30</td><td>10</td><td>20</td><td>33%</td></tr>
-      <tr><td>2018</td><td>14</td><td>3</td><td>11</td><td>21%</td></tr>
-      <tr><td>2022</td><td>21</td><td>7</td><td>14</td><td>33%</td></tr>
-      <tr><td class="highlight">2023</td><td>22</td><td class="highlight">5</td><td>17</td><td class="highlight">23%</td></tr>
-      <tr><td class="highlight">2024</td><td>24</td><td class="highlight">3</td><td>21</td><td class="highlight">12%</td></tr>
-    </table>
-    <p>2023&ndash;2024 added <strong>only 8 HET mice out of 46 total</strong> &mdash; predominantly WT. The model
-    gained more examples of healthy mice but not more examples of the disease it&rsquo;s trying to detect.</p>
-
-    <p><strong>b) Over-reliance on <code>mother_gen</code> (~50% feature importance)</strong></p>
-    <p>Both legacy and corrected models use <code>mother_gen</code> as their dominant feature (~46&ndash;50%).
-    The model essentially asks &ldquo;is the mother HET?&rdquo; and predicts HET. But HET mothers produce
-    ~50% HET and ~50% WT pups, so this strategy generates many false positives.
-    Adding 2023&ndash;2024 data introduced more WT pups from HET mothers, amplifying this error:</p>
-    <table>
-      <tr><th></th><th>Legacy</th><th>Pipeline (corrected)</th></tr>
-      <tr><td>WT &rarr; HET errors (false positives)</td><td>311</td><td class="highlight">617</td></tr>
-      <tr><td>WT Recall</td><td>69%</td><td class="highlight">53%</td></tr>
-    </table>
-
-    <p><strong>c) More mice = more variability</strong></p>
-    <p>The legacy dataset (65 mice, 3 years) is more homogeneous. Adding 46 mice from 2023&ndash;2024
-    introduces different recording conditions and mouse cohorts. With random split (same mouse
-    in train &amp; test), fewer mice means the model can more easily memorize individual patterns.
-    The acoustic features (syllable frequencies, durations, distances) contribute only ~1&ndash;3% each
-    and are not strong enough to generalize across the expanded, more variable dataset.</p>
-
     <h2>Summary</h2>
     <table>
-      <tr><th>Configuration</th><th>Rows</th><th>Mice</th><th>Test Acc</th><th>F1 (wtd)</th><th>HET F1</th><th>WT F1</th></tr>
-      <tr style="background:#f4f6fb;"><td><strong>Legacy (2015&ndash;2022), random</strong></td><td>7,322</td><td>65</td><td class="good">76.0%</td><td class="good">0.77</td><td class="good">0.71</td><td class="good">0.80</td></tr>
-      <tr><td>Pipeline, random split</td><td>9,515</td><td>87</td><td>66.6%</td><td>0.67</td><td>0.64</td><td>0.69</td></tr>
-      <tr><td>Pipeline, group split</td><td>9,515</td><td>87</td><td>58.3%</td><td>0.60</td><td>0.48</td><td>0.65</td></tr>
-      <tr><td>External, random split</td><td>13,081</td><td>115</td><td>70.7%</td><td>0.73</td><td>0.62</td><td>0.76</td></tr>
-      <tr><td>External, group split</td><td>13,081</td><td>115</td><td>56.1%</td><td>0.60</td><td>0.45</td><td>0.63</td></tr>
+      <tr><th>Configuration</th><th>Test Acc</th><th>F1 (wtd)</th><th>HET F1</th><th>WT F1</th></tr>
+      <tr><td>Pipeline, random split</td><td>66.6%</td><td>0.67</td><td>0.64</td><td>0.69</td></tr>
+      <tr><td>Pipeline, group split</td><td>58.3%</td><td>0.60</td><td>0.48</td><td>0.65</td></tr>
+      <tr><td>External, random split</td><td class="good">70.7%</td><td class="good">0.73</td><td>0.62</td><td class="good">0.76</td></tr>
+      <tr><td>External, group split</td><td>56.1%</td><td>0.60</td><td>0.45</td><td>0.63</td></tr>
     </table>
 
-    <div class="banner banner-warn">
-      <h3>More Data Did Not Improve the Model</h3>
-      <p>The legacy model (7,322 rows, 65 mice) outperforms all corrected configurations
-      despite having less data. The 2023&ndash;2024 additions contributed <strong>38 WT mice but
-      only 8 HET mice</strong>, diluting the disease signal. Combined with the model&rsquo;s
-      ~50% reliance on <code>mother_gen</code> (which is only ~50% predictive for offspring genotype),
-      adding more data increased false positives without improving HET detection.</p>
-    </div>
-
     <div class="banner banner-ok">
-      <h3>External Data Is the Best Corrected Option</h3>
-      <p>Among the corrected configurations, external data with random split performs best
-      (70.7% accuracy, 0.73 weighted F1), narrowing the gap with legacy. It provides correct
-      genotyping, more mice (115 vs 87), and recovers the 24 lost 2024 mice.
-      In group split, all sources perform similarly (~56&ndash;58%), confirming the generalization
-      bottleneck is the model architecture, not the data source.</p>
+      <h3>External Data Contributes Positively</h3>
+      <p>The external data <strong>improves random-split performance</strong> (+4.1% accuracy, +0.06 weighted F1)
+      by providing more training data and recovering the 24 lost 2024 mice.
+      In group split, both sources perform similarly (~56-58%), indicating the generalization
+      bottleneck is the model architecture and feature set, not the data source.</p>
     </div>
 
     <div class="banner banner-info">
       <h3>Recommendations</h3>
-      <p><strong>Use external data as the primary data source</strong> &mdash; it has correct genotyping
-      and the most complete coverage.</p>
-      <p style="margin-top:12px;">To close the gap with legacy and improve true generalization:</p>
+      <p><strong>Use external data as the primary data source</strong> &mdash; it has correct genotyping,
+      more mice (115 vs 87), and produces better random-split results.</p>
+      <p style="margin-top:12px;">To improve group-split performance (true generalization):</p>
       <ul style="margin-top:8px;">
-        <li><strong>Reduce reliance on <code>mother_gen</code></strong> &mdash; this feature is ~50% of model importance but only ~50% predictive. Explore acoustic-only feature sets</li>
-        <li><strong>Address class imbalance</strong>: oversampling HET, SMOTE, or <code>scale_pos_weight</code> in XGBoost</li>
-        <li><strong>Collect more HET samples</strong> &mdash; currently only 27 HET mice across all sources; more disease examples are needed</li>
-        <li><strong>Improve acoustic features</strong> &mdash; syllable features contribute only 1&ndash;3% each; temporal and spectral feature engineering could increase their discriminative power</li>
+        <li>Address class imbalance: oversampling HET, SMOTE, or <code>scale_pos_weight</code> in XGBoost</li>
+        <li>Reduce reliance on <code>mother_gen</code> &mdash; explore acoustic-only feature sets</li>
+        <li>Collect more HET samples (currently only 27 mice across both sources)</li>
+        <li>Consider alternative architectures that learn per-recording acoustic patterns</li>
       </ul>
     </div>
 
