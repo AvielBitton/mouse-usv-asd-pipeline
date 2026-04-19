@@ -1,4 +1,4 @@
-# XGBoost Classifier – Training Overview
+# ASD Classifier – Training Overview
 
 ## Data Flow
 
@@ -17,7 +17,7 @@ segmentation_*.xlsx          (per-file, all syllable rows + enrichment columns)
   all_data.csv                no headers, raw numbers
         │
         ▼
-  train_classifier.py         reads CSV, assigns col_names, trains XGBoost
+  train_classifier.py         reads CSV, assigns col_names, trains model
 ```
 
 > Enrichment columns (Complexity level, Syllable type, Noise, etc.) exist
@@ -42,7 +42,7 @@ Each row = **one recording** of one mouse. 48 columns total:
  45        pup_strain            Strain (1=2022, 2=other)
  ──────────────────────────────────────────────────
  46        pup_gen               TARGET — offspring genotype (WT/HET)
- 47        mouse_idx             Mouse index (not used in training)
+ 47        mouse_idx             Mouse index (used for group split, not as a feature)
 ```
 
 ### Column roles
@@ -51,7 +51,7 @@ Each row = **one recording** of one mouse. 48 columns total:
  ┌─────────────────────────────────────────┐
  │  X = columns 0–45  (46 features)       │  → model input
  │  y = column 46     (pup_gen)           │  → binary target
- │  groupsM = column 47 (mouse_idx)       │  → unused
+ │  groups = column 47 (mouse_idx)        │  → group split key
  └─────────────────────────────────────────┘
 ```
 
@@ -67,15 +67,18 @@ Syllable 10 (Undefined) is **dropped as NaN** before feature extraction.
 | 3 | Two syllables   |   | 8 | Chevron         |
 | 4 | Upward          |   | 9 | Short           |
 
-## Model
+## Models
 
-- **Algorithm:** XGBoost (`XGBClassifier`)
-- **Task:** Binary classification (WT vs HET offspring)
-- **Split:** 60% train / 20% validation / 20% test
-- **Class balancing:** `compute_sample_weight(class_weight='balanced')`
-- **Eval metrics:** AUC-ROC, classification error
+The `--model` flag selects which classifier to train. All models use the same
+data, split, and evaluation pipeline — only the estimator and model-specific
+outputs differ.
 
-### Key hyperparameters
+| Model   | Flag               | Description                                                    |
+|---------|--------------------|----------------------------------------------------------------|
+| XGBoost | `--model xgboost`  | Gradient boosting (default). Tuned hyperparams, sample weights |
+| TabPFN  | `--model tabpfn`   | Prior-data fitted network. No tuning needed, good for small data |
+
+### XGBoost hyperparameters
 
 | Parameter          | Value |
 |--------------------|-------|
@@ -87,14 +90,84 @@ Syllable 10 (Undefined) is **dropped as NaN** before feature extraction.
 | scale_pos_weight   | 0.8   |
 | colsample_bytree   | 0.6   |
 
-## Outputs (`results/`)
+### TabPFN notes
+
+- **Prior-Data Fitted Network** — a transformer pre-trained on synthetic tabular
+  datasets, requiring no hyperparameter tuning.
+- Works well on small-to-medium datasets (up to ~10K rows, ~100 features).
+- Does **not** support `sample_weight` or `eval_set`; training curves and
+  feature importance plots are skipped.
+- Paper: https://arxiv.org/abs/2207.01848
+
+## CLI Flags
+
+```
+python train_classifier.py [--model MODEL] [--group-split] [--external] [--results-dir DIR]
+```
+
+| Flag            | Description                                                  |
+|-----------------|--------------------------------------------------------------|
+| `--model`       | Model to train: `xgboost` (default), `tabpfn`               |
+| `--group-split` | Group-aware split by mouse identity (prevents data leakage)  |
+| `--external`    | Use external aggregated data (`all_data_external.csv`)       |
+| `--results-dir` | Override default results directory                           |
+
+### Results directory naming
+
+When `--results-dir` is not set, the output directory is composed automatically:
+
+```
+results[_MODEL][_group_split][_external]
+```
+
+The `_MODEL` suffix is added only for non-default models (i.e., not `xgboost`).
+
+**Examples:**
+
+| Flags                                       | Directory                          |
+|---------------------------------------------|------------------------------------|
+| *(none)*                                    | `results`                          |
+| `--model tabpfn`                            | `results_tabpfn`                   |
+| `--group-split`                             | `results_group_split`              |
+| `--model tabpfn --group-split`              | `results_tabpfn_group_split`       |
+| `--external`                                | `results_external`                 |
+| `--model tabpfn --external`                 | `results_tabpfn_external`          |
+| `--group-split --external`                  | `results_group_split_external`     |
+| `--model tabpfn --group-split --external`   | `results_tabpfn_group_split_external` |
+
+## Common evaluation
+
+- **Task:** Binary classification (WT vs HET offspring)
+- **Split:** 60% train / 20% validation / 20% test
+- **Class balancing:** `compute_sample_weight(class_weight='balanced')` (XGBoost only)
+- **Metrics:** accuracy, classification report (precision/recall/F1), confusion matrix
+- **Per-strain CMs:** separate confusion matrices for strain 1 and strain 2
+
+## Outputs
+
+All models produce:
 
 | File | Description |
 |------|-------------|
-| `model/XGBmodel.pkl` | Trained model (pickle) |
-| `plots/AUC_error.png` | AUC-ROC & error curves |
-| `plots/conf_matrix.png` | Confusion matrix (overall) |
+| `model/<model>_model.pkl` | Trained model (pickle) |
+| `plots/conf_matrix.png` | Confusion matrix heatmap (overall) |
+| `plots/confusionmatrix.png` | Confusion matrix with counts + percentages |
 | `plots/confusionmatrix_strain1.png` | Confusion matrix – strain 1 |
 | `plots/confusionmatrix_strain2.png` | Confusion matrix – strain 2 |
-| `plots/feature_importance_*.png` | Feature importance (weight, gain, cover) |
 | `logs/out.txt` | Training log |
+| `comparison_vs_baseline.txt` | Metrics delta vs baseline |
+
+XGBoost additionally produces:
+
+| File | Description |
+|------|-------------|
+| `plots/AUC_error.png` | AUC-ROC & error curves per boosting round |
+| `plots/feature_importances_0.png` | Bar chart of feature importances |
+| `plots/feature_importance_1.png` | Feature importance (weight, gain, cover) |
+
+## Adding a new model
+
+1. Add a factory function in `models.py` that returns an sklearn-compatible estimator.
+2. Register it in `MODEL_REGISTRY`.
+3. Update the capability sets (`_SUPPORTS_EVAL_SET`, etc.) if the model supports them.
+4. The training script handles the rest automatically.
