@@ -68,8 +68,8 @@ def parse_args():
         '--results-dir',
         type=str,
         default=None,
-        help='Directory for results. Defaults to "results" (baseline), composed '
-             'with model name and flags (e.g. "results_tabpfn_group_split").',
+        help='Directory for results. Defaults to "results/<model>[_base|_flags]" '
+             '(e.g. "results/tabpfn_group_split").',
     )
     return parser.parse_args()
 
@@ -210,13 +210,14 @@ def main():
     if args.results_dir:
         results_dir = args.results_dir
     else:
-        results_dir = 'results'
-        if model_name != 'xgboost':
-            results_dir += f'_{model_name}'
+        subdir = model_name
+        if not args.group_split and not args.external:
+            subdir += '_base'
         if args.group_split:
-            results_dir += '_group_split'
+            subdir += '_group_split'
         if args.external:
-            results_dir += '_external'
+            subdir += '_external'
+        results_dir = os.path.join('results', subdir)
 
     plots_dir = os.path.join(results_dir, 'plots')
     model_dir = os.path.join(results_dir, 'model')

@@ -117,23 +117,25 @@ python train_classifier.py [--model MODEL] [--group-split] [--external] [--resul
 When `--results-dir` is not set, the output directory is composed automatically:
 
 ```
-results[_MODEL][_group_split][_external]
+results/<model>[_base][_group_split][_external]
 ```
 
-The `_MODEL` suffix is added only for non-default models (i.e., not `xgboost`).
+All results live under the `results/` parent directory. The `_base` suffix is
+added when no `--group-split` or `--external` flags are active, to clearly
+identify the baseline run.
 
 **Examples:**
 
-| Flags                                       | Directory                          |
-|---------------------------------------------|------------------------------------|
-| *(none)*                                    | `results`                          |
-| `--model tabpfn`                            | `results_tabpfn`                   |
-| `--group-split`                             | `results_group_split`              |
-| `--model tabpfn --group-split`              | `results_tabpfn_group_split`       |
-| `--external`                                | `results_external`                 |
-| `--model tabpfn --external`                 | `results_tabpfn_external`          |
-| `--group-split --external`                  | `results_group_split_external`     |
-| `--model tabpfn --group-split --external`   | `results_tabpfn_group_split_external` |
+| Flags                                       | Directory                                  |
+|---------------------------------------------|--------------------------------------------|
+| *(none)*                                    | `results/xgboost_base`                     |
+| `--model tabpfn`                            | `results/tabpfn_base`                      |
+| `--group-split`                             | `results/xgboost_group_split`              |
+| `--model tabpfn --group-split`              | `results/tabpfn_group_split`               |
+| `--external`                                | `results/xgboost_external`                 |
+| `--model tabpfn --external`                 | `results/tabpfn_external`                  |
+| `--group-split --external`                  | `results/xgboost_group_split_external`     |
+| `--model tabpfn --group-split --external`   | `results/tabpfn_group_split_external`      |
 
 ## Common evaluation
 

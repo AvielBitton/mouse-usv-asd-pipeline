@@ -47,7 +47,7 @@ Excel inputs for the preprocessing pipeline and generated reference indexes:
 
 **Note:** Mapping files are optional reference; the split `Data … Segmentation` workbooks are the usual batch inputs.
 
-> **Data Correction (April 2026):** The original metadata files labeled **all** pups of HET mothers as HET. This was incorrect — a HET × WT cross produces ~50% HET and ~50% WT offspring. 14 mice (2,495 rows across 6 metadata files) were corrected from HET to WT based on individual genotyping data from the external segmentation file. See the executive summary in `results_external/summary/` for details.
+> **Data Correction (April 2026):** The original metadata files labeled **all** pups of HET mothers as HET. This was incorrect — a HET × WT cross produces ~50% HET and ~50% WT offspring. 14 mice (2,495 rows across 6 metadata files) were corrected from HET to WT based on individual genotyping data from the external segmentation file. See the executive summary in `results/xgboost_external/summary/` for details.
 
 ---
 
@@ -224,7 +224,7 @@ python train_classifier.py
 
 # TabPFN with group-aware split and external data
 python train_classifier.py --model tabpfn --group-split --external
-# → results_tabpfn_group_split_external/
+# → results/tabpfn_group_split_external/
 ```
 
 Each model produces the same evaluation outputs (accuracy, confusion matrix, classification report) for fair comparison. Model-specific outputs (e.g. XGBoost training curves, feature importance) are only generated when applicable.
