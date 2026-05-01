@@ -104,7 +104,7 @@ Combines all per-file outputs into `outputs/aggregated/all_data.xlsx` and `outpu
 * Pup Gen: WT → 1, HT → 0
 * idx_mouse — mouse ID
 
-### ASD Classification (`src/classification/train_classifier.py`)
+### ASD Classification (`src/classification/tabular/train_classifier.py`)
 
 Reads `outputs/aggregated/all_data.csv`, trains an XGBoost model, and generates:
 

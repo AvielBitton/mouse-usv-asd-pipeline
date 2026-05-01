@@ -5,7 +5,7 @@
 **Flags:** `--external`
 
 ```bash
-python3 src/classification/train_classifier.py --external
+python3 src/classification/tabular/train_classifier.py --external
 ```
 
 Uses the external segmentation file which contains correct individual genotyping
