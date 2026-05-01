@@ -79,9 +79,11 @@
         <td><code>results/xgboost_base/</code></td>
       </tr>
       <tr>
-        <td>External</td>
-        <td>Adds external USV data alongside pipeline data, increasing the dataset
-            to <strong>13,081 samples</strong>. More data generally improves generalization.</td>
+        <td><strong>External (Preferred)</strong></td>
+        <td><strong>Recommended for all runs.</strong> Uses the externally-validated dataset with
+            correct individual genotyping (<strong>13,081 samples</strong>). The pipeline-aggregated
+            data had genotype labeling errors (all pups of HET mothers were labeled HET);
+            the external file is the ground truth.</td>
         <td><code>--external</code></td>
         <td><code>results/xgboost_external/</code></td>
       </tr>
@@ -102,6 +104,14 @@
         <td><code>results/xgboost_group_split_external/</code></td>
       </tr>
     </table>
+
+    <div class="banner banner-ok">
+      <h3>External Data Is the Preferred Dataset</h3>
+      <p>The <code>--external</code> flag uses the externally-validated dataset with correct
+      individual genotyping. The pipeline-aggregated data (<code>all_data.csv</code>) had
+      genotype labeling errors &mdash; all pups of HET mothers were labeled HET, when ~50%
+      are actually WT. <strong>Always use <code>--external</code> for training runs.</strong></p>
+    </div>
 
     <div class="legend">
       <strong>Directory naming convention:</strong>
