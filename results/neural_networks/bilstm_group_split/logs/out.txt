@@ -1,0 +1,57 @@
+Active flags: ['--group-split']
+Model: bilstm
+Results directory: results/neural_networks/bilstm_group_split
+Loading from CSV cache: outputs/external/segmentation_classification_all_data.csv
+Loaded 442 sessions from 119 mice
+Sequence lengths: min=1, median=236, max=1202, P95=719
+MAX_SEQ_LEN=256
+Labels: WT=336, HT=106
+
+=== Split Info ===
+Strategy: group-aware (by mouse)
+Train: 247 sessions | Val: 91 sessions | Test: 104 sessions
+  Train: 71 mice, WT=192 (78%), HT=55 (22%)
+  Val: 24 mice, WT=69 (76%), HT=22 (24%)
+  Test: 24 mice, WT=75 (72%), HT=29 (28%)
+==================
+
+Class balance in train: WT=192, HT=55, pos_weight=0.286
+Model parameters: 148,953
+Epoch   1/50 | Train Loss: 0.3105 Acc: 0.761 | Val Loss: 0.3189 Acc: 0.758 AUC: 0.619 | LR: 0.001000
+Epoch   2/50 | Train Loss: 0.3057 Acc: 0.729 | Val Loss: 0.3164 Acc: 0.769 AUC: 0.659 | LR: 0.001000
+Epoch   3/50 | Train Loss: 0.3024 Acc: 0.721 | Val Loss: 0.3138 Acc: 0.670 AUC: 0.638 | LR: 0.001000
+Epoch   4/50 | Train Loss: 0.2986 Acc: 0.644 | Val Loss: 0.3130 Acc: 0.495 AUC: 0.573 | LR: 0.001000
+Epoch   5/50 | Train Loss: 0.2906 Acc: 0.632 | Val Loss: 0.3204 Acc: 0.527 AUC: 0.551 | LR: 0.001000
+Epoch   6/50 | Train Loss: 0.2807 Acc: 0.672 | Val Loss: 0.3262 Acc: 0.495 AUC: 0.542 | LR: 0.001000
+Epoch   7/50 | Train Loss: 0.2800 Acc: 0.632 | Val Loss: 0.3328 Acc: 0.484 AUC: 0.529 | LR: 0.001000
+Epoch   8/50 | Train Loss: 0.2694 Acc: 0.745 | Val Loss: 0.3273 Acc: 0.527 AUC: 0.532 | LR: 0.000500
+Epoch   9/50 | Train Loss: 0.2630 Acc: 0.729 | Val Loss: 0.3312 Acc: 0.516 AUC: 0.516 | LR: 0.000500
+Epoch  10/50 | Train Loss: 0.2546 Acc: 0.733 | Val Loss: 0.3368 Acc: 0.495 AUC: 0.503 | LR: 0.000500
+Epoch  11/50 | Train Loss: 0.2512 Acc: 0.713 | Val Loss: 0.3432 Acc: 0.549 AUC: 0.504 | LR: 0.000500
+Epoch  12/50 | Train Loss: 0.2505 Acc: 0.753 | Val Loss: 0.3608 Acc: 0.571 AUC: 0.516 | LR: 0.000500
+Epoch  13/50 | Train Loss: 0.2441 Acc: 0.713 | Val Loss: 0.3585 Acc: 0.484 AUC: 0.494 | LR: 0.000500
+Epoch  14/50 | Train Loss: 0.2328 Acc: 0.741 | Val Loss: 0.3594 Acc: 0.560 AUC: 0.504 | LR: 0.000250
+Epoch  15/50 | Train Loss: 0.2205 Acc: 0.785 | Val Loss: 0.3652 Acc: 0.582 AUC: 0.503 | LR: 0.000250
+Epoch  16/50 | Train Loss: 0.2264 Acc: 0.769 | Val Loss: 0.3684 Acc: 0.527 AUC: 0.491 | LR: 0.000250
+Epoch  17/50 | Train Loss: 0.2179 Acc: 0.765 | Val Loss: 0.3749 Acc: 0.571 AUC: 0.491 | LR: 0.000250
+Early stopping at epoch 17 (best AUC: 0.659)
+Best validation AUC: 0.659
+
+=== Test Results ===
+Test Accuracy:  0.7308
+Test AUC-ROC:   0.7959
+Train Accuracy: 0.7854
+Train AUC-ROC:  0.8577
+
+Classification Report:
+              precision    recall  f1-score   support
+
+      HT (0)       1.00      0.03      0.07        29
+      WT (1)       0.73      1.00      0.84        75
+
+    accuracy                           0.73       104
+   macro avg       0.86      0.52      0.45       104
+weighted avg       0.80      0.73      0.63       104
+
+
+Done. Results saved to results/neural_networks/bilstm_group_split/

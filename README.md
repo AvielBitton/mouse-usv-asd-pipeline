@@ -19,9 +19,12 @@ All source code lives here:
   - `tests/` — smoke tests
 
 - **`src/classification/`** — ASD classification
-  - `train_classifier.py` — reads `outputs/aggregated/all_data.csv`, trains a classifier, and generates evaluation plots (confusion matrix, classification report). Supports multiple models via `--model` (default: XGBoost, also TabPFN), `--external` for the **preferred** externally-validated dataset, and `--group-split` for group-aware splitting. **Always use `--external` — it contains correct individual genotyping.** See `src/classification/TRAINING.md` for details.
-  - `models.py` — model registry with factory functions for each supported classifier
-  - `report.py` — generates comparison-vs-baseline summary
+  - **`tabular/`** — tabular (aggregated-feature) pipeline
+    - `train_classifier.py` — reads `outputs/aggregated/all_data.csv`, trains a classifier, and generates evaluation plots (confusion matrix, classification report). Supports multiple models via `--model` (default: XGBoost, also TabPFN), `--external` for the **preferred** externally-validated dataset, and `--group-split` for group-aware splitting. **Always use `--external` — it contains correct individual genotyping.** See `src/classification/tabular/TRAINING.md` for details.
+    - `models.py` — model registry with factory functions for each supported classifier
+    - `report.py` — generates comparison-vs-baseline summary
+  - **`neural_networks/`** — sequence (deep learning) pipeline
+    - `sequence_pipeline.py` — trains BiLSTM / 1D-CNN / Transformer models on raw syllable sequences. See `src/classification/neural_networks/SEQUENCE_TRAINING.md` for details.
 
 - **`src/models/`** — pre-trained model weights
   - `model_weights.h6` — CNN weights for syllable type classification (used by the preprocessing pipeline)
@@ -217,7 +220,7 @@ The classifier supports multiple models via the `--model` flag:
 All flags compose independently for isolated, reproducible results:
 
 ```bash
-cd src/classification
+cd src/classification/tabular
 
 # Recommended: XGBoost with external data (preferred dataset)
 python train_classifier.py --external
@@ -232,7 +235,7 @@ python train_classifier.py --model tabpfn --group-split --external
 
 Each model produces the same evaluation outputs (accuracy, confusion matrix, classification report) for fair comparison. Model-specific outputs (e.g. XGBoost training curves, feature importance) are only generated when applicable.
 
-See `src/classification/TRAINING.md` for full documentation on flags, results directory naming, and how to add new models.
+See `src/classification/tabular/TRAINING.md` for full documentation on flags, results directory naming, and how to add new models.
 
 ---
 
@@ -241,7 +244,8 @@ See `src/classification/TRAINING.md` for full documentation on flags, results di
 - ✅ **Data preparation scripts** (`scripts/`) — folder normalization and metadata splitting
 - ✅ **Metadata generation** (`generate_metadata.py`) — supports local and Google Drive scanning, handles both old (underscore) and new (space/dash) folder naming
 - ✅ **Preprocessing pipeline** (`src/preprocessing/run_pipeline.py`) — segmentation, basic features, CNN classification, column enrichment, and feature extraction. Automatically normalizes folder structure on startup.
-- ✅ **ASD classification** (`src/classification/train_classifier.py`) — multi-model sick/healthy classifier (XGBoost, TabPFN)
+- ✅ **ASD classification (tabular)** (`src/classification/tabular/train_classifier.py`) — multi-model sick/healthy classifier (XGBoost, TabPFN)
+- ✅ **ASD classification (neural networks)** (`src/classification/neural_networks/sequence_pipeline.py`) — sequence models (BiLSTM, 1D-CNN, Transformer) on raw syllable sequences
 - ✅ **Supported data:** 2015, 2018, 2022, 2023, 2024
 - ✅ **External data integration (preferred)** — `outputs/external/segmentation_classification_all_data.xlsx` with correct individual genotyping. **This is the preferred data source; always train with `--external`.**
 - ⚠️ The available data is partial. Full dataset access requires access to the BGU lab servers.

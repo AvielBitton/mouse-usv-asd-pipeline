@@ -5,7 +5,7 @@
 **Flags:** none (baseline)
 
 ```bash
-python3 src/classification/train_classifier.py
+python3 src/classification/tabular/train_classifier.py
 ```
 
 Baseline model using pipeline-processed data with corrected genotype labels.

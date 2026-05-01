@@ -5,7 +5,7 @@
 **Flags:** `--group-split`
 
 ```bash
-python3 src/classification/train_classifier.py --group-split
+python3 src/classification/tabular/train_classifier.py --group-split
 ```
 
 Fair evaluation of the pipeline data — prevents data leakage by ensuring

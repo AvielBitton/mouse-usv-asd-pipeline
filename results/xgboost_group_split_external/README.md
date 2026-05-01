@@ -5,7 +5,7 @@
 **Flags:** `--external --group-split`
 
 ```bash
-python3 src/classification/train_classifier.py --external --group-split
+python3 src/classification/tabular/train_classifier.py --external --group-split
 ```
 
 Most rigorous evaluation: correct genotype labels, more data, and no data leakage.
