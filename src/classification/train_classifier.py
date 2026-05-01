@@ -62,7 +62,8 @@ def parse_args():
     parser.add_argument(
         '--external',
         action='store_true',
-        help='Use external aggregated data (all_data_external.csv) instead of the default.',
+        help='RECOMMENDED. Use the externally-validated dataset with correct individual '
+             'genotyping (all_data_external.csv). This is the preferred data source.',
     )
     parser.add_argument(
         '--results-dir',

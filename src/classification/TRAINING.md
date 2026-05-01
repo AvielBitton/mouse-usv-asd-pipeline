@@ -23,6 +23,15 @@ segmentation_*.xlsx          (per-file, all syllable rows + enrichment columns)
 > Enrichment columns (Complexity level, Syllable type, Noise, etc.) exist
 > only in the `.xlsx` files and **never reach the model**.
 
+## Preferred Data Source
+
+> **The external dataset (`--external` flag / `all_data_external.csv`) is the
+> preferred data source for all training runs.** It contains correct individual
+> genotyping data, unlike the pipeline-aggregated `all_data.csv` which had
+> genotype labeling errors (all pups of HET mothers were labeled HET, when in
+> reality ~50% are WT). Always use `--external` unless you have a specific
+> reason not to.
+
 ## Input: `all_data.csv`
 
 Each row = **one recording** of one mouse. 48 columns total:
@@ -109,7 +118,7 @@ python train_classifier.py [--model MODEL] [--group-split] [--external] [--resul
 |-----------------|--------------------------------------------------------------|
 | `--model`       | Model to train: `xgboost` (default), `tabpfn`               |
 | `--group-split` | Group-aware split by mouse identity (prevents data leakage)  |
-| `--external`    | Use external aggregated data (`all_data_external.csv`)       |
+| `--external`    | **Recommended.** Use the externally-validated dataset with correct individual genotyping (`all_data_external.csv`). This is the preferred data source. |
 | `--results-dir` | Override default results directory                           |
 
 ### Results directory naming

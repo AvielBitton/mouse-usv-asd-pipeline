@@ -209,7 +209,12 @@ def run_external_aggregated_feature_extraction(
     output_dir: str = "",
     logger: Optional[logging.Logger] = None,
 ) -> str:
-    """Run feature extraction on a single external Excel file containing all segmentation data.
+    """Run feature extraction on the external segmentation file (preferred dataset).
+
+    This produces the **preferred** training data. The external file contains
+    correct individual genotyping, unlike the pipeline-aggregated data which
+    had genotype labeling errors. Always use this output (``--external``) for
+    training unless you have a specific reason not to.
 
     Same pipeline as ``run_aggregated_feature_extraction`` but reads one
     pre-concatenated workbook instead of globbing individual per-file
