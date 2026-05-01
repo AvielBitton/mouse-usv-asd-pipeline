@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Multi-Model Comparison — Executive Summary</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', sans-serif; color: #1a1a2e; background: #f8f9fb; padding: 40px; line-height: 1.6; }
+  .container { max-width: 1060px; margin: 0 auto; background: #fff; border-radius: 12px; box-shadow: 0 2px 20px rgba(0,0,0,0.06); overflow: hidden; }
+  .header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: #fff; padding: 36px 44px; }
+  .header h1 { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+  .header p { font-size: 13px; color: #a8b2d1; }
+  .body { padding: 36px 44px; }
+  h2 { font-size: 15px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #16213e; margin: 28px 0 12px; border-bottom: 2px solid #e8ecf4; padding-bottom: 6px; }
+  h2:first-child { margin-top: 0; }
+  h3 { font-size: 14px; font-weight: 700; color: #16213e; margin: 20px 0 8px; }
+  p, li { font-size: 14px; color: #333; }
+  ul { padding-left: 20px; margin: 8px 0; }
+  li { margin-bottom: 6px; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 13px; }
+  th { background: #16213e; color: #fff; padding: 10px 14px; text-align: left; font-weight: 600; }
+  td { padding: 9px 14px; border-bottom: 1px solid #e8ecf4; }
+  tr:last-child td { border-bottom: none; }
+  .highlight { color: #e63946; font-weight: 600; }
+  .good { color: #2a9d8f; font-weight: 600; }
+  .neutral { color: #6c757d; font-weight: 600; }
+  .banner { border-radius: 8px; padding: 20px 24px; margin: 16px 0; }
+  .banner-warn { background: linear-gradient(135deg, #e63946 0%, #c1121f 100%); color: #fff; }
+  .banner-warn p { color: #fde8e8; }
+  .banner-warn h3 { color: #fff; margin-top: 0; }
+  .banner-info { background: linear-gradient(135deg, #457b9d 0%, #1d3557 100%); color: #fff; }
+  .banner-info p { color: #d4e4f0; }
+  .banner-info h3 { color: #fff; margin-top: 0; }
+  .banner-ok { background: linear-gradient(135deg, #2a9d8f 0%, #264653 100%); color: #fff; }
+  .banner-ok p { color: #d4f0e8; }
+  .banner-ok h3 { color: #fff; margin-top: 0; }
+  .model-xgb { background: #eef2ff; }
+  .model-tabpfn { background: #f0fdf4; }
+  .footer { padding: 20px 44px; background: #f4f6fb; font-size: 11px; color: #888; text-align: center; }
+  @media print {
+    body { padding: 0; background: #fff; }
+    .container { box-shadow: none; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <h1>Multi-Model Comparison &mdash; Executive Summary</h1>
+    <p>XGBoost vs TabPFN &nbsp;|&nbsp; 8 Configurations &nbsp;|&nbsp; April 2026</p>
+  </div>
+
+  <div class="body">
+
+    <h2>Objective</h2>
+    <p>Compare two classifiers &mdash; <strong>XGBoost</strong> (gradient boosting, tuned) and
+    <strong>TabPFN</strong> (prior-data fitted network, zero tuning) &mdash; across all data sources
+    and split strategies. Determine whether TabPFN can match or improve upon XGBoost for
+    ASD classification on this tabular USV feature dataset.</p>
+
+    <h2>Models</h2>
+    <table>
+      <tr><th></th><th>XGBoost</th><th>TabPFN</th></tr>
+      <tr><td>Type</td><td>Gradient boosting (tree-based)</td><td>Transformer pre-trained on synthetic tabular data</td></tr>
+      <tr><td>Hyperparameters</td><td>Manually tuned (50 estimators, depth 5, etc.)</td><td>None &mdash; zero-shot, no tuning required</td></tr>
+      <tr><td>Class balancing</td><td><code>compute_sample_weight(balanced)</code></td><td>None (built-in priors)</td></tr>
+      <tr><td>Training time</td><td>~2 seconds</td><td>~80&ndash;150 seconds (CPU, quadratic scaling)</td></tr>
+      <tr><td>Max dataset size</td><td>Unlimited</td><td>~10K rows (v1 limitation)</td></tr>
+    </table>
+
+    <h2>Results &mdash; All Configurations</h2>
+    <table>
+      <tr>
+        <th>Metric</th>
+        <th colspan="2">Pipeline, Random</th>
+        <th colspan="2">Pipeline, Group</th>
+        <th colspan="2">External, Random</th>
+        <th colspan="2">External, Group</th>
+      </tr>
+      <tr>
+        <th></th>
+        <th>XGB</th><th>TabPFN</th>
+        <th>XGB</th><th>TabPFN</th>
+        <th>XGB</th><th>TabPFN</th>
+        <th>XGB</th><th>TabPFN</th>
+      </tr>
+      <tr>
+        <td>Test Accuracy</td>
+        <td>66.6%</td><td class="good">73.5%</td>
+        <td class="good">58.3%</td><td>53.8%</td>
+        <td>70.7%</td><td class="good">76.2%</td>
+        <td>56.1%</td><td class="good">65.6%</td>
+      </tr>
+      <tr>
+        <td>Train Accuracy</td>
+        <td>70.6%</td><td>76.2%</td>
+        <td>82.4%</td><td>86.2%</td>
+        <td>73.1%</td><td>77.8%</td>
+        <td>75.2%</td><td>83.1%</td>
+      </tr>
+      <tr>
+        <td>Weighted F1</td>
+        <td>0.67</td><td class="good">0.69</td>
+        <td class="good">0.60</td><td>0.56</td>
+        <td class="good">0.73</td><td>0.70</td>
+        <td>0.60</td><td class="good">0.66</td>
+      </tr>
+      <tr>
+        <td>HET Precision</td>
+        <td>0.48</td><td class="good">0.68</td>
+        <td class="good">0.37</td><td>0.31</td>
+        <td>0.46</td><td class="good">0.59</td>
+        <td class="good">0.30</td><td>0.16</td>
+      </tr>
+      <tr>
+        <td>HET Recall</td>
+        <td class="good">0.97</td><td class="highlight">0.27</td>
+        <td class="good">0.70</td><td>0.52</td>
+        <td class="good">0.97</td><td class="highlight">0.15</td>
+        <td class="good">0.90</td><td>0.17</td>
+      </tr>
+      <tr>
+        <td>HET F1</td>
+        <td class="good">0.64</td><td>0.39</td>
+        <td class="good">0.48</td><td>0.39</td>
+        <td class="good">0.62</td><td>0.24</td>
+        <td class="good">0.45</td><td>0.17</td>
+      </tr>
+      <tr>
+        <td>WT Precision</td>
+        <td class="good">0.97</td><td>0.74</td>
+        <td>0.82</td><td>0.74</td>
+        <td class="good">0.98</td><td>0.77</td>
+        <td class="good">0.95</td><td>0.79</td>
+      </tr>
+      <tr>
+        <td>WT Recall</td>
+        <td>0.53</td><td class="good">0.94</td>
+        <td>0.54</td><td>0.54</td>
+        <td>0.62</td><td class="good">0.97</td>
+        <td>0.48</td><td class="good">0.78</td>
+      </tr>
+      <tr>
+        <td>WT F1</td>
+        <td>0.69</td><td class="good">0.83</td>
+        <td class="good">0.65</td><td>0.63</td>
+        <td>0.76</td><td class="good">0.86</td>
+        <td>0.63</td><td class="good">0.78</td>
+      </tr>
+      <tr>
+        <td>Test Samples</td>
+        <td colspan="2">1,903</td>
+        <td colspan="2">1,466</td>
+        <td colspan="2">2,617</td>
+        <td colspan="2">2,357</td>
+      </tr>
+    </table>
+
+    <h2>Analysis</h2>
+
+    <h3>1. TabPFN Achieves Higher Overall Accuracy (Random Split)</h3>
+    <p>With random split, TabPFN outperforms XGBoost in raw accuracy on both data sources:</p>
+    <table>
+      <tr><th>Metric</th><th>Pipeline XGB</th><th>Pipeline TabPFN</th><th>Delta</th><th>External XGB</th><th>External TabPFN</th><th>Delta</th></tr>
+      <tr><td>Test Accuracy</td><td>66.6%</td><td class="good">73.5%</td><td class="good">+6.9%</td><td>70.7%</td><td class="good">76.2%</td><td class="good">+5.5%</td></tr>
+      <tr><td>WT F1</td><td>0.69</td><td class="good">0.83</td><td class="good">+0.14</td><td>0.76</td><td class="good">0.86</td><td class="good">+0.10</td></tr>
+    </table>
+    <p>However, this improvement comes at a significant cost: TabPFN almost completely ignores the
+    minority HET class (27% and 15% recall respectively), predicting nearly everything as WT.
+    The higher accuracy reflects the class imbalance (70&ndash;75% WT), not better disease detection.</p>
+
+    <h3>2. XGBoost Detects Disease Far Better (HET Recall)</h3>
+    <p>Across all configurations, XGBoost dramatically outperforms TabPFN on HET recall &mdash; the
+    metric that matters most for disease screening:</p>
+    <table>
+      <tr><th>Configuration</th><th>XGBoost HET Recall</th><th>TabPFN HET Recall</th><th>Delta</th></tr>
+      <tr><td>Pipeline, Random</td><td class="good">0.97</td><td class="highlight">0.27</td><td class="highlight">&minus;0.70</td></tr>
+      <tr><td>Pipeline, Group</td><td class="good">0.70</td><td>0.52</td><td class="highlight">&minus;0.18</td></tr>
+      <tr><td>External, Random</td><td class="good">0.97</td><td class="highlight">0.15</td><td class="highlight">&minus;0.82</td></tr>
+      <tr><td>External, Group</td><td class="good">0.90</td><td>0.17</td><td class="highlight">&minus;0.73</td></tr>
+    </table>
+    <p>XGBoost&rsquo;s <code>compute_sample_weight(balanced)</code> and <code>scale_pos_weight=0.8</code>
+    actively compensate for class imbalance, pushing the model to detect HET mice even at the cost
+    of WT false positives. TabPFN has no such mechanism and defaults to predicting the majority class.</p>
+
+    <h3>3. The Accuracy&ndash;Sensitivity Tradeoff</h3>
+    <p>The two models occupy opposite ends of the precision&ndash;recall tradeoff:</p>
+    <ul>
+      <li><strong>XGBoost:</strong> High HET recall (catches 90&ndash;97% of disease cases), low WT recall
+      (many false alarms) &rarr; <em>sensitive screener</em></li>
+      <li><strong>TabPFN:</strong> High WT recall (94&ndash;97%), near-zero HET recall
+      (misses 73&ndash;85% of disease cases) &rarr; <em>majority-class predictor</em></li>
+    </ul>
+    <p>For a disease detection task, missing HET mice is far worse than false positives.
+    XGBoost&rsquo;s bias toward sensitivity is the correct strategy.</p>
+
+    <h3>4. Group Split Performance</h3>
+    <p>Both models degrade under group-aware split, but TabPFN shows an interesting pattern
+    on external data:</p>
+    <table>
+      <tr><th></th><th>XGBoost: Random &rarr; Group</th><th>TabPFN: Random &rarr; Group</th></tr>
+      <tr><td>Pipeline: Accuracy drop</td><td class="highlight">&minus;8.3%</td><td class="highlight">&minus;19.7%</td></tr>
+      <tr><td>External: Accuracy drop</td><td class="highlight">&minus;14.6%</td><td class="highlight">&minus;10.6%</td></tr>
+    </table>
+    <p>TabPFN&rsquo;s smaller drop on external data with group split (65.6% vs XGBoost&rsquo;s 56.1%) suggests
+    it may generalize better to unseen mice when given more data. However, this comes with
+    catastrophically low HET detection (17% recall), making it unusable for screening.</p>
+
+    <h3>5. Why TabPFN Fails on HET Detection</h3>
+    <ul>
+      <li><strong>No class balancing:</strong> TabPFN v1 does not accept <code>sample_weight</code>.
+      With 70&ndash;76% of the data being WT, the model learns to predict the majority class.</li>
+      <li><strong>Prior mismatch:</strong> TabPFN was pre-trained on synthetic balanced datasets.
+      The strong class imbalance in this dataset (24&ndash;30% HET) is outside its training distribution.</li>
+      <li><strong>Small effective signal:</strong> The discriminative acoustic features contribute only
+      1&ndash;3% each to classification. TabPFN&rsquo;s attention mechanism may not amplify these weak signals
+      as effectively as XGBoost&rsquo;s boosting, especially without explicit class weighting.</li>
+    </ul>
+
+    <h2>Summary</h2>
+    <table>
+      <tr><th>Configuration</th><th>Model</th><th>Rows</th><th>Test Acc</th><th>F1 (wtd)</th><th>HET F1</th><th>WT F1</th><th>HET Recall</th></tr>
+      <tr class="model-xgb"><td>Pipeline, random</td><td>XGBoost</td><td>9,515</td><td>66.6%</td><td>0.67</td><td class="good">0.64</td><td>0.69</td><td class="good">0.97</td></tr>
+      <tr class="model-tabpfn"><td>Pipeline, random</td><td>TabPFN</td><td>9,515</td><td class="good">73.5%</td><td>0.69</td><td>0.39</td><td class="good">0.83</td><td class="highlight">0.27</td></tr>
+      <tr class="model-xgb"><td>Pipeline, group</td><td>XGBoost</td><td>9,515</td><td class="good">58.3%</td><td class="good">0.60</td><td class="good">0.48</td><td class="good">0.65</td><td class="good">0.70</td></tr>
+      <tr class="model-tabpfn"><td>Pipeline, group</td><td>TabPFN</td><td>9,515</td><td>53.8%</td><td>0.56</td><td>0.39</td><td>0.63</td><td>0.52</td></tr>
+      <tr class="model-xgb"><td>External, random</td><td>XGBoost</td><td>13,081</td><td>70.7%</td><td class="good">0.73</td><td class="good">0.62</td><td>0.76</td><td class="good">0.97</td></tr>
+      <tr class="model-tabpfn"><td>External, random</td><td>TabPFN</td><td>13,081</td><td class="good">76.2%</td><td>0.70</td><td>0.24</td><td class="good">0.86</td><td class="highlight">0.15</td></tr>
+      <tr class="model-xgb"><td>External, group</td><td>XGBoost</td><td>13,081</td><td>56.1%</td><td>0.60</td><td class="good">0.45</td><td>0.63</td><td class="good">0.90</td></tr>
+      <tr class="model-tabpfn"><td>External, group</td><td>TabPFN</td><td>13,081</td><td class="good">65.6%</td><td class="good">0.66</td><td>0.17</td><td class="good">0.78</td><td class="highlight">0.17</td></tr>
+    </table>
+
+    <div class="banner banner-warn">
+      <h3>TabPFN Cannot Detect Disease</h3>
+      <p>Despite higher overall accuracy in most configurations, TabPFN misses 73&ndash;85% of
+      HET (ASD-model) mice in random split. For a disease screening task, this makes it
+      <strong>unsuitable as a standalone classifier</strong>. The accuracy improvement is an
+      artifact of predicting the majority class (WT), not better disease detection.</p>
+    </div>
+
+    <div class="banner banner-ok">
+      <h3>XGBoost Remains the Best Option</h3>
+      <p>XGBoost with class balancing detects 90&ndash;97% of HET mice (random split) and
+      70&ndash;90% (group split), making it the only viable model for ASD screening.
+      Its lower overall accuracy reflects the deliberate tradeoff: <strong>catching disease
+      cases matters more than avoiding false alarms</strong>.</p>
+    </div>
+
+    <div class="banner banner-info">
+      <h3>Recommendations</h3>
+      <p><strong>Keep XGBoost as the primary classifier.</strong> TabPFN v1 is not competitive
+      for this imbalanced disease detection task.</p>
+      <ul style="margin-top:8px;">
+        <li><strong>TabPFN v2</strong> (requires Python 3.9+) supports larger datasets and may
+        handle imbalance better &mdash; worth revisiting when upgrading the Python environment.</li>
+        <li><strong>Ensemble approach:</strong> combining XGBoost&rsquo;s sensitivity with
+        TabPFN&rsquo;s specificity could yield a better balanced classifier.</li>
+        <li><strong>CatBoost / LightGBM</strong> are natural next candidates &mdash; they support
+        class weighting natively and may outperform XGBoost on this data.</li>
+        <li><strong>Improve acoustic features:</strong> both models struggle because
+        <code>mother_gen</code> dominates (~50% importance). Stronger syllable-level features
+        would benefit any model.</li>
+      </ul>
+    </div>
+
+  </div>
+
+  <div class="footer">
+    Mouse USV ASD Pipeline &middot; HIT &mdash; Holon Institute of Technology &middot; 2026
+  </div>
+
+</div>
+</body>
+</html>

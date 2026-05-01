@@ -1,0 +1,37 @@
+Active flags: ['--model tabpfn']
+Model: tabpfn
+Results directory: results_tabpfn
+Data source: outputs/aggregated/all_data.csv
+
+=== Split Info ===
+Strategy: random (row-level)
+Train: 5709 rows | Val: 1903 rows | Test: 1903 rows
+WARNING: mouse overlap -- train/val: 87, train/test: 87, val/test: 87 shared mice
+  Train labels: class 0=1736 (30.4%), class 1=3973 (69.6%)
+  Val labels: class 0=583 (30.6%), class 1=1320 (69.4%)
+  Test labels: class 0=588 (30.9%), class 1=1315 (69.1%)
+==================
+
+Train Accuracy:  0.7624802942722018
+Test Accuracy:  0.7351550183920126
+Classification Report:
+              precision    recall  f1-score   support
+
+         0.0       0.68      0.27      0.39       588
+         1.0       0.74      0.94      0.83      1315
+
+    accuracy                           0.74      1903
+   macro avg       0.71      0.61      0.61      1903
+weighted avg       0.72      0.74      0.69      1903
+
+
+ Confusion Matrix:
+Confusion matrix, without normalization
+
+ Confusion Matrix - New pup:
+Confusion matrix, without normalization
+
+ Confusion Matrix - Old pup:
+Confusion matrix, without normalization
+[[ 160  428]
+ [  76 1239]]

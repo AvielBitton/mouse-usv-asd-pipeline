@@ -19,7 +19,9 @@ All source code lives here:
   - `tests/` — smoke tests
 
 - **`src/classification/`** — ASD classification
-  - `train_classifier.py` — reads `outputs/aggregated/all_data.csv`, trains XGBoost model, generates evaluation plots (confusion matrix, AUC-ROC, feature importance). Supports `--external` flag to use the external aggregated data (`outputs/aggregated_external/all_data_external.csv`) and `--group-split` for group-aware splitting.
+  - `train_classifier.py` — reads `outputs/aggregated/all_data.csv`, trains a classifier, and generates evaluation plots (confusion matrix, classification report). Supports multiple models via `--model` (default: XGBoost, also TabPFN), `--external` for external data, and `--group-split` for group-aware splitting. See `src/classification/TRAINING.md` for details.
+  - `models.py` — model registry with factory functions for each supported classifier
+  - `report.py` — generates comparison-vs-baseline summary
 
 - **`src/models/`** — pre-trained model weights
   - `model_weights.h6` — CNN weights for syllable type classification (used by the preprocessing pipeline)
@@ -45,7 +47,7 @@ Excel inputs for the preprocessing pipeline and generated reference indexes:
 
 **Note:** Mapping files are optional reference; the split `Data … Segmentation` workbooks are the usual batch inputs.
 
-> **Data Correction (April 2026):** The original metadata files labeled **all** pups of HET mothers as HET. This was incorrect — a HET × WT cross produces ~50% HET and ~50% WT offspring. 14 mice (2,495 rows across 6 metadata files) were corrected from HET to WT based on individual genotyping data from the external segmentation file. See the executive summary in `results_external/summary/` for details.
+> **Data Correction (April 2026):** The original metadata files labeled **all** pups of HET mothers as HET. This was incorrect — a HET × WT cross produces ~50% HET and ~50% WT offspring. 14 mice (2,495 rows across 6 metadata files) were corrected from HET to WT based on individual genotyping data from the external segmentation file. See the executive summary in `results/xgboost_external/summary/` for details.
 
 ---
 
@@ -203,6 +205,32 @@ The `generate_metadata.py` script supports scanning WAV files directly from Goog
 8. **External Data Aggregation**  
    Alternatively, aggregates features from the external segmentation file (`outputs/external/segmentation_classification_all_data.xlsx`) into `outputs/aggregated_external/`. This file contains correct individual genotyping and is the recommended data source. Cleaning steps: filters invalid genotype labels (UNK/NAN), unknown sex (U), and normalizes Session=0 to 1.
 
+### Model Training
+
+The classifier supports multiple models via the `--model` flag:
+
+| Model   | Flag               | Description                                                    |
+|---------|--------------------|----------------------------------------------------------------|
+| XGBoost | `--model xgboost`  | Gradient boosting (default, tuned hyperparameters)             |
+| TabPFN  | `--model tabpfn`   | Prior-data fitted network, no tuning needed, good for small data |
+
+All flags compose independently for isolated, reproducible results:
+
+```bash
+cd src/classification
+
+# Default XGBoost
+python train_classifier.py
+
+# TabPFN with group-aware split and external data
+python train_classifier.py --model tabpfn --group-split --external
+# → results/tabpfn_group_split_external/
+```
+
+Each model produces the same evaluation outputs (accuracy, confusion matrix, classification report) for fair comparison. Model-specific outputs (e.g. XGBoost training curves, feature importance) are only generated when applicable.
+
+See `src/classification/TRAINING.md` for full documentation on flags, results directory naming, and how to add new models.
+
 ---
 
 ## Current Status
@@ -210,7 +238,7 @@ The `generate_metadata.py` script supports scanning WAV files directly from Goog
 - ✅ **Data preparation scripts** (`scripts/`) — folder normalization and metadata splitting
 - ✅ **Metadata generation** (`generate_metadata.py`) — supports local and Google Drive scanning, handles both old (underscore) and new (space/dash) folder naming
 - ✅ **Preprocessing pipeline** (`src/preprocessing/run_pipeline.py`) — segmentation, basic features, CNN classification, column enrichment, and feature extraction. Automatically normalizes folder structure on startup.
-- ✅ **ASD classification** (`src/classification/train_classifier.py`) — XGBoost-based sick/healthy classifier
+- ✅ **ASD classification** (`src/classification/train_classifier.py`) — multi-model sick/healthy classifier (XGBoost, TabPFN)
 - ✅ **Supported data:** 2015, 2018, 2022, 2023, 2024
 - ✅ **External data integration** — `outputs/external/segmentation_classification_all_data.xlsx` with correct individual genotyping (recommended data source)
 - ⚠️ The available data is partial. Full dataset access requires access to the BGU lab servers.

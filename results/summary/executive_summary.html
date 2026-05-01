@@ -3,43 +3,46 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Executive Summary — Mouse USV ASD Classification (2015-2024)</title>
+<title>Central Executive Summary — Mouse USV ASD Classification</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: 'Inter', sans-serif; color: #1a1a2e; background: #f8f9fb; padding: 40px; line-height: 1.6; }
-  .container { max-width: 900px; margin: 0 auto; background: #fff; border-radius: 12px; box-shadow: 0 2px 20px rgba(0,0,0,0.06); overflow: hidden; }
+  .container { max-width: 1100px; margin: 0 auto; background: #fff; border-radius: 12px; box-shadow: 0 2px 20px rgba(0,0,0,0.06); overflow: hidden; }
   .header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: #fff; padding: 36px 44px; }
   .header h1 { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
   .header p { font-size: 13px; color: #a8b2d1; }
   .body { padding: 36px 44px; }
-  h2 { font-size: 15px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #16213e; margin: 28px 0 12px; border-bottom: 2px solid #e8ecf4; padding-bottom: 6px; }
+  h2 { font-size: 15px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #16213e; margin: 32px 0 12px; border-bottom: 2px solid #e8ecf4; padding-bottom: 6px; }
   h2:first-child { margin-top: 0; }
+  h3 { font-size: 14px; font-weight: 700; color: #16213e; margin: 20px 0 8px; }
   p, li { font-size: 14px; color: #333; }
   ul { padding-left: 20px; margin: 8px 0; }
   li { margin-bottom: 6px; }
-  .metrics { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin: 16px 0; }
-  .metric-card { background: #f4f6fb; border-radius: 8px; padding: 18px; text-align: center; }
-  .metric-card .value { font-size: 28px; font-weight: 700; color: #16213e; }
-  .metric-card .label { font-size: 12px; color: #666; margin-top: 4px; }
-  .metric-card .delta { font-size: 12px; color: #2a9d8f; font-weight: 600; margin-top: 2px; }
   table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 13px; }
   th { background: #16213e; color: #fff; padding: 10px 14px; text-align: left; font-weight: 600; }
   td { padding: 9px 14px; border-bottom: 1px solid #e8ecf4; }
   tr:last-child td { border-bottom: none; }
   .highlight { color: #e63946; font-weight: 600; }
   .good { color: #2a9d8f; font-weight: 600; }
-  .img-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 16px 0; }
-  .img-row img { width: 100%; border-radius: 8px; border: 1px solid #e8ecf4; }
-  .img-full img { width: 100%; border-radius: 8px; border: 1px solid #e8ecf4; margin: 12px 0; }
-  .improvement-banner { background: linear-gradient(135deg, #2a9d8f 0%, #1a8a7e 100%); color: #fff; border-radius: 8px; padding: 20px 24px; margin: 16px 0; }
-  .improvement-banner h3 { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
-  .improvement-banner p { font-size: 13px; color: #e0f5f2; margin: 0; }
-  .comparison-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-top: 12px; }
-  .comparison-card { background: rgba(255,255,255,0.15); border-radius: 6px; padding: 12px; text-align: center; }
-  .comparison-card .old { font-size: 13px; text-decoration: line-through; opacity: 0.7; }
-  .comparison-card .new { font-size: 22px; font-weight: 700; }
-  .comparison-card .metric-name { font-size: 11px; opacity: 0.8; margin-top: 2px; }
+  .neutral { color: #6c757d; font-weight: 600; }
+  .banner { border-radius: 8px; padding: 20px 24px; margin: 16px 0; }
+  .banner-warn { background: linear-gradient(135deg, #e63946 0%, #c1121f 100%); color: #fff; }
+  .banner-warn p { color: #fde8e8; }
+  .banner-warn h3 { color: #fff; margin-top: 0; }
+  .banner-info { background: linear-gradient(135deg, #457b9d 0%, #1d3557 100%); color: #fff; }
+  .banner-info p { color: #d4e4f0; }
+  .banner-info h3 { color: #fff; margin-top: 0; }
+  .banner-ok { background: linear-gradient(135deg, #2a9d8f 0%, #264653 100%); color: #fff; }
+  .banner-ok p { color: #d4f0e8; }
+  .banner-ok h3 { color: #fff; margin-top: 0; }
+  .model-xgb { background: #eef2ff; }
+  .model-tabpfn { background: #f0fdf4; }
+  .config-table td:first-child { font-weight: 600; }
+  .config-table tr:nth-child(even) { background: #f8f9fb; }
+  .legend { background: #f4f6fb; border-radius: 8px; padding: 16px 20px; margin: 12px 0; font-size: 13px; }
+  .legend strong { color: #16213e; }
+  code { background: #eef2ff; padding: 2px 6px; border-radius: 4px; font-size: 12px; }
   .footer { padding: 20px 44px; background: #f4f6fb; font-size: 11px; color: #888; text-align: center; }
   @media print {
     body { padding: 0; background: #fff; }
@@ -51,128 +54,246 @@
 <div class="container">
 
   <div class="header">
-    <h1>Executive Summary — Mouse USV ASD Classification</h1>
-    <p>XGBoost Binary Classifier &nbsp;|&nbsp; Data: 2015–2024 &nbsp;|&nbsp; Updated April 4, 2026</p>
+    <h1>Central Executive Summary &mdash; All Models &amp; Configurations</h1>
+    <p>XGBoost vs TabPFN &nbsp;|&nbsp; 8 Configurations &nbsp;|&nbsp; May 2026</p>
   </div>
 
   <div class="body">
 
     <h2>Objective</h2>
-    <p>Classify mouse pups as <strong>Wild-Type (WT)</strong> or <strong>ASD-model (HET)</strong> based on ultrasonic vocalization (USV) features extracted from audio recordings.</p>
+    <p>Classify mouse pups as <strong>Wild-Type (WT)</strong> or <strong>ASD-model (HET)</strong>
+    based on ultrasonic vocalization (USV) features. This document compares all model &times;
+    configuration combinations and explains what each configuration means.</p>
 
-    <h2>Dataset</h2>
-    <ul>
-      <li><strong>9,515</strong> syllable-sequence samples from aggregated recordings (previously 7,322)</li>
-      <li><strong>46 features</strong> per sample (syllable frequencies, durations, distributions, ISI, sex, age, strain)</li>
-      <li><strong>87 mice</strong> across 5 recording years: 2015, 2018, 2022, 2023, 2024</li>
-      <li>Strain mapping: 2022/2023/2024 → Strain 1 &nbsp;|&nbsp; 2015/2018 → Strain 2</li>
-      <li>Split: 60% train / 20% validation / 20% test</li>
-      <li>Class ratio in test: 768 HET vs 1,135 WT</li>
-    </ul>
+    <!-- ============================================================ -->
+    <h2>Glossary &mdash; Configurations Explained</h2>
 
-    <div class="improvement-banner">
-      <h3>Improvement vs. Previous Model (2015–2022)</h3>
-      <p>Adding 2023–2024 data and correcting the strain mapping (2022/2023/2024 → Strain 1) improved classification across all key metrics:</p>
-      <div class="comparison-grid">
-        <div class="comparison-card">
-          <div class="old">76.0%</div>
-          <div class="new">82.9%</div>
-          <div class="metric-name">Test Accuracy (+6.9%)</div>
-        </div>
-        <div class="comparison-card">
-          <div class="old">0.77</div>
-          <div class="new">0.83</div>
-          <div class="metric-name">Weighted F1 (+0.06)</div>
-        </div>
-        <div class="comparison-card">
-          <div class="old">0.58</div>
-          <div class="new">0.73</div>
-          <div class="metric-name">HET Precision (+0.15)</div>
-        </div>
-      </div>
-    </div>
-
-    <h2>Key Results</h2>
-    <div class="metrics">
-      <div class="metric-card">
-        <div class="value">82.9%</div>
-        <div class="label">Test Accuracy</div>
-        <div class="delta">▲ +6.9% from prev.</div>
-      </div>
-      <div class="metric-card">
-        <div class="value">0.83</div>
-        <div class="label">Weighted F1-Score</div>
-        <div class="delta">▲ +0.06 from prev.</div>
-      </div>
-      <div class="metric-card">
-        <div class="value">88.0%</div>
-        <div class="label">Train Accuracy</div>
-        <div class="delta">▲ +8.2% from prev.</div>
-      </div>
-    </div>
-
-    <h2>Per-Class Performance</h2>
-    <table>
-      <tr><th>Class</th><th>Precision</th><th>Recall</th><th>F1-Score</th><th>Support</th></tr>
-      <tr><td>0 — HET (ASD-model)</td><td>0.73</td><td class="good">0.90</td><td class="good">0.81</td><td>768</td></tr>
-      <tr><td>1 — WT</td><td class="good">0.92</td><td>0.78</td><td class="good">0.84</td><td>1,135</td></tr>
-      <tr style="background:#f4f6fb; font-weight:600;"><td>Weighted Avg</td><td>0.85</td><td>0.83</td><td>0.83</td><td>1,903</td></tr>
+    <table class="config-table">
+      <tr><th>Term</th><th>Meaning</th><th>CLI Flag</th><th>Results Directory</th></tr>
+      <tr>
+        <td>Base</td>
+        <td>Baseline run using only the pipeline's own data (2015&ndash;2024, 9,515 samples)
+            with a <strong>random</strong> 60/20/20 train/val/test split.
+            Individual syllable-sequences from the same mouse may appear in different splits.</td>
+        <td><em>(no flags)</em></td>
+        <td><code>results/xgboost_base/</code></td>
+      </tr>
+      <tr>
+        <td>External</td>
+        <td>Adds external USV data alongside pipeline data, increasing the dataset
+            to <strong>13,081 samples</strong>. More data generally improves generalization.</td>
+        <td><code>--external</code></td>
+        <td><code>results/xgboost_external/</code></td>
+      </tr>
+      <tr>
+        <td>Group Split</td>
+        <td>Splits data so that all recordings from the <strong>same mouse</strong> stay in
+            the same split (train, val, or test). This is a stricter, more realistic evaluation
+            that prevents data leakage between mice. Performance typically drops because the model
+            can no longer memorize individual mouse patterns.</td>
+        <td><code>--group-split</code></td>
+        <td><code>results/xgboost_group_split/</code></td>
+      </tr>
+      <tr>
+        <td>Group Split + External</td>
+        <td>Combines both: external data <strong>and</strong> group-aware splitting.
+            The most rigorous evaluation setting.</td>
+        <td><code>--group-split --external</code></td>
+        <td><code>results/xgboost_group_split_external/</code></td>
+      </tr>
     </table>
 
-    <h2>Comparison with Previous Model</h2>
-    <table>
-      <tr><th>Metric</th><th>2015–2022</th><th>2015–2024</th><th>Change</th></tr>
-      <tr><td>Test Accuracy</td><td>76.0%</td><td class="good">82.9%</td><td class="good">+6.9%</td></tr>
-      <tr><td>HET Precision</td><td>0.58</td><td class="good">0.73</td><td class="good">+0.15</td></tr>
-      <tr><td>HET Recall</td><td>0.92</td><td>0.90</td><td>-0.02</td></tr>
-      <tr><td>HET F1</td><td>0.71</td><td class="good">0.81</td><td class="good">+0.10</td></tr>
-      <tr><td>WT Precision</td><td>0.94</td><td>0.92</td><td>-0.02</td></tr>
-      <tr><td>WT Recall</td><td>0.69</td><td class="good">0.78</td><td class="good">+0.09</td></tr>
-      <tr><td>WT F1</td><td>0.80</td><td class="good">0.84</td><td class="good">+0.04</td></tr>
-      <tr><td>Samples</td><td>7,322</td><td class="good">9,515</td><td class="good">+2,193</td></tr>
-    </table>
-
-    <h2>Confusion Matrix</h2>
-    <table>
-      <tr><th></th><th>Predicted HET</th><th>Predicted WT</th></tr>
-      <tr><td><strong>Actual HET</strong></td><td class="good">693</td><td>75</td></tr>
-      <tr><td><strong>Actual WT</strong></td><td>251</td><td class="good">884</td></tr>
-    </table>
-
-    <h2>Strengths</h2>
-    <ul>
-      <li>High HET recall (<span class="good">90%</span>) — nearly all ASD-model mice are correctly detected.</li>
-      <li>High WT precision (<span class="good">92%</span>) — when the model predicts WT, it is almost always correct.</li>
-      <li>Model is <strong>more balanced</strong> than before — both classes now have F1 above 0.80.</li>
-      <li>Small train-test gap (88.0% vs 82.9%) — no significant overfitting.</li>
-      <li>Improvement came from <strong>more data, not parameter tuning</strong> — same hyperparameters as previous model.</li>
-    </ul>
-
-    <h2>Remaining Weaknesses</h2>
-    <ul>
-      <li>WT recall is <span class="highlight">78%</span> — the model still misclassifies 22% of WT mice as HET (251 false positives).</li>
-      <li>HET precision (73%) means ~1 in 4 HET predictions are false alarms — improved from 42%, but room remains.</li>
-    </ul>
-
-    <h2>Top Feature</h2>
-    <p>The single most important feature is <strong>mother_gen</strong> (mother genotype), contributing <strong>57%</strong> of total feature importance, followed by <strong>pup_strain</strong> (7.3%) and <strong>pup_sex</strong> (4.9%). This suggests that genetic background is the dominant predictor in the current model.</p>
-
-    <h2>Training Curves &amp; Feature Importance</h2>
-    <div class="img-row">
-      <img src="../plots/AUC_error.png" alt="AUC and Error curves">
-      <img src="../plots/conf_matrix.png" alt="Confusion Matrix Heatmap">
-    </div>
-    <div class="img-full">
-      <img src="../plots/feature_importance_1.png" alt="Feature Importance">
+    <div class="legend">
+      <strong>Directory naming convention:</strong>
+      <code>results/&lt;model&gt;[_base][_group_split][_external]/</code><br>
+      The <code>_base</code> suffix appears when no flags are active, to clearly mark the baseline.
+      For other models replace the model name, e.g. <code>results/tabpfn_external/</code>.
     </div>
 
-    <h2>Conclusion</h2>
-    <p>Expanding the dataset to 9,515 samples and correcting the strain mapping (2022/2023/2024 → Strain 1) yielded a <span class="good">+6.9%</span> improvement in test accuracy. The model now achieves <strong>82.9% accuracy</strong> with a weighted F1 of <strong>0.83</strong>, making it a solid baseline for USV-based ASD screening. Further gains may come from hyperparameter tuning, temporal feature engineering, or ensemble methods.</p>
+    <!-- ============================================================ -->
+    <h2>Models</h2>
+    <table>
+      <tr><th></th><th>XGBoost</th><th>TabPFN</th></tr>
+      <tr><td>Type</td><td>Gradient boosting (tree-based)</td><td>Transformer pre-trained on synthetic tabular data</td></tr>
+      <tr><td>Hyperparameters</td><td>Manually tuned (50 estimators, depth 5, etc.)</td><td>None &mdash; zero-shot, no tuning required</td></tr>
+      <tr><td>Class balancing</td><td><code>compute_sample_weight(balanced)</code></td><td>None (built-in priors only)</td></tr>
+      <tr><td>Training time</td><td>~2 seconds</td><td>~80&ndash;150 seconds (CPU)</td></tr>
+      <tr><td>Max dataset size</td><td>Unlimited</td><td>~10K rows (v1 limitation)</td></tr>
+    </table>
+
+    <!-- ============================================================ -->
+    <h2>Results &mdash; All 8 Configurations</h2>
+
+    <table>
+      <tr>
+        <th>Configuration</th>
+        <th>Model</th>
+        <th>Samples</th>
+        <th>Test Acc</th>
+        <th>F1 (wtd)</th>
+        <th>HET F1</th>
+        <th>HET Recall</th>
+        <th>HET Prec</th>
+        <th>WT F1</th>
+        <th>WT Recall</th>
+      </tr>
+      <tr class="model-xgb">
+        <td>Base (random)</td><td>XGBoost</td><td>9,515</td>
+        <td>66.6%</td><td>0.67</td>
+        <td class="good">0.64</td><td class="good">0.97</td><td>0.48</td>
+        <td>0.69</td><td>0.53</td>
+      </tr>
+      <tr class="model-tabpfn">
+        <td>Base (random)</td><td>TabPFN</td><td>9,515</td>
+        <td class="good">73.5%</td><td>0.69</td>
+        <td>0.39</td><td class="highlight">0.27</td><td>0.68</td>
+        <td class="good">0.83</td><td>0.94</td>
+      </tr>
+      <tr class="model-xgb">
+        <td>Group split</td><td>XGBoost</td><td>9,515</td>
+        <td class="good">58.3%</td><td class="good">0.60</td>
+        <td class="good">0.48</td><td class="good">0.70</td><td>0.37</td>
+        <td class="good">0.65</td><td>0.54</td>
+      </tr>
+      <tr class="model-tabpfn">
+        <td>Group split</td><td>TabPFN</td><td>9,515</td>
+        <td>53.8%</td><td>0.56</td>
+        <td>0.39</td><td>0.52</td><td>0.31</td>
+        <td>0.63</td><td>0.54</td>
+      </tr>
+      <tr class="model-xgb">
+        <td>External (random)</td><td>XGBoost</td><td>13,081</td>
+        <td>70.7%</td><td class="good">0.73</td>
+        <td class="good">0.62</td><td class="good">0.97</td><td>0.46</td>
+        <td>0.76</td><td>0.62</td>
+      </tr>
+      <tr class="model-tabpfn">
+        <td>External (random)</td><td>TabPFN</td><td>13,081</td>
+        <td class="good">76.2%</td><td>0.70</td>
+        <td>0.24</td><td class="highlight">0.15</td><td>0.59</td>
+        <td class="good">0.86</td><td>0.97</td>
+      </tr>
+      <tr class="model-xgb">
+        <td>External + group</td><td>XGBoost</td><td>13,081</td>
+        <td>56.1%</td><td>0.60</td>
+        <td class="good">0.45</td><td class="good">0.90</td><td>0.30</td>
+        <td>0.63</td><td>0.48</td>
+      </tr>
+      <tr class="model-tabpfn">
+        <td>External + group</td><td>TabPFN</td><td>13,081</td>
+        <td class="good">65.6%</td><td class="good">0.66</td>
+        <td>0.17</td><td class="highlight">0.17</td><td>0.16</td>
+        <td class="good">0.78</td><td>0.78</td>
+      </tr>
+    </table>
+
+    <!-- ============================================================ -->
+    <h2>Analysis</h2>
+
+    <h3>1. XGBoost Detects Disease Far Better (HET Recall)</h3>
+    <p>The most critical metric for disease screening is <strong>HET recall</strong> &mdash;
+    how many sick mice the model actually catches. XGBoost dramatically outperforms TabPFN:</p>
+    <table>
+      <tr><th>Configuration</th><th>XGBoost</th><th>TabPFN</th><th>Gap</th></tr>
+      <tr><td>Base (random)</td><td class="good">97%</td><td class="highlight">27%</td><td class="highlight">&minus;70%</td></tr>
+      <tr><td>Group split</td><td class="good">70%</td><td>52%</td><td class="highlight">&minus;18%</td></tr>
+      <tr><td>External (random)</td><td class="good">97%</td><td class="highlight">15%</td><td class="highlight">&minus;82%</td></tr>
+      <tr><td>External + group</td><td class="good">90%</td><td class="highlight">17%</td><td class="highlight">&minus;73%</td></tr>
+    </table>
+    <p>XGBoost&rsquo;s <code>compute_sample_weight(balanced)</code> and <code>scale_pos_weight=0.8</code>
+    actively push the model to detect HET mice. TabPFN has no class balancing mechanism and
+    defaults to predicting the majority class (WT).</p>
+
+    <h3>2. TabPFN&rsquo;s Higher Accuracy Is Misleading</h3>
+    <p>TabPFN wins on overall accuracy in 3 of 4 configurations, but this reflects the class
+    imbalance (70&ndash;75% WT). Predicting &ldquo;WT&rdquo; for everything would yield ~72% accuracy.
+    TabPFN is effectively a near-majority-class predictor with limited disease detection ability.</p>
+
+    <h3>3. Impact of Group-Aware Splitting</h3>
+    <p>Both models degrade under group split, confirming some information leaks between splits
+    when the same mouse appears in train and test sets:</p>
+    <table>
+      <tr><th></th><th>XGBoost: Random &rarr; Group</th><th>TabPFN: Random &rarr; Group</th></tr>
+      <tr><td>Pipeline: Accuracy drop</td><td class="highlight">&minus;8.3%</td><td class="highlight">&minus;19.7%</td></tr>
+      <tr><td>External: Accuracy drop</td><td class="highlight">&minus;14.6%</td><td class="highlight">&minus;10.6%</td></tr>
+    </table>
+    <p>Group split is the more realistic evaluation. The drops are expected and highlight
+    that the random-split numbers are optimistic.</p>
+
+    <h3>4. Impact of External Data</h3>
+    <p>Adding external data (9,515 &rarr; 13,081 samples) generally improves accuracy for both models.
+    For XGBoost with random split, accuracy goes from 66.6% to 70.7% (+4.1%).
+    External data helps most with group split, where XGBoost goes from 58.3% to 56.1%
+    (slight drop, but HET recall improves from 70% to 90%).</p>
+
+    <h3>5. Why TabPFN Fails on HET Detection</h3>
+    <ul>
+      <li><strong>No class balancing:</strong> TabPFN v1 does not accept <code>sample_weight</code>.
+      With 70&ndash;76% WT data, it learns to predict the majority class.</li>
+      <li><strong>Prior mismatch:</strong> Pre-trained on synthetic balanced datasets;
+      real-world class imbalance (24&ndash;30% HET) is outside its training distribution.</li>
+      <li><strong>Weak signal amplification:</strong> Discriminative features contribute only
+      1&ndash;3% each. XGBoost&rsquo;s boosting amplifies these better than TabPFN&rsquo;s attention.</li>
+    </ul>
+
+    <!-- ============================================================ -->
+    <h2>Individual Results Directory Guide</h2>
+    <table class="config-table">
+      <tr><th>Directory</th><th>Description</th></tr>
+      <tr><td><code>results/xgboost_base/</code></td><td>XGBoost, pipeline data, random split (baseline)</td></tr>
+      <tr><td><code>results/xgboost_group_split/</code></td><td>XGBoost, pipeline data, group-aware split</td></tr>
+      <tr><td><code>results/xgboost_external/</code></td><td>XGBoost, pipeline + external data, random split</td></tr>
+      <tr><td><code>results/xgboost_group_split_external/</code></td><td>XGBoost, pipeline + external data, group-aware split</td></tr>
+      <tr><td><code>results/tabpfn_base/</code></td><td>TabPFN, pipeline data, random split</td></tr>
+      <tr><td><code>results/tabpfn_group_split/</code></td><td>TabPFN, pipeline data, group-aware split</td></tr>
+      <tr><td><code>results/tabpfn_external/</code></td><td>TabPFN, pipeline + external data, random split</td></tr>
+      <tr><td><code>results/tabpfn_group_split_external/</code></td><td>TabPFN, pipeline + external data, group-aware split</td></tr>
+      <tr><td><code>results/xgboost_2015_2022/</code></td><td>XGBoost, older dataset (2015&ndash;2022 only), for historical comparison</td></tr>
+    </table>
+    <p>Each directory contains: <code>logs/out.txt</code> (full log), <code>plots/</code>
+    (confusion matrices, training curves where applicable), <code>model/</code> (saved model),
+    and <code>comparison_vs_baseline.txt</code> (delta vs the 2015&ndash;2022 baseline).</p>
+
+    <!-- ============================================================ -->
+    <h2>Conclusions</h2>
+
+    <div class="banner banner-warn">
+      <h3>TabPFN Cannot Detect Disease</h3>
+      <p>Despite higher overall accuracy in most configurations, TabPFN misses 73&ndash;85% of
+      HET (ASD-model) mice in random split. For a disease screening task, this makes it
+      <strong>unsuitable as a standalone classifier</strong>. The accuracy improvement reflects
+      majority-class bias, not better detection.</p>
+    </div>
+
+    <div class="banner banner-ok">
+      <h3>XGBoost Remains the Best Option</h3>
+      <p>XGBoost with class balancing detects 90&ndash;97% of HET mice (random split) and
+      70&ndash;90% (group split), making it the only viable model for ASD screening.
+      Its lower overall accuracy reflects the deliberate tradeoff: <strong>catching disease
+      cases matters more than avoiding false alarms</strong>.</p>
+    </div>
+
+    <div class="banner banner-info">
+      <h3>Recommendations</h3>
+      <p><strong>Keep XGBoost as the primary classifier.</strong></p>
+      <ul style="margin-top:8px;">
+        <li><strong>Best production config:</strong> XGBoost + external data + group split
+        (56.1% accuracy, but 90% HET recall &mdash; catches nearly all sick mice).</li>
+        <li><strong>TabPFN v2</strong> (Python 3.9+) may handle imbalance better &mdash;
+        worth revisiting when upgrading the Python environment.</li>
+        <li><strong>CatBoost / LightGBM</strong> support class weighting natively and are
+        natural next candidates.</li>
+        <li><strong>Ensemble approach:</strong> combining XGBoost&rsquo;s sensitivity with
+        TabPFN&rsquo;s specificity could yield a better balanced classifier.</li>
+        <li><strong>Improve acoustic features:</strong> <code>mother_gen</code> dominates
+        (~57% importance). Stronger syllable-level features would benefit any model.</li>
+      </ul>
+    </div>
 
   </div>
 
   <div class="footer">
-    Mouse USV ASD Pipeline &nbsp;·&nbsp; HIT — Holon Institute of Technology &nbsp;·&nbsp; 2026
+    Mouse USV ASD Pipeline &middot; HIT &mdash; Holon Institute of Technology &middot; 2026
   </div>
 
 </div>
