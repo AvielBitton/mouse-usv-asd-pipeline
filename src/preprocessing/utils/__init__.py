@@ -12,8 +12,23 @@ from .io_utils import (
     replace_extension,
     extract_year_from_filename,
     read_metadata_as_lists,
+    normalize_metadata_columns,
+    metadata_columns_satisfied,
+    normalize_sex_cell,
+    normalize_supplement_cell,
+    pup_summary_columns_satisfied,
+    build_sex_lookup_from_pup_summary_xlsx,
+    build_pup_summary_details_lookup_xlsx,
+    PUP_SUMMARY_REQUIRED_COLUMNS,
+    get_metadata_alias_lookup,
 )
-from .audio_paths import build_recording_base_path, resolve_wav_path
+from .audio_paths import (
+    build_recording_base_path,
+    resolve_wav_path,
+    pup_identity_key,
+    canonical_pup_display_name,
+    iter_pup_table_lookup_keys,
+)
 from .recordings_loader import load_recordings_from_metadata
 from .cli_utils import parse_args, get_files_to_process
 
@@ -31,8 +46,20 @@ __all__ = [
     'replace_extension',
     'extract_year_from_filename',
     'read_metadata_as_lists',
+    'normalize_metadata_columns',
+    'metadata_columns_satisfied',
+    'normalize_sex_cell',
+    'normalize_supplement_cell',
+    'pup_summary_columns_satisfied',
+    'build_sex_lookup_from_pup_summary_xlsx',
+    'build_pup_summary_details_lookup_xlsx',
+    'PUP_SUMMARY_REQUIRED_COLUMNS',
+    'get_metadata_alias_lookup',
     'build_recording_base_path',
     'resolve_wav_path',
+    'pup_identity_key',
+    'canonical_pup_display_name',
+    'iter_pup_table_lookup_keys',
     'load_recordings_from_metadata',
     'parse_args',
     'get_files_to_process',

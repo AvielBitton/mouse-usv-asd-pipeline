@@ -60,28 +60,40 @@ The script skips already processed files (if outputs exist) for safe resumption.
 | 4 | Mother | Mother mouse identifier |
 | 5 | Mother Genotype | Mother genotype (e.g. HT, WT) |
 | 6 | Mother Genotype (binary) | Binary flag: WT = 1, other = 0 |
-| 7 | Supplement (Mother) | 1 if Mother name contains "sup", else 0 |
+| 7 | Supplement (Mother) | 1 if Mother name **or Path** contains "sup", else 0 |
 | 8 | Name | Pup/offspring identifier |
-| 9 | Sex | Pup sex |
+| 9 | Sex | Pup sex (normalized to `M` / `F` / `U`) |
 | 10 | Offspring Genotype | Pup genotype (e.g. HT, WT) |
 | 11 | Offspring Genotype (binary) | Binary flag: WT = 1, other = 0 |
-| 12 | Supplement (Offspring) | 1 if Name contains "sup", else 0 |
+| 12 | Supplement (Offspring) | Metadata cell first; falls back to 1 if `Name` or `Path` contains "sup", else 0 |
 | 13 | Day | Age of the mouse in days |
 | 14 | Session | Recording session number |
-| 15 | Recording Number | Recording identifier (e.g. T0000001) |
-| 16 | Syllable order (in recording) | Order of this syllable within the recording (1, 2, 3, … by ascending start time) |
-| 17 | Syllables per recording | Total number of syllables detected in this recording |
-| 18 | Start point(s) | Syllable start time in seconds |
-| 19 | End point(s) | Syllable end time in seconds |
-| 20 | Duration (time) | Syllable duration in seconds |
-| 21 | ISI_time | Inter-Syllable Interval (time gap to the previous syllable) |
-| 22 | Start Point (Hz) | Frequency at the start of the syllable |
-| 23 | End Point (Hz) | Frequency at the end of the syllable |
-| 24 | Noise | 1 if Start Point (Hz) == End Point (Hz), else 0 |
-| 25 | Syllable number | Syllable type (0–10) assigned by the CNN classifier |
-| 26 | Syllable type | English label for the syllable number (Complex, Frequency steps, Composite, Two syllables, Upward, Flat, Harmonic, Downward, Chevron, Short, Undefined) |
-| 27 | Complexity level | Complexity category: "Single Vowel", "Multiple Vowels", or "Advanced Harmonic" |
-| 28 | Complexity level (numeric) | Numeric complexity: 1 (Single Vowel), 2 (Multiple Vowels), 3 (Advanced Harmonic) |
+| 15 | Strain | Descriptive strain label by year: `BALB/C` (2015 / 2018) or `BALB/C+BLACK/C57` (2022 / 2023 / 2024). See note below. |
+| 16 | Recording Number | Recording identifier (e.g. T0000001) |
+| 17 | Syllable order (in recording) | Order of this syllable within the recording (1, 2, 3, … by ascending start time; nullable `Int64`) |
+| 18 | Syllables per recording | Total number of syllables detected in this recording |
+| 19 | Start point(s) | Syllable start time in seconds |
+| 20 | End point(s) | Syllable end time in seconds |
+| 21 | Duration (time) | Syllable duration in seconds |
+| 22 | ISI_time | Inter-Syllable Interval (time gap to the previous syllable) |
+| 23 | Start Point (Hz) | Frequency at the start of the syllable |
+| 24 | End Point (Hz) | Frequency at the end of the syllable |
+| 25 | Noise | 1 if Start Point (Hz) == End Point (Hz), else 0 |
+| 26 | Syllable number | Syllable type (0–10) assigned by the CNN classifier |
+| 27 | Syllable type | English label for the syllable number (Complex, Frequency steps, Composite, Two syllables, Upward, Flat, Harmonic, Downward, Chevron, Short, Undefined) |
+| 28 | Complexity level | Complexity category: "Single Vowel", "Multiple Vowels", or "Advanced Harmonic" |
+| 29 | Complexity level (numeric) | Numeric complexity: 1 (Single Vowel), 2 (Multiple Vowels), 3 (Advanced Harmonic) |
+
+> **Note about `Strain`.** The per-file `outputs/segmentation_*.xlsx` workbooks store `Strain` as a descriptive **text label** (`BALB/C` for 2015 / 2018, `BALB/C+BLACK/C57` for 2022 / 2023 / 2024) that mirrors the labels in the externally produced `outputs/external/segmentation_classification_all_data.xlsx`. The tabular feature-extraction step (`add_strain_column` / `add_strain_from_path` in `src/preprocessing/steps/extract_features.py`) **overwrites** this column to a numeric strain identifier (1 or 2 — defined by `STRAIN_1_YEARS` in `src/preprocessing/utils/io_utils.py`) before the data reaches `compute_features` and the training CSVs. This means the XGBoost / TabPFN trainer (`COL_NAMES['pup_strain']`) always receives the numeric value, while a human inspecting a `segmentation_*.xlsx` sees the readable strain label. The aggregated `outputs/aggregated/all_data.xlsx` also carries the numeric value because `add_strain_from_path` runs before that workbook is written.
+
+### Pipeline Behaviour Notes
+
+- **Metadata header detection**: `read_metadata_as_lists` scans the first 20 rows of the metadata workbook to find the header row, so workbooks with a banner / title row above the headers are accepted automatically. See `Metadata_Structure.md → Header Flexibility` for the full alias map (English variants and Hebrew labels).
+- **Sex normalization**: every value in the `Sex` column is coerced to `M` / `F` / `U` (English, single-letter and Hebrew labels supported) before the segmentation workbook is written.
+- **Path resolution**: WAVs are resolved through `build_recording_base_path` + `resolve_wav_path`. The resolver tries the canonical `<root>/<year>/<mother>_<matgen>/<name>_<pupgen>/day_<d>/sessionN/<rec>` layout first, then identity-key matching (handles colour/genotype/parenthetical decorators on pup folders), and finally a prefix / token fallback. The same resolver is used by both the loader step and the CNN classification step so they stay consistent.
+- **CNN classification performance**: `Syl_Class_Vec` (in `legacy/statistics_generator.py`) caches the loaded waveform across consecutive syllables of the same recording, then stacks every spectrogram and runs `model.predict` in chunks of `_GLOBAL_INFERENCE_CHUNK = 2048` (capped lower for huge jobs) with `_PREDICT_BATCH_SIZE = 32`. For multi-thousand-syllable workbooks this is dramatically faster than per-syllable `librosa.load` + `model.predict`.
+- **Welch PSD robustness**: `_welch_psd` clamps `nperseg` / `noverlap` to the segment length, so syllables near the very end of a recording (where the slice can be shorter than 1024 samples) no longer crash; `StartEndFreq` also wraps each row in a `try`/`except` and logs the first 25 failures.
+- **Idempotent column writes**: all enrichment / classification columns are overwritten in place if they already exist, so re-running the pipeline on a workbook is safe.
 
 #### Syllable type mapping
 

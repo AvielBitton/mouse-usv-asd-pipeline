@@ -152,7 +152,14 @@ USV_Recordings/{year}/{mother_folder}/{pup_folder}/day_{day}/session{session}/{r
 **2023+ data** uses space/dash-separated names:
 `13128K WT/13128K 1A WT-WT-WT RED/day_6/session1/T0000001.wav`
 
-Both formats are supported. The pipeline resolves the correct directory automatically using fuzzy matching (case-insensitive, dash/space interchangeable). Mothers with multiple litters in separate folders (e.g. `24277J WT` and `24277J WT - litter 2 (2.7.24)`) are also handled.
+Both formats are supported. `build_recording_base_path` resolves the correct directory using a two-pass fuzzy matcher:
+
+1. **Identity-key match** (`pup_identity_key`) strips colour suffixes (`RED`, `BLUE`, `GREEN-RED`, `BLU`/`GRN`/…), genotype suffixes (`WT`, `HT`, `KO`, …), supplement markers (`SUP`/`SUPP`), and parenthetical notes — so `24277J-2A (J)` matches the folder `24277J-2A (BLUE) WT-WT-WT`.
+2. **Prefix / token fallback** (`_find_all_dirs`) handles non-canonical layouts that the identity key cannot reach, e.g. `13128K 1A WT-WT-WT RED` when looking up `13128K-1A`, or `13131J Het SUP 1A red` for `13131J-1A`.
+
+Mothers with multiple litters in separate folders (e.g. `24277J WT` and `24277J WT - litter 2 (2.7.24)`) are searched in order until the pup is found. See `docs/Metadata_Structure.md → Folder / Excel Identity Joins` for the full normalization rules.
+
+Metadata workbooks themselves are also flexible: the loader auto-detects the header row (banner / title rows above the headers are tolerated), accepts English variants and Hebrew labels for every required column (e.g. `אם` → `Mother`, `גנוטיפ גור` → `Offspring Genotype`, `מין` → `Sex`), and normalizes the `Sex` column to `M` / `F` / `U` regardless of the source spelling. See `docs/Metadata_Structure.md → Header Flexibility` for the full alias map.
 
 ### Google Drive Integration
 
@@ -190,11 +197,10 @@ The `generate_metadata.py` script supports scanning WAV files directly from Goog
    Imports the WAV recordings for each session.
 
 3. **Segmentation**  
-   Extracts syllables (USVs) from raw audio.  
-   **Important:** The original segmentation script from the lab is missing and must be obtained to reproduce the results fully.
+   Extracts syllables (USVs) from raw audio using the ERB-filterbank detector (35 kHz lower band, 90 channels), with frame length / overlap parameters matching the lab's reference algorithm.
 
 4. **Classification**  
-   Uses the original ASD classifier to categorize each syllable type (0–10).
+   Uses the original CNN classifier (`src/models/model_weights.h6`) to categorize each syllable type (0–10). Per-syllable spectrograms are batched (`_GLOBAL_INFERENCE_CHUNK = 2048`, `_PREDICT_BATCH_SIZE = 32`) so multi-thousand-syllable workbooks classify in minutes instead of hours, and the loaded waveform is cached across consecutive syllables of the same recording.
 
 5. **Column Enrichment**  
    Adds derived columns to the segmentation Excel: row index, year, genotype binary flags, syllable order within recording, noise indicator, supplement flags, syllable type English labels, and complexity levels. See `docs/Running_the_Pipeline.md` for the full column list.

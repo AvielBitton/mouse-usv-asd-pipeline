@@ -8,6 +8,7 @@ Original file is located at
 """
 
 
+import logging
 import numpy as np
 import numpy.matlib
 import pandas as pd
@@ -25,6 +26,25 @@ import math
 import tensorflow as tf
 
 
+def _welch_psd(seg, rate, nperseg=1024, noverlap=625):
+    """
+    Welch PSD with nperseg/noverlap clamped to the segment length.
+
+    scipy requires noverlap < nperseg. When the slice is shorter than *nperseg*
+    (e.g. end of file, or st1/st2 near the end of the recording), scipy uses
+    a smaller effective nperseg; a fixed *noverlap* would then become invalid.
+    """
+    seg = np.asarray(seg, dtype=float).ravel()
+    n = seg.size
+    if n < 1:
+        return None
+    nperseg_e = min(int(nperseg), n)
+    noverlap_e = min(int(noverlap), nperseg_e - 1)
+    if noverlap_e < 0:
+        noverlap_e = 0
+    return signal.welch(seg, rate, nperseg=nperseg_e, noverlap=noverlap_e)
+
+
 """ISI_time:"""
 def ISI_time(rec_numSyl,startSyl,endSyl):
   ISI = []
@@ -34,11 +54,13 @@ def ISI_time(rec_numSyl,startSyl,endSyl):
     else:
       ISI.append(np.NaN)
   return ISI
-  
+
 
 """Start End frequency:"""
 
-def StartEndFreq(SignalVec,siz,mother,name,age,session,rec_num,motherSyl,nameSyl,ageSyl,sessionSyl,rec_numSyl,startSyl,endSyl,rate):
+def StartEndFreq(SignalVec,siz,mother,name,age,session,rec_num,motherSyl,nameSyl,ageSyl,sessionSyl,rec_numSyl,startSyl,endSyl,rate,logger=None):
+  _log = logger or logging.getLogger(__name__)
+  _fail_n = [0]
   StartEndFrec = []
   startF = []
   endF = []
@@ -46,31 +68,176 @@ def StartEndFreq(SignalVec,siz,mother,name,age,session,rec_num,motherSyl,nameSyl
     StartEndFrec = []
     for i in range(len(motherSyl)):
       if (mother[s2] == motherSyl[i]) and (name[s2] == nameSyl[i]) and (age[s2] == ageSyl[i]) and (session[s2] == sessionSyl[i]) and (rec_num[s2] == rec_numSyl[i]):
-        st1 = round(startSyl[i]*rate)-1000
-        if st1<0:
-          st1 = 0
-        f1, Pxx_den1 = signal.welch(SignalVec[s2][st1:st1+2000], rate, nperseg=1024, noverlap=625)
-        st2 = round(endSyl[i]*rate)-1000
-        f2, Pxx_den2 = signal.welch(SignalVec[s2][st2:st2+2000], rate, nperseg=1024, noverlap=625)
-        k1 = np.where(f1>40000)
-        peaksInd1, _ = find_peaks(Pxx_den1[k1[0][0]:-1])
-        peaks1 = Pxx_den1[peaksInd1+k1[0][0]]
-        is_empty = len(peaks1) == 0
-        if (is_empty):
+        try:
+          st1 = round(startSyl[i]*rate)-1000
+          if st1<0:
+            st1 = 0
+          seg1 = SignalVec[s2][st1:st1+2000]
+          w1 = _welch_psd(seg1, rate)
+          if w1 is None:
+            StartEndFrec.append([0,0])
+            startF.append(0)
+            endF.append(0)
+            continue
+          f1, Pxx_den1 = w1
+          st2 = round(endSyl[i]*rate)-1000
+          seg2 = SignalVec[s2][st2:st2+2000]
+          w2 = _welch_psd(seg2, rate)
+          if w2 is None:
+            StartEndFrec.append([0,0])
+            startF.append(0)
+            endF.append(0)
+            continue
+          f2, Pxx_den2 = w2
+          k1 = np.where(f1>40000)
+          if k1[0].size == 0:
+            StartEndFrec.append([0,0])
+            startF.append(0)
+            endF.append(0)
+            continue
+          peaksInd1, _ = find_peaks(Pxx_den1[k1[0][0]:-1])
+          peaks1 = Pxx_den1[peaksInd1+k1[0][0]]
+          is_empty = len(peaks1) == 0
+          if (is_empty):
+            StartEndFrec.append([0,0])
+            startF.append(0)
+            endF.append(0)
+            continue
+          peakMax1 = np.argmax(peaks1)
+          frec1 = f1[peaksInd1[peakMax1]+k1[0][0]]
+          k2 = np.where(f2>40000)
+          if k2[0].size == 0:
+            StartEndFrec.append([0,0])
+            startF.append(0)
+            endF.append(0)
+            continue
+          peaksInd2, _ = find_peaks(Pxx_den2[k2[0][0]:-1])
+          peaks2 = Pxx_den2[peaksInd2+k2[0][0]]
+          peakMax2 = np.argmax(peaks2)
+          frec2 = f2[peaksInd2[peakMax2]+k2[0][0]]
+          StartEndFrec.append([f1[peaksInd1[peakMax1]+k1[0][0]],f2[peaksInd2[peakMax2]+k2[0][0]]])
+          startF.append(f1[peaksInd1[peakMax1]+k1[0][0]])
+          endF.append(f2[peaksInd2[peakMax2]+k2[0][0]])
+        except Exception as exc:
+          _fail_n[0] += 1
+          if _fail_n[0] <= 25:
+            _log.warning("StartEndFreq failed syllable row %s (recording index %s): %s", i, s2, exc)
+          elif _fail_n[0] == 26:
+            _log.warning("StartEndFreq: further per-syllable errors suppressed in log.")
           StartEndFrec.append([0,0])
           startF.append(0)
           endF.append(0)
-          continue
-        peakMax1 = np.argmax(peaks1)
-        frec1 = f1[peaksInd1[peakMax1]+k1[0][0]]
-        k2 = np.where(f2>40000)
-        peaksInd2, _ = find_peaks(Pxx_den2[k2[0][0]:-1])
-        peaks2 = Pxx_den2[peaksInd2+k2[0][0]]
-        peakMax2 = np.argmax(peaks2)
-        frec2 = f2[peaksInd2[peakMax2]+k2[0][0]]   
-        StartEndFrec.append([f1[peaksInd1[peakMax1]+k1[0][0]],f2[peaksInd2[peakMax2]+k2[0][0]]])
-        startF.append(f1[peaksInd1[peakMax1]+k1[0][0]])
-        endF.append(f2[peaksInd2[peakMax2]+k2[0][0]])
   return startF, endF
 
 
+def StartEndFreq_from_paths(
+    audio_paths,
+    siz,
+    mother,
+    name,
+    age,
+    session,
+    rec_num,
+    motherSyl,
+    nameSyl,
+    ageSyl,
+    sessionSyl,
+    rec_numSyl,
+    startSyl,
+    endSyl,
+    rate,
+    logger=None,
+):
+    """
+    Same as :func:`StartEndFreq` but loads each recording from disk one at a
+    time. Lower peak RAM than holding all of ``SignalVec`` in memory, which
+    matters for multi-thousand-row workbooks.
+    """
+    _log = logger or logging.getLogger(__name__)
+    _fail_n = [0]
+    startF = []
+    endF = []
+    # Build a direct index recording-key → syllable-row indices.
+    # Preserves output order while avoiding O(siz * n_syllables) scans.
+    syllable_idx_by_key = {}
+    use_index = True
+    try:
+        for i in range(len(motherSyl)):
+            k = (motherSyl[i], nameSyl[i], ageSyl[i], sessionSyl[i], rec_numSyl[i])
+            if k in syllable_idx_by_key:
+                syllable_idx_by_key[k].append(i)
+            else:
+                syllable_idx_by_key[k] = [i]
+    except TypeError:
+        # Defensive fallback for unexpected unhashable cells.
+        use_index = False
+    for s2 in range(siz):
+        sig, _ = librosa.load(str(audio_paths[s2]), sr=int(rate))
+        if use_index:
+            key = (mother[s2], name[s2], age[s2], session[s2], rec_num[s2])
+            syllable_indices = syllable_idx_by_key.get(key, [])
+        else:
+            syllable_indices = [
+                i for i in range(len(motherSyl))
+                if (mother[s2] == motherSyl[i]) and (name[s2] == nameSyl[i]) and (age[s2] == ageSyl[i])
+                and (session[s2] == sessionSyl[i]) and (rec_num[s2] == rec_numSyl[i])
+            ]
+
+        for i in syllable_indices:
+            try:
+                st1 = round(startSyl[i] * rate) - 1000
+                if st1 < 0:
+                    st1 = 0
+                seg1 = sig[st1 : st1 + 2000]
+                w1 = _welch_psd(seg1, rate)
+                if w1 is None:
+                    startF.append(0)
+                    endF.append(0)
+                    continue
+                f1, Pxx_den1 = w1
+                st2 = round(endSyl[i] * rate) - 1000
+                seg2 = sig[st2 : st2 + 2000]
+                w2 = _welch_psd(seg2, rate)
+                if w2 is None:
+                    startF.append(0)
+                    endF.append(0)
+                    continue
+                f2, Pxx_den2 = w2
+                k1 = np.where(f1 > 40000)
+                if k1[0].size == 0:
+                    startF.append(0)
+                    endF.append(0)
+                    continue
+                peaksInd1, _ = find_peaks(Pxx_den1[k1[0][0] : -1])
+                peaks1 = Pxx_den1[peaksInd1 + k1[0][0]]
+                is_empty = len(peaks1) == 0
+                if is_empty:
+                    startF.append(0)
+                    endF.append(0)
+                    continue
+                peakMax1 = np.argmax(peaks1)
+                k2 = np.where(f2 > 40000)
+                if k2[0].size == 0:
+                    startF.append(0)
+                    endF.append(0)
+                    continue
+                peaksInd2, _ = find_peaks(Pxx_den2[k2[0][0] : -1])
+                peaks2 = Pxx_den2[peaksInd2 + k2[0][0]]
+                peakMax2 = np.argmax(peaks2)
+                startF.append(f1[peaksInd1[peakMax1] + k1[0][0]])
+                endF.append(f2[peaksInd2[peakMax2] + k2[0][0]])
+            except Exception as exc:
+                _fail_n[0] += 1
+                if _fail_n[0] <= 25:
+                    _log.warning(
+                        "StartEndFreq_from_paths failed syllable row %s (recording index %s): %s",
+                        i,
+                        s2,
+                        exc,
+                    )
+                elif _fail_n[0] == 26:
+                    _log.warning("StartEndFreq_from_paths: further per-syllable errors suppressed in log.")
+                startF.append(0)
+                endF.append(0)
+        del sig
+    return startF, endF

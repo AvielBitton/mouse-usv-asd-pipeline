@@ -83,6 +83,59 @@ Each metadata file contains the following columns:
 
 **Note:** The `generate_metadata.py` script automatically extracts these fields from WAV file paths and joins sex information from Excel tables.
 
+## Header Flexibility
+
+`run_pipeline.py` does **not** require workbooks to use the canonical English headers above. The metadata loader (`utils.io_utils.read_metadata_as_lists`) auto-detects the header row in the first 20 rows of the first sheet, then renames known aliases to the canonical column names. Aliases include:
+
+| Canonical | Common variants accepted |
+|-----------|---------------------------|
+| `Mother` | `MOTHER`, `mother`, `אם`, `אמא`, `עכברת אם`, `אם עכברוש` |
+| `Mother Genotype` | `Maternal genotype`, `MATERNAL GENOTYPE`, `גנוטיפ אם`, `גנטיקת אם`, `גנוטיפ האם` |
+| `Name` | `MOUSE NAME`, `mouse name`, `Pup`, `Pup name`, `pup name`, `שם גור`, `שם הגור`, `שם פרטי גור`, `גור` |
+| `Sex` | `Gender`, `GENDER`, `gender/sex`, `sex/gender`, `מין`, `מגדר` |
+| `Offspring Genotype` | `Pup genotype`, `Genotype`, `Genotytpe` (typo), `OFFSPRING GENOTYPE`, `גנוטיפ גור`, `גנטיקת גור`, `גנוטיפ הצאצא` |
+| `Day` | `יום`, `גיל`, `גיל (ימים)`, `גיל בימים` |
+| `Session` | `סשן`, `מפגש` |
+| `Recording Number` | `recording number`, `Recording number`, `מספר הקלטה`, `מספר קובץ` |
+
+Matching is case- and separator-insensitive (spaces, dashes, underscores, slashes, parentheses, etc. are normalized). The full alias map lives in `_METADATA_CANONICAL_ALIASES` in `src/preprocessing/utils/io_utils.py`.
+
+The `Sex` column is normalized to `M` / `F` / `U` after the rename: English (`Male`, `female`, `unknown`), single-letter (`m`, `F`), and Hebrew labels (`זכר`, `נקבה`) are all accepted. Unrecognised values map to `U`.
+
+## Pup-Summary Workbooks
+
+When the recording metadata only carries the Mother/Day/Session/Recording fields and the **sex / supplement** lookup lives in a separate "pup summary" workbook (e.g. `USV pups 2024 summary.xlsx`, `טבלת עכברים`), the helpers below build a lookup table keyed by `(mother, name)` *and* `(mother.upper(), pup_identity_key(name))`:
+
+- `utils.io_utils.build_sex_lookup_from_pup_summary_xlsx(metadata_path)` → `{(mother, name) → "M" | "F" | "U"}`
+- `utils.io_utils.build_pup_summary_details_lookup_xlsx(metadata_path)` → `{(mother, name) → {"sex", "offspring_genotype", "supplement"}}`
+
+The second key (`pup_identity_key`) makes joins robust to colour suffixes, genotype suffixes and parenthetical notes — e.g. an Excel row labelled `24277J-2A (J)` will still match a folder named `24277J-2A (BLUE) WT-WT-WT`. See *Folder / Excel Identity Joins* below for the full set of normalization rules.
+
+## Folder / Excel Identity Joins
+
+The fuzzy folder resolver (`utils.audio_paths`) recognises three categories of decorator that may appear at the end of a pup label but should be ignored when matching the folder name:
+
+- **Colour suffixes**: `RED`, `BLUE`, `GREEN`, `YELLOW`, `BLACK`, `WHITE`, `PURPLE`, `PINK`, `ORANGE`, `VIOLET`, `CYAN`, `MAGENTA`, plus compound forms like `GREEN-RED` and `B-G`. Common shorthand abbreviations (`BLU`, `GRN`, `ORN`, `PNK`, `YLW`, `BLK`, `WHT`, `GRY`, `BRN`, `PUR`, `VIO`, `CYA`, `MAG`, `TAN`, `LAV`) are also stripped.
+- **Genotype suffixes**: `WT`, `HT`, `HOM`, `HET`, `KO`, `KI`, `+/+`, `+/-`, `-/-`.
+- **Markers / notes**: `SUP`, `SUPP`, parenthetical text such as `(RED)` or `(2.7.24)`.
+
+Two helper utilities use these rules:
+
+- `canonical_pup_display_name(label)` — produces a short, decorator-free pup id suitable for display.
+- `pup_identity_key(label)` — produces a normalized identity key (case-insensitive, hyphenated) for lookups across Excel and folder names.
+
+Examples (all return identity key `13128K-1A`):
+
+| Source | Excel label | Folder name |
+|---|---|---|
+| Excel ↔ folder | `13128K-1A` | `13128K_1A` |
+| Excel ↔ folder | `13128K-1A` | `13128K-1A_RED` |
+| Excel ↔ folder | `14164P-1C (RED)` | `14164P_1C_BLUE` |
+| Excel ↔ folder | `13131J-1A` | `13131J Het SUP 1A red` |
+| Excel ↔ folder | `22742K_4A_G-R` | `22742K_4A_GREEN-RED` |
+
+Folders that include extended genotype chains like `WT-WT-WT` are **not** caught by the identity-key pass; for those, the resolver falls back to a prefix / token match (lowercase + dash→space). Both passes are wired into `build_recording_base_path`, so callers do not need to pick a strategy by hand.
+
 ## Key Observations
 
 1. **Division by experimental groups**: Files are split by different mother/pup groups, not randomly
