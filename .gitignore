@@ -4,6 +4,7 @@
 dumps/
 credentials.json
 token.json
+token.json.bak
 __pycache__/
 *.pyc
 dump/
