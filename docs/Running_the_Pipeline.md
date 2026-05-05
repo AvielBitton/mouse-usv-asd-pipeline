@@ -65,24 +65,26 @@ The script skips already processed files (if outputs exist) for safe resumption.
 | 9 | Sex | Pup sex (normalized to `M` / `F` / `U`) |
 | 10 | Offspring Genotype | Pup genotype (e.g. HT, WT) |
 | 11 | Offspring Genotype (binary) | Binary flag: WT = 1, other = 0 |
-| 12 | Supplement (Offspring) | Metadata cell first; falls back to 1 if `Name` or `Path` contains "sup", else 0 |
-| 13 | Day | Age of the mouse in days |
-| 14 | Session | Recording session number |
-| 15 | Strain | Descriptive strain label by year: `BALB/C` (2015 / 2018) or `BALB/C+BLACK/C57` (2022 / 2023 / 2024). See note below. |
-| 16 | Recording Number | Recording identifier (e.g. T0000001) |
-| 17 | Syllable order (in recording) | Order of this syllable within the recording (1, 2, 3, … by ascending start time; nullable `Int64`) |
-| 18 | Syllables per recording | Total number of syllables detected in this recording |
-| 19 | Start point(s) | Syllable start time in seconds |
-| 20 | End point(s) | Syllable end time in seconds |
-| 21 | Duration (time) | Syllable duration in seconds |
-| 22 | ISI_time | Inter-Syllable Interval (time gap to the previous syllable) |
-| 23 | Start Point (Hz) | Frequency at the start of the syllable |
-| 24 | End Point (Hz) | Frequency at the end of the syllable |
-| 25 | Noise | 1 if Start Point (Hz) == End Point (Hz), else 0 |
-| 26 | Syllable number | Syllable type (0–10) assigned by the CNN classifier |
-| 27 | Syllable type | English label for the syllable number (Complex, Frequency steps, Composite, Two syllables, Upward, Flat, Harmonic, Downward, Chevron, Short, Undefined) |
-| 28 | Complexity level | Complexity category: "Undefined", "Single Vowel", "Multiple Vowels", or "Advanced Harmonic" |
-| 29 | Complexity level (numeric) | Numeric complexity: 0 (Undefined), 1 (Single Vowel), 2 (Multiple Vowels), 3 (Advanced Harmonic) |
+| 12 | Genotype Group | `"<Mother>-<Offspring>"` text label combining both genotypes (e.g. `WT-WT`, `HT-WT`, `HT-HT`, `WT-UNK`). Empty/missing → `NAN`; any other label → `UNK` |
+| 13 | Genotype Group (numeric) | Numeric encoding: `WT-WT = 1`, `HT-WT = 2`, `HT-HT = 3`, anything else (including UNK / NAN combinations) = `0` |
+| 14 | Supplement (Offspring) | Metadata cell first; falls back to 1 if `Name` or `Path` contains "sup", else 0 |
+| 15 | Day | Age of the mouse in days |
+| 16 | Session | Recording session number |
+| 17 | Strain | Descriptive strain label by year: `BALB/C` (2015 / 2018) or `BALB/C+BLACK/C57` (2022 / 2023 / 2024). See note below. |
+| 18 | Recording Number | Recording identifier (e.g. T0000001) |
+| 19 | Syllable order (in recording) | Order of this syllable within the recording (1, 2, 3, … by ascending start time; nullable `Int64`) |
+| 20 | Syllables per recording | Total number of syllables detected in this recording |
+| 21 | Start point(s) | Syllable start time in seconds |
+| 22 | End point(s) | Syllable end time in seconds |
+| 23 | Duration (time) | Syllable duration in seconds |
+| 24 | ISI_time | Inter-Syllable Interval (time gap to the previous syllable) |
+| 25 | Start Point (Hz) | Frequency at the start of the syllable |
+| 26 | End Point (Hz) | Frequency at the end of the syllable |
+| 27 | Noise | 1 if Start Point (Hz) == End Point (Hz), else 0 |
+| 28 | Syllable number | Syllable type (0–10) assigned by the CNN classifier |
+| 29 | Syllable type | English label for the syllable number (Complex, Frequency steps, Composite, Two syllables, Upward, Flat, Harmonic, Downward, Chevron, Short, Undefined) |
+| 30 | Complexity level | Complexity category: "Undefined", "Single Vowel", "Multiple Vowels", or "Advanced Harmonic" |
+| 31 | Complexity level (numeric) | Numeric complexity: 0 (Undefined), 1 (Single Vowel), 2 (Multiple Vowels), 3 (Advanced Harmonic) |
 
 > **Note about `Strain`.** The per-file `outputs/segmentation_*.xlsx` workbooks store `Strain` as a descriptive **text label** (`BALB/C` for 2015 / 2018, `BALB/C+BLACK/C57` for 2022 / 2023 / 2024) that mirrors the labels in the externally produced `outputs/external/segmentation_classification_all_data.xlsx`. The tabular feature-extraction step (`add_strain_column` / `add_strain_from_path` in `src/preprocessing/steps/extract_features.py`) **overwrites** this column to a numeric strain identifier (1 or 2 — defined by `STRAIN_1_YEARS` in `src/preprocessing/utils/io_utils.py`) before the data reaches `compute_features` and the training CSVs. This means the XGBoost / TabPFN trainer (`COL_NAMES['pup_strain']`) always receives the numeric value, while a human inspecting a `segmentation_*.xlsx` sees the readable strain label. The aggregated `outputs/aggregated/all_data.xlsx` also carries the numeric value because `add_strain_from_path` runs before that workbook is written.
 
