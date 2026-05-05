@@ -40,7 +40,7 @@ segmentation_classification_all_data.xlsx (125K syllable rows)
     Pad/truncate to MAX_SEQ_LEN (default: 256)
             │
             ▼
-    Train sequence model → Predict WT (1) vs HT (0)
+    Train sequence model → Predict HT (1) vs WT (0)
 ```
 
 ## Models

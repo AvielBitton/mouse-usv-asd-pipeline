@@ -225,16 +225,16 @@ def enrich_segmentation_columns(
     else:
         df["Year"] = year
 
-    # 3. Mother Genotype (binary): WT → 1, anything else → 0
+    # 3. Mother Genotype (binary): HT → 1, WT/UNK/NAN (and any other label) → 0
     df["Mother Genotype (binary)"] = (
         df["Mother Genotype"]
-        .apply(lambda x: 1 if str(x).strip().upper() == "WT" else 0)
+        .apply(lambda x: 1 if str(x).strip().upper() == "HT" else 0)
     )
 
-    # 4. Offspring Genotype (binary): WT → 1, anything else → 0
+    # 4. Offspring Genotype (binary): HT → 1, WT/UNK/NAN (and any other label) → 0
     df["Offspring Genotype (binary)"] = (
         df["Offspring Genotype"]
-        .apply(lambda x: 1 if str(x).strip().upper() == "WT" else 0)
+        .apply(lambda x: 1 if str(x).strip().upper() == "HT" else 0)
     )
 
     # 4b/4c. Genotype Group (text + numeric): combined Mother + Offspring genotype.
