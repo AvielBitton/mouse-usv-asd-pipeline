@@ -48,6 +48,43 @@ _COMPLEXITY_TEXT = {
     3: "Advanced Harmonic",
 }
 
+
+def _normalize_genotype(value) -> str:
+    """Normalize a genotype cell to one of WT / HT / UNK / NAN.
+
+    Empty / missing cells map to ``NAN``; any unknown label maps to ``UNK``
+    so the grouping logic can treat both as the catch-all bucket.
+    """
+    if value is None or (isinstance(value, float) and pd.isna(value)):
+        return "NAN"
+    s = str(value).strip().upper()
+    if not s or s in {"NAN", "NONE"}:
+        return "NAN"
+    if s in {"WT", "HT", "UNK"}:
+        return s
+    return "UNK"
+
+
+# Numeric encoding for the Genotype Group column.
+# (Mother, Offspring) → 1/2/3; everything else falls through to 0.
+_GENOTYPE_GROUP_NUMERIC = {
+    ("WT", "WT"): 1,
+    ("HT", "WT"): 2,
+    ("HT", "HT"): 3,
+}
+
+
+def _genotype_group_label(mother, offspring) -> str:
+    """Combine mother + offspring genotype into a ``"<M>-<O>"`` string."""
+    return f"{_normalize_genotype(mother)}-{_normalize_genotype(offspring)}"
+
+
+def _genotype_group_numeric(mother, offspring) -> int:
+    """Return 1/2/3 for the three known crosses; 0 for any other combination."""
+    return _GENOTYPE_GROUP_NUMERIC.get(
+        (_normalize_genotype(mother), _normalize_genotype(offspring)), 0
+    )
+
 # Columns written by the CNN classification step. They are dropped (and omitted
 # from the final column order) when ``include_syllable_classification_columns``
 # is False, so a segmentation-only run still produces a clean workbook.
@@ -70,6 +107,8 @@ FINAL_COLUMN_ORDER = [
     "Sex",
     "Offspring Genotype",
     "Offspring Genotype (binary)",
+    "Genotype Group",
+    "Genotype Group (numeric)",
     "Supplement (Offspring)",
     "Day",
     "Session",
@@ -197,6 +236,16 @@ def enrich_segmentation_columns(
         df["Offspring Genotype"]
         .apply(lambda x: 1 if str(x).strip().upper() == "WT" else 0)
     )
+
+    # 4b/4c. Genotype Group (text + numeric): combined Mother + Offspring genotype.
+    df["Genotype Group"] = [
+        _genotype_group_label(m, o)
+        for m, o in zip(df["Mother Genotype"], df["Offspring Genotype"])
+    ]
+    df["Genotype Group (numeric)"] = [
+        _genotype_group_numeric(m, o)
+        for m, o in zip(df["Mother Genotype"], df["Offspring Genotype"])
+    ]
 
     # 5a. Syllable order within recording (by ascending Start point).
     #     Group by Path (unique per recording) so repeated Recording Numbers
