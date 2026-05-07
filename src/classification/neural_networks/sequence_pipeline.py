@@ -130,8 +130,8 @@ def load_and_prepare(data_path: str, max_seq_len: int):
     print(f"Sequence lengths: min={min(lengths)}, median={np.median(lengths):.0f}, "
           f"max={max(lengths)}, P95={np.percentile(lengths, 95):.0f}")
     print(f"MAX_SEQ_LEN={max_seq_len}")
-    print(f"Labels: WT={sum(1 for s in sequences if s['label']==1.0)}, "
-          f"HT={sum(1 for s in sequences if s['label']==0.0)}")
+    print(f"Labels: HT={sum(1 for s in sequences if s['label']==1.0)}, "
+          f"WT={sum(1 for s in sequences if s['label']==0.0)}")
 
     return sequences
 
@@ -198,11 +198,11 @@ def log_split_info(train, val, test, is_group_split):
 
     for name, subset in [("Train", train), ("Val", val), ("Test", test)]:
         mice = set(s["mouse"] for s in subset)
-        n_wt = sum(1 for s in subset if s["label"] == 1.0)
-        n_ht = sum(1 for s in subset if s["label"] == 0.0)
+        n_ht = sum(1 for s in subset if s["label"] == 1.0)
+        n_wt = sum(1 for s in subset if s["label"] == 0.0)
         total = len(subset)
-        print(f"  {name}: {len(mice)} mice, WT={n_wt} ({100*n_wt/total:.0f}%), "
-              f"HT={n_ht} ({100*n_ht/total:.0f}%)")
+        print(f"  {name}: {len(mice)} mice, HT={n_ht} ({100*n_ht/total:.0f}%), "
+              f"WT={n_wt} ({100*n_wt/total:.0f}%)")
 
     if not is_group_split:
         train_mice = set(s["mouse"] for s in train)
@@ -581,8 +581,8 @@ def plot_confusion_matrices(y_true, y_pred, plots_dir):
     sns.heatmap(
         cm / cm.sum(axis=1, keepdims=True),
         annot=True, fmt=".2%", cmap="Blues", ax=ax,
-        xticklabels=["HT (0)", "WT (1)"],
-        yticklabels=["HT (0)", "WT (1)"],
+        xticklabels=["WT (0)", "HT (1)"],
+        yticklabels=["WT (0)", "HT (1)"],
     )
     ax.set_title("Confusion Matrix", fontsize=18)
     ax.set_xlabel("Predicted", fontsize=14)
@@ -594,8 +594,8 @@ def plot_confusion_matrices(y_true, y_pred, plots_dir):
     fig, ax = plt.subplots(figsize=(6, 5))
     sns.heatmap(
         cm, annot=True, fmt="d", cmap="Blues", ax=ax,
-        xticklabels=["HT (0)", "WT (1)"],
-        yticklabels=["HT (0)", "WT (1)"],
+        xticklabels=["WT (0)", "HT (1)"],
+        yticklabels=["WT (0)", "HT (1)"],
     )
     ax.set_title("Confusion Matrix (counts)", fontsize=18)
     ax.set_xlabel("Predicted", fontsize=14)
@@ -726,10 +726,11 @@ def main():
                              collate_fn=collate_fn)
 
     # --- class weight ---
-    n_wt = sum(1 for s in train_seqs if s["label"] == 1.0)
-    n_ht = sum(1 for s in train_seqs if s["label"] == 0.0)
-    pos_weight = n_ht / max(n_wt, 1)
-    print(f"Class balance in train: WT={n_wt}, HT={n_ht}, pos_weight={pos_weight:.3f}")
+    # Positive class = label 1.0 = HT; pos_weight = n_negatives / n_positives.
+    n_ht = sum(1 for s in train_seqs if s["label"] == 1.0)
+    n_wt = sum(1 for s in train_seqs if s["label"] == 0.0)
+    pos_weight = n_wt / max(n_ht, 1)
+    print(f"Class balance in train: HT={n_ht}, WT={n_wt}, pos_weight={pos_weight:.3f}")
 
     # --- build model ---
     num_cont = len(CONTINUOUS_FEATURES)
@@ -762,7 +763,7 @@ def main():
     print(f"Train AUC-ROC:  {train_auc:.4f}")
 
     report_str = classification_report(test_labels, test_preds, zero_division=0,
-                                       target_names=["HT (0)", "WT (1)"])
+                                       target_names=["WT (0)", "HT (1)"])
     report_dict = classification_report(test_labels, test_preds, zero_division=0,
                                         output_dict=True)
     print(f"\nClassification Report:\n{report_str}")

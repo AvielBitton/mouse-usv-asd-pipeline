@@ -59,12 +59,12 @@ The script skips already processed files (if outputs exist) for safe resumption.
 | 3 | Year | Recording year, derived from the Path |
 | 4 | Mother | Mother mouse identifier |
 | 5 | Mother Genotype | Mother genotype (e.g. HT, WT) |
-| 6 | Mother Genotype (binary) | Binary flag: WT = 1, other = 0 |
+| 6 | Mother Genotype (binary) | Binary flag: HT = 1, WT / UNK / NAN (and anything else) = 0 |
 | 7 | Supplement (Mother) | 1 if Mother name **or Path** contains "sup", else 0 |
 | 8 | Name | Pup/offspring identifier |
 | 9 | Sex | Pup sex (normalized to `M` / `F` / `U`) |
 | 10 | Offspring Genotype | Pup genotype (e.g. HT, WT) |
-| 11 | Offspring Genotype (binary) | Binary flag: WT = 1, other = 0 |
+| 11 | Offspring Genotype (binary) | Binary flag: HT = 1, WT / UNK / NAN (and anything else) = 0 |
 | 12 | Genotype Group | `"<Mother>-<Offspring>"` text label combining both genotypes (e.g. `WT-WT`, `HT-WT`, `HT-HT`, `WT-UNK`). Empty/missing → `NAN`; any other label → `UNK` |
 | 13 | Genotype Group (numeric) | Numeric encoding: `WT-WT = 1`, `HT-WT = 2`, `HT-HT = 3`, anything else (including UNK / NAN combinations) = `0` |
 | 14 | Supplement (Offspring) | Metadata cell first; falls back to 1 if `Name` or `Path` contains "sup", else 0 |
