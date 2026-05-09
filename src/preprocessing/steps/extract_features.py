@@ -203,6 +203,49 @@ AGGREGATED_EXTERNAL_SUBDIR = "aggregated_external"
 ALL_DATA_EXTERNAL_XLSX_NAME = "all_data_external.xlsx"
 ALL_DATA_EXTERNAL_CSV_NAME = "all_data_external.csv"
 
+_BINARY_GENOTYPES = frozenset({"WT", "HET"})
+
+
+def _normalize_token(value) -> str:
+    if value is None or (isinstance(value, float) and pd.isna(value)):
+        return ""
+    return str(value).strip().upper()
+
+
+def drop_non_binary_genotype_rows_for_external(
+    dataset: pd.DataFrame,
+    logger: Optional[logging.Logger] = None,
+) -> pd.DataFrame:
+    """Keep rows where mother and offspring genotypes are WT or HET after HT→HET.
+
+    Matches ``audio_feature_extraction_reduction_by_recording`` so ``LabelEncoder``
+    in legacy feature extraction sees only two classes for binary training.
+    """
+    required = ("Offspring Genotype", "Mother Genotype")
+    if any(c not in dataset.columns for c in required):
+        if logger:
+            logger.warning(
+                "drop_non_binary_genotype_rows_for_external: genotype columns missing; "
+                "skipping row filter."
+            )
+        return dataset
+
+    before = len(dataset)
+    mother = dataset["Mother Genotype"].replace("HT", "HET")
+    offspring = dataset["Offspring Genotype"].replace("HT", "HET")
+    m_norm = mother.map(_normalize_token)
+    o_norm = offspring.map(_normalize_token)
+    keep = m_norm.isin(_BINARY_GENOTYPES) & o_norm.isin(_BINARY_GENOTYPES)
+    out = dataset.loc[keep].reset_index(drop=True)
+    removed = before - len(out)
+    if logger:
+        logger.info(
+            f"Dropped {removed} row(s) with non-binary genotype "
+            f"(mother and offspring must be WT or HET after HT→HET); "
+            f"{len(out)} row(s) remaining"
+        )
+    return out
+
 
 def run_external_aggregated_feature_extraction(
     external_file: str,
@@ -229,6 +272,10 @@ def run_external_aggregated_feature_extraction(
 
     Returns:
         Path to the aggregated CSV file.
+
+    Rows with non-binary mother/offspring genotype (not WT/HET after HT→HET) are
+    removed before feature extraction; invalid sex is filtered next; then
+    Session=0→1 and strain-from-path, matching the rest of the pipeline.
     """
     if not output_dir:
         output_dir = os.path.join(
@@ -247,19 +294,16 @@ def run_external_aggregated_feature_extraction(
     if logger:
         logger.info(f"Loaded {len(dataset)} rows from {external_file}")
 
-    invalid_labels = {"UNK", "NAN"}
+    dataset = drop_non_binary_genotype_rows_for_external(dataset, logger=logger)
+
     valid_sex = {"M", "F"}
-    mask = (
-        dataset["Offspring Genotype"].isin(invalid_labels)
-        | dataset["Mother Genotype"].isin(invalid_labels)
-        | ~dataset["Sex"].isin(valid_sex)
-    )
-    if mask.any():
-        dataset = dataset[~mask].reset_index(drop=True)
+    sex_mask = ~dataset["Sex"].isin(valid_sex)
+    if sex_mask.any():
+        dataset = dataset[~sex_mask].reset_index(drop=True)
         if logger:
             logger.info(
-                f"Filtered {mask.sum()} rows with invalid genotype labels "
-                f"(UNK/NAN) or unknown sex, {len(dataset)} rows remaining"
+                f"Filtered {sex_mask.sum()} row(s) with unknown sex, "
+                f"{len(dataset)} row(s) remaining"
             )
 
     # Session 0 means no session subfolder existed (single session) -- treat as 1

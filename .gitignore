@@ -1,6 +1,9 @@
 .idea/
 /USV_Recordings/
 .venv/
+.venv-verify/
+venv/
+env/
 dumps/
 credentials.json
 token.json

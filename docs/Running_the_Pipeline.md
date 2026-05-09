@@ -48,6 +48,8 @@ After all files are processed, the pipeline also writes under `outputs/aggregate
 - `outputs/aggregated/all_data.xlsx` - Combined data from all segmentation files
 - `outputs/aggregated/all_data.csv` - Combined per-recording features
 
+External aggregation (from `outputs/external/segmentation_classification_all_data.xlsx`) writes under `outputs/aggregated_external/` (`all_data_external.xlsx` / `all_data_external.csv`). Rows where **Mother Genotype** or **Offspring Genotype** is not **WT** or **HET** after `HT`→`HET` are dropped before feature extraction so the training CSV stays binary for `pup_gen`.
+
 The script skips already processed files (if outputs exist) for safe resumption.
 
 ### Segmentation Excel columns (`outputs/segmentation_*.xlsx`)
