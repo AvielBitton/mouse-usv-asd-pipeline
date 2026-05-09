@@ -1,6 +1,9 @@
 .idea/
 /USV_Recordings/
 .venv/
+.venv-verify/
+venv/
+env/
 dumps/
 credentials.json
 token.json
@@ -11,6 +14,7 @@ dump/
 # Ignore log and txt files in outputs, but keep other files
 outputs/*.log
 outputs/*.txt
+outputs/**/*.log
 outputs_temp_backup/
 # Temporary files (Excel lock files, etc.)
 ~$*

@@ -32,6 +32,8 @@ segmentation_*.xlsx          (per-file, all syllable rows + enrichment columns)
 > reality ~50% are WT). Always use `--external` unless you have a specific
 > reason not to.
 
+When building `all_data_external.csv`, the pipeline **drops** syllable-level rows whose **Mother Genotype** or **Offspring Genotype** is not **WT** or **HET** after the same `HT`→`HET` normalization as in legacy feature extraction (e.g. **UNK** is excluded). That keeps `pup_gen` strictly **binary** for XGBoost.
+
 ## Input: `all_data.csv`
 
 Each row = **one recording** of one mouse. 48 columns total:

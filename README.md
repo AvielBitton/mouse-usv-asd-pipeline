@@ -219,7 +219,7 @@ The `generate_metadata.py` script supports scanning WAV files directly from Goog
    Combines all per-file outputs into `outputs/aggregated/all_data.xlsx` and `outputs/aggregated/all_data.csv` (overwrites if they already exist).
 
 8. **External Data Aggregation (Preferred)**  
-   Aggregates features from the external segmentation file (`outputs/external/segmentation_classification_all_data.xlsx`) into `outputs/aggregated_external/`. **This is the preferred data source for all training runs** — it contains correct individual genotyping, unlike the pipeline-aggregated data which had genotype labeling errors. Cleaning steps: filters invalid genotype labels (UNK/NAN), unknown sex (U), and normalizes Session=0 to 1.
+   Aggregates features from the external segmentation file (`outputs/external/segmentation_classification_all_data.xlsx`) into `outputs/aggregated_external/`. **This is the preferred data source for all training runs** — it contains correct individual genotyping, unlike the pipeline-aggregated data which had genotype labeling errors. Cleaning steps: drops rows where mother or offspring genotype is not WT/HET after `HT`→`HET` (so `pup_gen` stays binary), filters unknown sex, and normalizes Session=0 to 1.
 
 ### Model Training
 
