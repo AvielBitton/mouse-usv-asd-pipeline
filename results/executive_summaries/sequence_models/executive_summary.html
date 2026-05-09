@@ -257,12 +257,12 @@
     <h2>Results Directory Guide</h2>
     <table class="config-table">
       <tr><th>Directory</th><th>Description</th></tr>
-      <tr><td><code>results/neural_networks/bilstm_base/</code></td><td>BiLSTM, random session-level split</td></tr>
-      <tr><td><code>results/neural_networks/bilstm_group_split/</code></td><td>BiLSTM, group-aware split by mouse</td></tr>
-      <tr><td><code>results/neural_networks/cnn1d_base/</code></td><td>1D-CNN, random session-level split</td></tr>
-      <tr><td><code>results/neural_networks/cnn1d_group_split/</code></td><td>1D-CNN, group-aware split by mouse</td></tr>
-      <tr><td><code>results/neural_networks/transformer_base/</code></td><td>Transformer, random session-level split</td></tr>
-      <tr><td><code>results/neural_networks/transformer_group_split/</code></td><td>Transformer, group-aware split by mouse</td></tr>
+      <tr><td><code>results/neural_networks/bilstm_subject_eval_dependent/</code></td><td>BiLSTM, subject-dependent evaluation (random split)</td></tr>
+      <tr><td><code>results/neural_networks/bilstm_subject_eval_independent/</code></td><td>BiLSTM, subject-independent evaluation</td></tr>
+      <tr><td><code>results/neural_networks/cnn1d_subject_eval_dependent/</code></td><td>1D-CNN, subject-dependent evaluation (random split)</td></tr>
+      <tr><td><code>results/neural_networks/cnn1d_subject_eval_independent/</code></td><td>1D-CNN, subject-independent evaluation</td></tr>
+      <tr><td><code>results/neural_networks/transformer_subject_eval_dependent/</code></td><td>Transformer, subject-dependent evaluation (random split)</td></tr>
+      <tr><td><code>results/neural_networks/transformer_subject_eval_independent/</code></td><td>Transformer, subject-independent evaluation</td></tr>
     </table>
     <p>Each directory contains: <code>logs/out.txt</code> (training log), <code>plots/</code>
     (training curves, confusion matrix, ROC curve), <code>model/</code> (best model checkpoint + scaler),
@@ -364,19 +364,19 @@
 
     <h3>Running a Single Model</h3>
     <pre><code># BiLSTM with group-aware split (recommended)
-python src/classification/neural_networks/sequence_pipeline.py --model bilstm --group-split
+python src/classification/neural_networks/sequence_pipeline.py --model bilstm --independent
 
 # 1D-CNN with random split
 python src/classification/neural_networks/sequence_pipeline.py --model cnn1d
 
 # Transformer with group split
-python src/classification/neural_networks/sequence_pipeline.py --model transformer --group-split</code></pre>
+python src/classification/neural_networks/sequence_pipeline.py --model transformer --independent</code></pre>
 
     <h3>All Available Options</h3>
     <table class="config-table">
       <tr><th>Flag</th><th>Default</th><th>Description</th></tr>
       <tr><td><code>--model</code></td><td><code>bilstm</code></td><td>Architecture: <code>bilstm</code>, <code>cnn1d</code>, or <code>transformer</code></td></tr>
-      <tr><td><code>--group-split</code></td><td>off</td><td>Split by mouse identity (prevents data leakage between train/test)</td></tr>
+      <tr><td><code>--group-split</code> / <code>--independent</code></td><td>off</td><td>Subject-independent evaluation (split by subject; no leakage)</td></tr>
       <tr><td><code>--data-path</code></td><td>Excel file</td><td>Path to the syllable-level data file</td></tr>
       <tr><td><code>--max-seq-len</code></td><td><code>256</code></td><td>Max syllable sequence length (pad shorter, truncate longer)</td></tr>
       <tr><td><code>--epochs</code></td><td><code>100</code></td><td>Max training epochs (early stopping may cut short)</td></tr>
@@ -389,7 +389,7 @@ python src/classification/neural_networks/sequence_pipeline.py --model transform
     <pre><code># All models × both split modes
 for model in bilstm cnn1d transformer; do
   python src/classification/neural_networks/sequence_pipeline.py --model $model --epochs 50
-  python src/classification/neural_networks/sequence_pipeline.py --model $model --group-split --epochs 50
+  python src/classification/neural_networks/sequence_pipeline.py --model $model --independent --epochs 50
 done</code></pre>
 
     <h3>Approximate Training Times (CPU)</h3>

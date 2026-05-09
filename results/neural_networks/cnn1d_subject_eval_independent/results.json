@@ -36,5 +36,6 @@
   "num_test": 104,
   "total_params": 86041,
   "epochs_trained": 29,
-  "best_val_auc": 0.5750988142292489
+  "best_val_auc": 0.5750988142292489,
+  "subject_eval_independent": true
 }

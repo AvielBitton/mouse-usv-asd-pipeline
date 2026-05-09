@@ -71,12 +71,12 @@
     <table class="config-table">
       <tr><th>Term</th><th>Meaning</th><th>CLI Flag</th><th>Results Directory</th></tr>
       <tr>
-        <td>Base</td>
+        <td>Subject-dependent</td>
         <td>Baseline run using only the pipeline's own data (2015&ndash;2024, 9,515 samples)
             with a <strong>random</strong> 60/20/20 train/val/test split.
-            Individual syllable-sequences from the same mouse may appear in different splits.</td>
+            Recordings from the same subject may appear in different splits.</td>
         <td><em>(no flags)</em></td>
-        <td><code>results/xgboost_base/</code></td>
+        <td><code>results/tabular_models/xgboost_subject_eval_dependent/</code></td>
       </tr>
       <tr>
         <td><strong>External (Preferred)</strong></td>
@@ -85,23 +85,22 @@
             data had genotype labeling errors (all pups of HET mothers were labeled HET);
             the external file is the ground truth.</td>
         <td><code>--external</code></td>
-        <td><code>results/xgboost_external/</code></td>
+        <td><code>results/tabular_models/xgboost_subject_eval_dependent_external/</code></td>
       </tr>
       <tr>
-        <td>Group Split</td>
-        <td>Splits data so that all recordings from the <strong>same mouse</strong> stay in
-            the same split (train, val, or test). This is a stricter, more realistic evaluation
-            that prevents data leakage between mice. Performance typically drops because the model
-            can no longer memorize individual mouse patterns.</td>
-        <td><code>--group-split</code></td>
-        <td><code>results/xgboost_group_split/</code></td>
+        <td>Subject-independent</td>
+        <td>Splits data so that all recordings from the <strong>same subject (mouse)</strong> stay in
+            the same split (train, val, or test). Prevents leakage across subjects. Performance
+            typically drops because the model cannot rely on subject-specific memorization.</td>
+        <td><code>--group-split</code> or <code>--independent</code></td>
+        <td><code>results/tabular_models/xgboost_subject_eval_independent/</code></td>
       </tr>
       <tr>
-        <td>Group Split + External</td>
-        <td>Combines both: external data <strong>and</strong> group-aware splitting.
+        <td>Subject-independent + External</td>
+        <td>External data <strong>and</strong> subject-independent splitting.
             The most rigorous evaluation setting.</td>
         <td><code>--group-split --external</code></td>
-        <td><code>results/xgboost_group_split_external/</code></td>
+        <td><code>results/tabular_models/xgboost_subject_eval_independent_external/</code></td>
       </tr>
     </table>
 
@@ -115,9 +114,10 @@
 
     <div class="legend">
       <strong>Directory naming convention:</strong>
-      <code>results/&lt;model&gt;[_base][_group_split][_external]/</code><br>
-      The <code>_base</code> suffix appears when no flags are active, to clearly mark the baseline.
-      For other models replace the model name, e.g. <code>results/tabpfn_external/</code>.
+      <code>results/tabular_models/&lt;model&gt;[_subject_eval_dependent|_subject_eval_independent][_external]/</code><br>
+      <code>_subject_eval_dependent</code> = random split (subject may appear in multiple sets);
+      <code>_subject_eval_independent</code> = group split by subject (<code>--group-split</code> / <code>--independent</code>).
+      Example: <code>results/tabular_models/tabpfn_subject_eval_dependent_external/</code>.
     </div>
 
     <!-- ============================================================ -->
@@ -250,15 +250,15 @@
     <h2>Individual Results Directory Guide</h2>
     <table class="config-table">
       <tr><th>Directory</th><th>Description</th></tr>
-      <tr><td><code>results/xgboost_base/</code></td><td>XGBoost, pipeline data, random split (baseline)</td></tr>
-      <tr><td><code>results/xgboost_group_split/</code></td><td>XGBoost, pipeline data, group-aware split</td></tr>
-      <tr><td><code>results/xgboost_external/</code></td><td>XGBoost, pipeline + external data, random split</td></tr>
-      <tr><td><code>results/xgboost_group_split_external/</code></td><td>XGBoost, pipeline + external data, group-aware split</td></tr>
-      <tr><td><code>results/tabpfn_base/</code></td><td>TabPFN, pipeline data, random split</td></tr>
-      <tr><td><code>results/tabpfn_group_split/</code></td><td>TabPFN, pipeline data, group-aware split</td></tr>
-      <tr><td><code>results/tabpfn_external/</code></td><td>TabPFN, pipeline + external data, random split</td></tr>
-      <tr><td><code>results/tabpfn_group_split_external/</code></td><td>TabPFN, pipeline + external data, group-aware split</td></tr>
-      <tr><td><code>results/xgboost_2015_2022/</code></td><td>XGBoost, older dataset (2015&ndash;2022 only), for historical comparison</td></tr>
+      <tr><td><code>results/tabular_models/xgboost_subject_eval_dependent/</code></td><td>XGBoost, pipeline data, subject-dependent evaluation</td></tr>
+      <tr><td><code>results/tabular_models/xgboost_subject_eval_independent/</code></td><td>XGBoost, pipeline data, subject-independent evaluation</td></tr>
+      <tr><td><code>results/tabular_models/xgboost_subject_eval_dependent_external/</code></td><td>XGBoost, pipeline + external data, subject-dependent evaluation</td></tr>
+      <tr><td><code>results/tabular_models/xgboost_subject_eval_independent_external/</code></td><td>XGBoost, pipeline + external data, subject-independent evaluation</td></tr>
+      <tr><td><code>results/tabular_models/tabpfn_subject_eval_dependent/</code></td><td>TabPFN, pipeline data, subject-dependent evaluation</td></tr>
+      <tr><td><code>results/tabular_models/tabpfn_subject_eval_independent/</code></td><td>TabPFN, pipeline data, subject-independent evaluation</td></tr>
+      <tr><td><code>results/tabular_models/tabpfn_subject_eval_dependent_external/</code></td><td>TabPFN, pipeline + external data, subject-dependent evaluation</td></tr>
+      <tr><td><code>results/tabular_models/tabpfn_subject_eval_independent_external/</code></td><td>TabPFN, pipeline + external data, subject-independent evaluation</td></tr>
+      <tr><td><code>results/tabular_models/xgboost_2015_2022/</code></td><td>XGBoost, older dataset (2015&ndash;2022 only), for historical comparison</td></tr>
     </table>
     <p>Each directory contains: <code>logs/out.txt</code> (full log), <code>plots/</code>
     (confusion matrices, training curves where applicable), <code>model/</code> (saved model),

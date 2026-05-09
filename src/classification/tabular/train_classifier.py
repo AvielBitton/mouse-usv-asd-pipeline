@@ -54,10 +54,12 @@ def parse_args():
         help='Model to train (default: xgboost).',
     )
     parser.add_argument(
-        '--group-split',
+        '--group-split', '--independent',
         action='store_true',
-        help='Use group-aware train/val/test split based on mouse identity. '
-             'Prevents data leakage by ensuring no mouse appears in more than one set.',
+        help='Subject-independent evaluation: group-aware train/val/test split by subject '
+             '(mouse) so no subject appears in more than one set (alias: --independent). '
+             'Without this flag, evaluation is subject-dependent (random split; overlap '
+             'across sets is allowed).',
     )
     parser.add_argument(
         '--external',
@@ -69,8 +71,9 @@ def parse_args():
         '--results-dir',
         type=str,
         default=None,
-        help='Directory for results. Defaults to "results/<model>[_base|_flags]" '
-             '(e.g. "results/tabpfn_group_split").',
+        help='Directory for results. Defaults under results/tabular_models/ with '
+             '_subject_eval_dependent or _subject_eval_independent (+ _external). '
+             'Example: results/tabular_models/tabpfn_subject_eval_independent_external.',
     )
     return parser.parse_args()
 
@@ -212,13 +215,13 @@ def main():
         results_dir = args.results_dir
     else:
         subdir = model_name
-        if not args.group_split and not args.external:
-            subdir += '_base'
         if args.group_split:
-            subdir += '_group_split'
+            subdir += '_subject_eval_independent'
+        else:
+            subdir += '_subject_eval_dependent'
         if args.external:
             subdir += '_external'
-        results_dir = os.path.join('results', subdir)
+        results_dir = os.path.join('results', 'tabular_models', subdir)
 
     plots_dir = os.path.join(results_dir, 'plots')
     model_dir = os.path.join(results_dir, 'model')
@@ -235,7 +238,7 @@ def main():
     if model_name != 'xgboost':
         active_flags.append(f'--model {model_name}')
     if args.group_split:
-        active_flags.append('--group-split')
+        active_flags.append('--independent')
     if args.external:
         active_flags.append('--external')
     print(f'Active flags: {active_flags if active_flags else "none (baseline)"}')

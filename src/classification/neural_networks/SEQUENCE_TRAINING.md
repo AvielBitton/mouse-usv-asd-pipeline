@@ -8,14 +8,14 @@ the temporal ordering and "syntax" of vocalizations.
 ## Quick Start
 
 ```bash
-# BiLSTM with group-aware split (recommended)
-python src/classification/neural_networks/sequence_pipeline.py --model bilstm --group-split
+# BiLSTM with subject-independent evaluation (group split; recommended)
+python src/classification/neural_networks/sequence_pipeline.py --model bilstm --independent
 
-# 1D-CNN with random split
+# 1D-CNN with subject-dependent (random) split
 python src/classification/neural_networks/sequence_pipeline.py --model cnn1d
 
-# Transformer with group-aware split
-python src/classification/neural_networks/sequence_pipeline.py --model transformer --group-split
+# Transformer with subject-independent evaluation
+python src/classification/neural_networks/sequence_pipeline.py --model transformer --independent
 ```
 
 ## Data Flow
@@ -69,19 +69,19 @@ sex, day, session) is concatenated to the sequence encoder output before classif
 
 ## Split Modes
 
-### Random split (default)
-Sessions are split randomly 60/20/20. Sessions from the same mouse **can** appear
-in different sets. This mirrors `train_classifier.py` without `--group-split`.
+### Subject-dependent split (default)
+Sessions are split randomly 60/20/20. Sessions from the same subject **can** appear
+in different sets. This mirrors `train_classifier.py` without `--group-split` / `--independent`.
 
-### Group-aware split (`--group-split`)
-Mice are split 60/20/20, then all sessions of each mouse go to the same set.
-**No mouse appears in more than one set.** This is the scientifically correct
-evaluation but reduces effective diversity.
+### Subject-independent split (`--group-split` / `--independent`)
+Subjects (mice) are split 60/20/20, then all sessions of each subject go to the same set.
+**No subject appears in more than one set.** This is the scientifically rigorous
+evaluation for generalization but reduces effective diversity.
 
 ## Output Structure
 
 ```
-results/neural_networks/<model>_<split>/
+results/neural_networks/<model>_<subject_eval_dependent|subject_eval_independent>/
 ├── logs/out.txt              # Full training log
 ├── model/<model>_best.pt     # Best model checkpoint (by val AUC)
 ├── model/scaler.pkl          # StandardScaler fit on training data
