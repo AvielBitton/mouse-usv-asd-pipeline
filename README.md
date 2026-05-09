@@ -20,14 +20,21 @@ All source code lives here:
 
 - **`src/classification/`** — ASD classification
   - **`tabular/`** — tabular (aggregated-feature) pipeline
-    - `train_classifier.py` — reads `outputs/aggregated/all_data.csv`, trains a classifier, and generates evaluation plots (confusion matrix, classification report). Supports multiple models via `--model` (default: XGBoost, also TabPFN), `--external` for the **preferred** externally-validated dataset, and `--group-split` for group-aware splitting. **Always use `--external` — it contains correct individual genotyping.** See `src/classification/tabular/TRAINING.md` for details.
+    - `train_classifier.py` — reads `outputs/aggregated/all_data.csv`, trains a classifier, and generates evaluation plots (confusion matrix, classification report). Supports multiple models via `--model` (default: XGBoost, also TabPFN), `--external` for the **preferred** externally-validated dataset, and `--group-split` / `--independent` for subject-independent evaluation (no leakage across subjects). **Always use `--external` — it contains correct individual genotyping.** Default outputs go under `results/tabular_models/`. See `src/classification/tabular/TRAINING.md` for details.
     - `models.py` — model registry with factory functions for each supported classifier
     - `report.py` — generates comparison-vs-baseline summary
   - **`neural_networks/`** — sequence (deep learning) pipeline
-    - `sequence_pipeline.py` — trains BiLSTM / 1D-CNN / Transformer models on raw syllable sequences. See `src/classification/neural_networks/SEQUENCE_TRAINING.md` for details.
+    - `sequence_pipeline.py` — trains BiLSTM / 1D-CNN / Transformer models on raw syllable sequences (`results/neural_networks/`). See `src/classification/neural_networks/SEQUENCE_TRAINING.md` for details.
 
 - **`src/models/`** — pre-trained model weights
   - `model_weights.h6` — CNN weights for syllable type classification (used by the preprocessing pipeline)
+
+### **results/**
+Training outputs and reports (not all files may be tracked in git):
+
+- **`tabular_models/`** — tabular classifier runs (`*_subject_eval_dependent*` / `*_subject_eval_independent*`).
+- **`neural_networks/`** — sequence model runs.
+- **`executive_summaries/`** — HTML/PDF executive summaries: `tabular_central/`, `sequence_models/`, `tabular_by_experiment/<run>/`.
 
 ### **scripts/**
 Data preparation utilities — run these before the main pipeline:
@@ -50,7 +57,7 @@ Excel inputs for the preprocessing pipeline and generated reference indexes:
 
 **Note:** Mapping files are optional reference; the split `Data … Segmentation` workbooks are the usual batch inputs.
 
-> **Data Correction (April 2026):** The original metadata files labeled **all** pups of HET mothers as HET. This was incorrect — a HET × WT cross produces ~50% HET and ~50% WT offspring. 14 mice (2,495 rows across 6 metadata files) were corrected from HET to WT based on individual genotyping data from the external segmentation file. See the executive summary in `results/xgboost_external/summary/` for details.
+> **Data Correction (April 2026):** The original metadata files labeled **all** pups of HET mothers as HET. This was incorrect — a HET × WT cross produces ~50% HET and ~50% WT offspring. 14 mice (2,495 rows across 6 metadata files) were corrected from HET to WT based on individual genotyping data from the external segmentation file. See the executive summary in `results/executive_summaries/tabular_by_experiment/xgboost_subject_eval_dependent_external/` for details.
 
 ---
 
@@ -236,7 +243,7 @@ python train_classifier.py --external --group-split
 
 # TabPFN with group-aware split and external data
 python train_classifier.py --model tabpfn --group-split --external
-# → results/tabpfn_group_split_external/
+# → results/tabular_models/tabpfn_subject_eval_independent_external/
 ```
 
 Each model produces the same evaluation outputs (accuracy, confusion matrix, classification report) for fair comparison. Model-specific outputs (e.g. XGBoost training curves, feature importance) are only generated when applicable.

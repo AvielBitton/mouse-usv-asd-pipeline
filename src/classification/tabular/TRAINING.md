@@ -117,34 +117,33 @@ python train_classifier.py [--model MODEL] [--group-split] [--external] [--resul
 | Flag            | Description                                                  |
 |-----------------|--------------------------------------------------------------|
 | `--model`       | Model to train: `xgboost` (default), `tabpfn`               |
-| `--group-split` | Group-aware split by mouse identity (prevents data leakage)  |
+| `--group-split` / `--independent` | Subject-independent evaluation: split by subject (mouse); no leakage across sets |
 | `--external`    | **Recommended.** Use the externally-validated dataset with correct individual genotyping (`all_data_external.csv`). This is the preferred data source. |
 | `--results-dir` | Override default results directory                           |
 
 ### Results directory naming
 
-When `--results-dir` is not set, the output directory is composed automatically:
+When `--results-dir` is not set, the output directory is composed automatically under `results/tabular_models/`:
 
 ```
-results/<model>[_base][_group_split][_external]
+results/tabular_models/<model>[_subject_eval_dependent|_subject_eval_independent][_external]
 ```
 
-All results live under the `results/` parent directory. The `_base` suffix is
-added when no `--group-split` or `--external` flags are active, to clearly
-identify the baseline run.
+- **`_subject_eval_dependent`** — random row-level split; subjects may appear in multiple sets.
+- **`_subject_eval_independent`** — group-aware split by subject (mouse); use `--group-split` or `--independent`.
 
 **Examples:**
 
-| Flags                                       | Directory                                  |
-|---------------------------------------------|--------------------------------------------|
-| *(none)*                                    | `results/xgboost_base`                     |
-| `--model tabpfn`                            | `results/tabpfn_base`                      |
-| `--group-split`                             | `results/xgboost_group_split`              |
-| `--model tabpfn --group-split`              | `results/tabpfn_group_split`               |
-| `--external`                                | `results/xgboost_external`                 |
-| `--model tabpfn --external`                 | `results/tabpfn_external`                  |
-| `--group-split --external`                  | `results/xgboost_group_split_external`     |
-| `--model tabpfn --group-split --external`   | `results/tabpfn_group_split_external`      |
+| Flags                                       | Directory |
+|---------------------------------------------|-----------|
+| *(none)*                                    | `results/tabular_models/xgboost_subject_eval_dependent` |
+| `--model tabpfn`                            | `results/tabular_models/tabpfn_subject_eval_dependent` |
+| `--group-split`                             | `results/tabular_models/xgboost_subject_eval_independent` |
+| `--model tabpfn --group-split`              | `results/tabular_models/tabpfn_subject_eval_independent` |
+| `--external`                                | `results/tabular_models/xgboost_subject_eval_dependent_external` |
+| `--model tabpfn --external`                 | `results/tabular_models/tabpfn_subject_eval_dependent_external` |
+| `--group-split --external`                  | `results/tabular_models/xgboost_subject_eval_independent_external` |
+| `--model tabpfn --group-split --external`   | `results/tabular_models/tabpfn_subject_eval_independent_external` |
 
 ## Common evaluation
 

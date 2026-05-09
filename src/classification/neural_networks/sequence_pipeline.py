@@ -634,8 +634,10 @@ def parse_args():
         help="Model architecture (default: bilstm).",
     )
     parser.add_argument(
-        "--group-split", action="store_true",
-        help="Use group-aware split by mouse identity (prevents data leakage).",
+        "--group-split", "--independent",
+        action="store_true",
+        help="Subject-independent evaluation: split by subject (mouse) with no leakage "
+             "across sets (alias: --independent). Default is subject-dependent random split.",
     )
     parser.add_argument(
         "--data-path", type=str, default=DATA_PATH,
@@ -664,10 +666,10 @@ def main():
         results_dir = args.results_dir
     else:
         subdir = args.model
-        if not args.group_split:
-            subdir += "_base"
+        if args.group_split:
+            subdir += "_subject_eval_independent"
         else:
-            subdir += "_group_split"
+            subdir += "_subject_eval_dependent"
         results_dir = os.path.join("results", "neural_networks", subdir)
 
     plots_dir = os.path.join(results_dir, "plots")
@@ -697,7 +699,7 @@ def main():
     if args.model != "bilstm":
         active_flags.append(f"--model {args.model}")
     if args.group_split:
-        active_flags.append("--group-split")
+        active_flags.append("--independent")
     print(f"Active flags: {active_flags if active_flags else 'none (baseline)'}")
     print(f"Model: {args.model}")
     print(f"Results directory: {results_dir}")
@@ -779,6 +781,7 @@ def main():
     # --- save results JSON for executive summary ---
     results_data = {
         "model": args.model,
+        "subject_eval_independent": bool(args.group_split),
         "group_split": args.group_split,
         "test_accuracy": float(test_acc),
         "test_auc": float(test_auc),

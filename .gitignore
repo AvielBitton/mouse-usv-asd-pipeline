@@ -21,4 +21,4 @@ outputs_temp_backup/
 # Model weights data file (too large for git)
 src/models/model_weights.h6/variables/variables.data-00000-of-00001
 # TabPFN model pickles are >100MB
-results/tabpfn*/model/tabpfn_model.pkl
+results/tabular_models/tabpfn*/model/tabpfn_model.pkl
