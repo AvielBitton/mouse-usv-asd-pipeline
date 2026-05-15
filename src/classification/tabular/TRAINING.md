@@ -25,7 +25,7 @@ segmentation_*.xlsx          (per-file, all syllable rows + enrichment columns)
 
 ## Preferred Data Source
 
-> **The external dataset (`--external` flag / `all_data_external.csv`) is the
+> **The external dataset (`--external` flag / `all_data_external_main.csv`) is the
 > preferred data source for all training runs.** It contains correct individual
 > genotyping data, unlike the pipeline-aggregated `all_data.csv` which had
 > genotype labeling errors (all pups of HET mothers were labeled HET, when in
@@ -35,6 +35,11 @@ segmentation_*.xlsx          (per-file, all syllable rows + enrichment columns)
 When building `all_data_external.csv`, the pipeline **drops** syllable-level rows whose **Mother Genotype** or **Offspring Genotype** is not **WT** or **HET** after the same `HT`→`HET` normalization as in legacy feature extraction (e.g. **UNK** is excluded). That keeps `pup_gen` strictly **binary** for XGBoost.
 
 ## Input: `all_data.csv`
+
+Default CSV locations:
+- Internal: `outputs/legacy/aggregated/all_data.csv`
+- External (`--external`): `outputs/external/aggregated/all_data_external_main.csv`
+- Specific variant: pass `--data-csv PATH` (overrides default selection)
 
 Each row = **one recording** of one mouse. 48 columns total:
 
@@ -113,23 +118,38 @@ outputs differ.
 ## CLI Flags
 
 ```
-python train_classifier.py [--model MODEL] [--group-split] [--external] [--results-dir DIR]
+python train_classifier.py [--model MODEL] [--group-split] [--external] [--data-csv PATH] [--results-dir DIR]
 ```
 
 | Flag            | Description                                                  |
 |-----------------|--------------------------------------------------------------|
 | `--model`       | Model to train: `xgboost` (default), `tabpfn`               |
 | `--group-split` / `--independent` | Subject-independent evaluation: split by subject (mouse); no leakage across sets |
-| `--external`    | **Recommended.** Use the externally-validated dataset with correct individual genotyping (`all_data_external.csv`). This is the preferred data source. |
+| `--external`    | **Recommended.** Use the externally-validated dataset with correct individual genotyping (`all_data_external_main.csv`). This is the preferred data source. |
+| `--data-csv`    | Explicit path to the training CSV (48 columns, no header). Use for a specific aggregate file (e.g. a filtered variant). When set, **overrides** the path implied by `--external` / the internal default. The file must exist or the script exits with an error. |
 | `--results-dir` | Override default results directory                           |
+
+### Choosing a specific aggregate CSV
+
+Use `--data-csv` whenever you want to train on one exact aggregation output
+(for example, an external single-filter variant):
+
+```bash
+python train_classifier.py --data-csv "outputs/external/aggregated/all_data_external_filter_noise.csv"
+```
+
+`--data-csv` overrides the dataset implied by `--external`.
 
 ### Results directory naming
 
 When `--results-dir` is not set, the output directory is composed automatically under `results/tabular_models/`:
 
 ```
-results/tabular_models/<model>[_subject_eval_dependent|_subject_eval_independent][_external]
+results/tabular_models/<model>[_subject_eval_dependent|_subject_eval_independent][_external|_data_<stem>]
 ```
+
+- **`_external`** — data path resolves to the default `outputs/external/aggregated/all_data_external_main.csv` (with or without `--external` when that is the effective path).
+- **`_data_<stem>`** — `--data-csv` points at any other file; `<stem>` is a sanitized basename (e.g. a variant CSV). Use `--results-dir` for full control of the output folder name.
 
 - **`_subject_eval_dependent`** — random row-level split; subjects may appear in multiple sets.
 - **`_subject_eval_independent`** — group-aware split by subject (mouse); use `--group-split` or `--independent`.

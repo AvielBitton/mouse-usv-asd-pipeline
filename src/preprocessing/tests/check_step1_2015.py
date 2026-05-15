@@ -42,7 +42,7 @@ def main() -> None:
     logger = setup_logger()
 
     metadata_dir = "metadata"
-    outputs_dir = "outputs"
+    outputs_dir = "outputs/legacy"
     recordings_root = "USV_Recordings"
     sr = 250000
 

@@ -2,6 +2,7 @@ import argparse
 import itertools
 import os
 import pickle
+import re
 import sys
 
 import matplotlib.pyplot as plt
@@ -22,8 +23,39 @@ from models import (
 )
 from report import generate_comparison
 
-ALL_DATA_CSV = os.path.join("outputs", "aggregated", "all_data.csv")
-ALL_DATA_EXTERNAL_CSV = os.path.join("outputs", "aggregated_external", "all_data_external.csv")
+ALL_DATA_CSV = os.path.join("outputs", "legacy", "aggregated", "all_data.csv")
+ALL_DATA_EXTERNAL_CSV = os.path.join(
+    "outputs", "external", "aggregated", "all_data_external_main.csv"
+)
+
+
+def resolve_training_csv_path(args: argparse.Namespace) -> str:
+    """Return absolute path to the tabular CSV; ``--data-csv`` wins over defaults."""
+    if getattr(args, "data_csv", None):
+        return os.path.abspath(args.data_csv)
+    if args.external:
+        return os.path.abspath(ALL_DATA_EXTERNAL_CSV)
+    return os.path.abspath(ALL_DATA_CSV)
+
+
+def default_results_subdir(model_name: str, group_split: bool, data_csv_abspath: str) -> str:
+    """Build ``results/tabular_models/<subdir>`` name from data source."""
+    subdir = model_name
+    subdir += (
+        "_subject_eval_independent" if group_split else "_subject_eval_dependent"
+    )
+    ext_abs = os.path.abspath(ALL_DATA_EXTERNAL_CSV)
+    int_abs = os.path.abspath(ALL_DATA_CSV)
+    if data_csv_abspath == ext_abs:
+        subdir += "_external"
+    elif data_csv_abspath == int_abs:
+        pass
+    else:
+        stem = os.path.splitext(os.path.basename(data_csv_abspath))[0]
+        safe = re.sub(r"[^0-9a-zA-Z_-]+", "_", stem).strip("_")[:48] or "custom"
+        subdir += "_data_" + safe
+    return subdir
+
 
 COL_NAMES = [
     'syll1_s_freq', 'syll2_s_freq', 'syll3_s_freq', 'syll4_s_freq', 'syll5_s_freq',
@@ -65,7 +97,17 @@ def parse_args():
         '--external',
         action='store_true',
         help='RECOMMENDED. Use the externally-validated dataset with correct individual '
-             'genotyping (all_data_external.csv). This is the preferred data source.',
+             'genotyping (all_data_external_main.csv). This is the preferred data source. '
+             'Ignored for choosing the CSV path when --data-csv is set.',
+    )
+    parser.add_argument(
+        '--data-csv',
+        type=str,
+        default=None,
+        metavar='PATH',
+        help='Path to the tabular training CSV (48 columns, no header). '
+             'Use this to train on a specific aggregate (e.g. a filtered variant). '
+             'When set, overrides the path implied by --external / internal default.',
     )
     parser.add_argument(
         '--results-dir',
@@ -211,16 +253,15 @@ def main():
     model_name = args.model
 
     # --- results directory ---------------------------------------------------
+    data_csv = resolve_training_csv_path(args)
+    if not os.path.isfile(data_csv):
+        print(f'Error: data CSV not found: {data_csv}', file=sys.stderr)
+        sys.exit(1)
+
     if args.results_dir:
         results_dir = args.results_dir
     else:
-        subdir = model_name
-        if args.group_split:
-            subdir += '_subject_eval_independent'
-        else:
-            subdir += '_subject_eval_dependent'
-        if args.external:
-            subdir += '_external'
+        subdir = default_results_subdir(model_name, args.group_split, data_csv)
         results_dir = os.path.join('results', 'tabular_models', subdir)
 
     plots_dir = os.path.join(results_dir, 'plots')
@@ -241,12 +282,13 @@ def main():
         active_flags.append('--independent')
     if args.external:
         active_flags.append('--external')
+    if args.data_csv:
+        active_flags.append(f'--data-csv {args.data_csv}')
     print(f'Active flags: {active_flags if active_flags else "none (baseline)"}')
     print(f'Model: {model_name}')
     print(f'Results directory: {results_dir}')
 
     # --- load data -----------------------------------------------------------
-    data_csv = ALL_DATA_EXTERNAL_CSV if args.external else ALL_DATA_CSV
     print(f'Data source: {data_csv}')
     dataset = pd.read_csv(data_csv, header=None, names=COL_NAMES)
     X = dataset.iloc[:, :-2]

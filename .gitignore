@@ -15,6 +15,16 @@ dump/
 outputs/*.log
 outputs/*.txt
 outputs/**/*.log
+# Pre-refactor local copies (canonical: outputs/legacy/, outputs/external/)
+outputs/aggregated/
+outputs/aggregated_external/
+outputs/segmentation_*
+outputs/external/segmentation_classification_all_data.csv
+outputs/external/segmentation_classification_all_data.xlsx
+outputs/external/aggregated/all_data_external.csv
+outputs/external/aggregated/all_data_external.xlsx
+outputs/external/aggregated/all_data_external_filter_invalid_genotype.csv
+outputs/external/aggregated/all_data_external_filter_invalid_genotype.xlsx
 outputs_temp_backup/
 # Temporary files (Excel lock files, etc.)
 ~$*

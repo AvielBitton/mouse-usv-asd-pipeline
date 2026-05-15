@@ -60,7 +60,7 @@ sex, day, session) is concatenated to the sequence encoder output before classif
 |---|---|---|
 | `--model` | `bilstm` | Model architecture: `bilstm`, `cnn1d`, or `transformer` |
 | `--group-split` | off | Split by mouse identity (prevents data leakage) |
-| `--data-path` | `outputs/external/segmentation_classification_all_data.xlsx` | Syllable data file |
+| `--data-path` | `outputs/external/input/segmentation_classification_all_data.xlsx` | Syllable data file |
 | `--max-seq-len` | `256` | Maximum sequence length (pad/truncate) |
 | `--epochs` | `100` | Maximum training epochs |
 | `--batch-size` | `32` | Batch size |

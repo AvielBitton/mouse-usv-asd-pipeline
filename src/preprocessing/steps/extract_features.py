@@ -3,15 +3,20 @@ from __future__ import annotations
 import glob
 import logging
 import os
-from typing import List, Optional
+from typing import Dict, Iterable, List, Optional, Tuple
 
 import numpy as np
 import pandas as pd
 
 from legacy.audio_feature_extraction_reduction_by_recording import feature_extraction
-from utils import FEATURE_COLUMNS, strain_from_year, replace_extension
+from utils import (
+    FEATURE_COLUMNS,
+    OUTPUTS_EXTERNAL_AGGREGATED_DIR,
+    replace_extension,
+    strain_from_year,
+)
 
-# Combined pipeline outputs (per-run); avoids mixing with per-file segmentation_*.xlsx in outputs root.
+# Per-file segmentations and internal aggregate live under outputs/legacy/ (see run_pipeline).
 AGGREGATED_SUBDIR = "aggregated"
 ALL_DATA_XLSX_NAME = "all_data.xlsx"
 ALL_DATA_CSV_NAME = "all_data.csv"
@@ -158,14 +163,15 @@ def run_aggregated_feature_extraction(
     1. Find all segmentation Excel files in the outputs directory
     2. Concatenate them into a single DataFrame
     3. Add a Strain column derived from the year in each recording Path
-    4. Save the combined dataset as ``aggregated/all_data.xlsx``
+    4. Save the combined dataset as ``outputs/legacy/aggregated/all_data.xlsx``
     5. Select the feature columns and compute per-recording features
-    6. Save the aggregated feature matrix as ``aggregated/all_data.csv``
+    6. Save the aggregated feature matrix as ``outputs/legacy/aggregated/all_data.csv``
 
     Existing ``all_data.*`` files in that subdirectory are overwritten.
 
     Args:
         outputs_dir: Directory containing the per-file ``segmentation_*.xlsx`` workbooks
+            (typically ``outputs/legacy``).
         logger: Optional logger instance
 
     Returns:
@@ -199,17 +205,110 @@ def run_aggregated_feature_extraction(
     return output_csv
 
 
-AGGREGATED_EXTERNAL_SUBDIR = "aggregated_external"
-ALL_DATA_EXTERNAL_XLSX_NAME = "all_data_external.xlsx"
-ALL_DATA_EXTERNAL_CSV_NAME = "all_data_external.csv"
+ALL_DATA_EXTERNAL_MAIN_XLSX_NAME = "all_data_external_main.xlsx"
+ALL_DATA_EXTERNAL_MAIN_CSV_NAME = "all_data_external_main.csv"
+
+EXTERNAL_FILTERS: Dict[str, str] = {
+    "invalid_sex": "invalid_sex",
+    "noise": "noise",
+    "supplement_offspring": "supplement_offspring",
+    "undefined_syllable": "undefined_syllable",
+}
 
 _BINARY_GENOTYPES = frozenset({"WT", "HET"})
+
+_STRAIN_TEXT_TO_NUMERIC = {
+    "balb/c": 2,
+    "balb/c+black/c57": 1,
+}
+
+_VALID_SEX = {"M", "F"}
 
 
 def _normalize_token(value) -> str:
     if value is None or (isinstance(value, float) and pd.isna(value)):
         return ""
     return str(value).strip().upper()
+
+
+def _to_bool_mask(series: pd.Series) -> pd.Series:
+    numeric = pd.to_numeric(series, errors="coerce")
+    mask_numeric = numeric == 1
+    text = series.astype(str).str.strip().str.lower()
+    mask_text = text.isin({"1", "true", "yes", "y"})
+    return mask_numeric.fillna(False) | mask_text
+
+
+def normalize_session_values(
+    dataset: pd.DataFrame,
+    logger: Optional[logging.Logger] = None,
+) -> pd.DataFrame:
+    """Normalize Session=0 to 1."""
+    if "Session" not in dataset.columns:
+        return dataset
+
+    zero_sessions = dataset["Session"] == 0
+    if zero_sessions.any():
+        dataset.loc[zero_sessions, "Session"] = 1
+        if logger:
+            logger.info(
+                f"Replaced {zero_sessions.sum()} Session=0 values with 1"
+            )
+    return dataset
+
+
+def add_strain_from_column(
+    dataset: pd.DataFrame,
+    logger: Optional[logging.Logger] = None,
+) -> pd.DataFrame:
+    """Map textual Strain labels to the numeric 1/2 encoding."""
+    if "Strain" not in dataset.columns:
+        if logger:
+            logger.warning("Strain column missing, falling back to Path-derived strain.")
+        return add_strain_from_path(dataset)
+
+    values: List[int] = []
+    fallback_count = 0
+    missing_count = 0
+
+    has_path = "Path" in dataset.columns
+    for idx, strain_value in enumerate(dataset["Strain"]):
+        path_value = dataset["Path"].iloc[idx] if has_path else None
+        num_value: Optional[int] = None
+
+        if isinstance(strain_value, (int, float)) and not pd.isna(strain_value):
+            iv = int(strain_value)
+            if iv in (1, 2):
+                num_value = iv
+
+        if num_value is None:
+            key = " ".join(str(strain_value).strip().lower().split())
+            num_value = _STRAIN_TEXT_TO_NUMERIC.get(key)
+
+        if num_value is None:
+            fallback_count += 1
+            try:
+                year = str(path_value).split("/")[1]
+                num_value = strain_from_year(year)
+            except Exception:
+                missing_count += 1
+                num_value = np.nan
+
+        values.append(num_value)
+
+    dataset["Strain"] = values
+
+    if logger:
+        if fallback_count:
+            logger.warning(
+                f"Strain mapping fallback used for {fallback_count} row(s) based on Path year."
+            )
+        if missing_count:
+            logger.warning(
+                f"Could not map Strain for {missing_count} row(s); values left as NaN."
+            )
+
+    return dataset
 
 
 def drop_non_binary_genotype_rows_for_external(
@@ -220,6 +319,7 @@ def drop_non_binary_genotype_rows_for_external(
 
     Matches ``audio_feature_extraction_reduction_by_recording`` so ``LabelEncoder``
     in legacy feature extraction sees only two classes for binary training.
+    Applied to every external aggregate (main and ``--external-filter`` variants).
     """
     required = ("Offspring Genotype", "Mother Genotype")
     if any(c not in dataset.columns for c in required):
@@ -247,9 +347,88 @@ def drop_non_binary_genotype_rows_for_external(
     return out
 
 
+def apply_single_external_filter(
+    dataset: pd.DataFrame,
+    filter_name: str,
+    logger: Optional[logging.Logger] = None,
+) -> Tuple[pd.DataFrame, int]:
+    """Apply one external aggregation filter and return filtered data + removed count."""
+    if filter_name == "invalid_sex":
+        if "Sex" not in dataset.columns:
+            if logger:
+                logger.warning("Filter invalid_sex requested but Sex column is missing.")
+            return dataset, 0
+        sex = dataset["Sex"].map(_normalize_token)
+        mask = ~sex.isin(_VALID_SEX)
+    elif filter_name == "noise":
+        if "Noise" not in dataset.columns:
+            if logger:
+                logger.warning("Filter noise requested but Noise column is missing.")
+            return dataset, 0
+        mask = pd.to_numeric(dataset["Noise"], errors="coerce").fillna(0) == 1
+    elif filter_name == "supplement_offspring":
+        if "Supplement (Offspring)" not in dataset.columns or "Name" not in dataset.columns:
+            if logger:
+                logger.warning(
+                    "Filter supplement_offspring requested but required columns are missing."
+                )
+            return dataset, 0
+        supplemented = _to_bool_mask(dataset["Supplement (Offspring)"])
+        names = set(dataset.loc[supplemented, "Name"].dropna().astype(str))
+        mask = dataset["Name"].astype(str).isin(names)
+    elif filter_name == "undefined_syllable":
+        if "Syllable number" not in dataset.columns:
+            if logger:
+                logger.warning(
+                    "Filter undefined_syllable requested but Syllable number column is missing."
+                )
+            return dataset, 0
+        mask = pd.to_numeric(dataset["Syllable number"], errors="coerce") == 10
+    else:
+        if logger:
+            logger.warning(f"Unknown filter requested: {filter_name}")
+        return dataset, 0
+
+    removed = int(mask.sum())
+    filtered = dataset.loc[~mask].reset_index(drop=True)
+    if logger:
+        logger.info(
+            f"Applied external filter '{filter_name}': removed {removed} row(s), "
+            f"{len(filtered)} row(s) remaining"
+        )
+    return filtered, removed
+
+
+def save_external_aggregate_outputs(
+    dataset: pd.DataFrame,
+    output_dir: str,
+    xlsx_name: str,
+    csv_name: str,
+    logger: Optional[logging.Logger] = None,
+) -> str:
+    """Save one external aggregate pair (xlsx + csv)."""
+    os.makedirs(output_dir, exist_ok=True)
+    output_xlsx = os.path.join(output_dir, xlsx_name)
+    output_csv = os.path.join(output_dir, csv_name)
+
+    if logger and os.path.isfile(output_xlsx):
+        logger.info(f"Overwriting existing file: {output_xlsx}")
+    dataset.to_excel(output_xlsx, index=False)
+
+    X = select_feature_columns(dataset)
+    mouse_final_data = compute_features(X)
+
+    if logger and os.path.isfile(output_csv):
+        logger.info(f"Overwriting existing file: {output_csv}")
+    np.savetxt(output_csv, X=mouse_final_data, delimiter=",")
+
+    return output_csv
+
+
 def run_external_aggregated_feature_extraction(
     external_file: str,
     output_dir: str = "",
+    enabled_filters: Optional[Iterable[str]] = None,
     logger: Optional[logging.Logger] = None,
 ) -> str:
     """Run feature extraction on the external segmentation file (preferred dataset).
@@ -265,23 +444,21 @@ def run_external_aggregated_feature_extraction(
 
     Args:
         external_file: Path to the external Excel file
-            (e.g. ``outputs/external/segmentation_classification_all_data.xlsx``).
-        output_dir: Directory to write ``all_data.xlsx`` and ``all_data.csv``.
-            Defaults to ``outputs/aggregated_external``.
+            (e.g. ``outputs/external/input/segmentation_classification_all_data.xlsx``).
+        output_dir: Directory to write ``all_data_external_*.xlsx/csv``.
+            Defaults to ``outputs/external/aggregated``.
+        enabled_filters: Optional iterable of single-filter variant keys to generate.
+            Supported values are ``invalid_sex``, ``noise``,
+            ``supplement_offspring``, ``undefined_syllable``.
+            Rows with non-binary mother/offspring genotype (not WT/HET after HT→HET)
+            are always dropped before any output is written.
         logger: Optional logger instance.
 
     Returns:
-        Path to the aggregated CSV file.
-
-    Rows with non-binary mother/offspring genotype (not WT/HET after HT→HET) are
-    removed before feature extraction; invalid sex is filtered next; then
-    Session=0→1 and strain-from-path, matching the rest of the pipeline.
+        Path to the main external aggregated CSV file.
     """
     if not output_dir:
-        output_dir = os.path.join(
-            os.path.dirname(os.path.dirname(external_file)),
-            AGGREGATED_EXTERNAL_SUBDIR,
-        )
+        output_dir = OUTPUTS_EXTERNAL_AGGREGATED_DIR
 
     if logger:
         logger.info(
@@ -295,43 +472,40 @@ def run_external_aggregated_feature_extraction(
         logger.info(f"Loaded {len(dataset)} rows from {external_file}")
 
     dataset = drop_non_binary_genotype_rows_for_external(dataset, logger=logger)
+    dataset = normalize_session_values(dataset, logger=logger)
+    dataset = add_strain_from_column(dataset, logger=logger)
 
-    valid_sex = {"M", "F"}
-    sex_mask = ~dataset["Sex"].isin(valid_sex)
-    if sex_mask.any():
-        dataset = dataset[~sex_mask].reset_index(drop=True)
-        if logger:
-            logger.info(
-                f"Filtered {sex_mask.sum()} row(s) with unknown sex, "
-                f"{len(dataset)} row(s) remaining"
-            )
-
-    # Session 0 means no session subfolder existed (single session) -- treat as 1
-    zero_sessions = dataset["Session"] == 0
-    if zero_sessions.any():
-        dataset.loc[zero_sessions, "Session"] = 1
-        if logger:
-            logger.info(
-                f"Replaced {zero_sessions.sum()} Session=0 values with 1"
-            )
-
-    dataset = add_strain_from_path(dataset)
-
-    os.makedirs(output_dir, exist_ok=True)
-    output_xlsx = os.path.join(output_dir, ALL_DATA_EXTERNAL_XLSX_NAME)
-    if logger and os.path.isfile(output_xlsx):
-        logger.info(f"Overwriting existing file: {output_xlsx}")
-    dataset.to_excel(output_xlsx, index=False)
-
-    X = select_feature_columns(dataset)
-    mouse_final_data = compute_features(X)
-
-    output_csv = os.path.join(output_dir, ALL_DATA_EXTERNAL_CSV_NAME)
-    if logger and os.path.isfile(output_csv):
-        logger.info(f"Overwriting existing file: {output_csv}")
-    np.savetxt(output_csv, X=mouse_final_data, delimiter=",")
+    main_csv = save_external_aggregate_outputs(
+        dataset=dataset,
+        output_dir=output_dir,
+        xlsx_name=ALL_DATA_EXTERNAL_MAIN_XLSX_NAME,
+        csv_name=ALL_DATA_EXTERNAL_MAIN_CSV_NAME,
+        logger=logger,
+    )
 
     if logger:
-        logger.info(f"Finished external aggregation: {output_csv}")
+        logger.info(f"Finished main external aggregation: {main_csv}")
 
-    return output_csv
+    requested = list(dict.fromkeys(enabled_filters or []))
+    requested = [name for name in requested if name in EXTERNAL_FILTERS]
+    for filter_name in requested:
+        filtered, removed = apply_single_external_filter(
+            dataset.copy(),
+            filter_name,
+            logger=logger,
+        )
+        suffix = EXTERNAL_FILTERS[filter_name]
+        variant_csv = save_external_aggregate_outputs(
+            dataset=filtered,
+            output_dir=output_dir,
+            xlsx_name=f"all_data_external_filter_{suffix}.xlsx",
+            csv_name=f"all_data_external_filter_{suffix}.csv",
+            logger=logger,
+        )
+        if logger:
+            logger.info(
+                f"Finished external variant '{filter_name}' "
+                f"(removed={removed}): {variant_csv}"
+            )
+
+    return main_csv

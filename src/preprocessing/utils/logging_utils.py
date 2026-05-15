@@ -2,7 +2,7 @@ import os
 import logging
 
 
-def setup_logger(log_path="outputs/output.log"):
+def setup_logger(log_path="outputs/legacy/output.log"):
     """Setup logging to both console and file."""
     # Create parent directory if missing
     os.makedirs(os.path.dirname(log_path), exist_ok=True)
