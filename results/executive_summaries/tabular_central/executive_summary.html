@@ -55,7 +55,7 @@
 
   <div class="header">
     <h1>Central Executive Summary &mdash; All Models &amp; Configurations</h1>
-    <p>XGBoost vs TabPFN &nbsp;|&nbsp; 8 Configurations &nbsp;|&nbsp; May 2026</p>
+    <p>XGBoost vs TabPFN &nbsp;|&nbsp; 8 Configurations + 4 Per-Strain &nbsp;|&nbsp; May 2026</p>
   </div>
 
   <div class="body">
@@ -247,6 +247,66 @@
     </ul>
 
     <!-- ============================================================ -->
+    <h2>Per-Strain Results (External, XGBoost)</h2>
+
+    <p>Each strain is filtered <strong>before</strong> train/val/test splitting so the model
+    is trained and evaluated on a single strain. Data source:
+    <code>outputs/external/aggregated/all_data_external_main.csv</code>.
+    <code>pup_strain</code> is dropped from features (constant within each run).</p>
+
+    <table>
+      <tr>
+        <th>Strain</th>
+        <th>Evaluation</th>
+        <th>Rows</th>
+        <th>Mice</th>
+        <th>Test Acc</th>
+        <th>F1 (wtd)</th>
+        <th>HET F1</th>
+        <th>HET Recall</th>
+        <th>WT F1</th>
+        <th>WT Recall</th>
+      </tr>
+      <tr class="model-xgb">
+        <td>1 (BALB/C+BLACK/C57)</td><td>Subject-dependent</td><td>8,616</td><td>70</td>
+        <td>74.5%</td><td>0.77</td>
+        <td class="good">0.64</td><td class="good">0.97</td>
+        <td>0.80</td><td>0.68</td>
+      </tr>
+      <tr class="model-xgb">
+        <td>1 (BALB/C+BLACK/C57)</td><td>Subject-independent</td><td>8,616</td><td>70</td>
+        <td>68.7%</td><td>0.72</td>
+        <td>0.53</td><td class="good">0.98</td>
+        <td>0.77</td><td>0.62</td>
+      </tr>
+      <tr class="model-xgb">
+        <td>2 (BALB/C)</td><td>Subject-dependent</td><td>5,009</td><td>50</td>
+        <td class="good">75.5%</td><td>0.77</td>
+        <td class="good">0.68</td><td class="good">0.86</td>
+        <td>0.80</td><td>0.71</td>
+      </tr>
+      <tr class="model-xgb">
+        <td>2 (BALB/C)</td><td>Subject-independent</td><td>5,009</td><td>50</td>
+        <td>64.6%</td><td>0.70</td>
+        <td class="highlight">0.22</td><td>0.37</td>
+        <td>0.77</td><td>0.69</td>
+      </tr>
+    </table>
+
+    <h3>Per-Strain Observations</h3>
+    <ul>
+      <li><strong>Strain 1</strong> (newer cohorts, 70 mice): high HET recall in both evaluations
+      (97&ndash;98%), consistent with the combined external runs. Subject-independent accuracy
+      drops ~6 percentage points vs dependent.</li>
+      <li><strong>Strain 2</strong> (older cohorts, 50 mice): dependent performance is slightly better
+      than strain 1 on test accuracy (75.5% vs 74.5%). However, subject-independent evaluation
+      shows a sharp drop in HET detection (F1 0.22, recall 37%), suggesting that with fewer mice
+      (50 vs 70) the model struggles to generalize across subjects for this strain.</li>
+      <li><strong>Imbalance note:</strong> Strain 2 independent test set has only 102 HET samples
+      (13.6%) due to the mouse-level split with 10 test mice, which amplifies variance.</li>
+    </ul>
+
+    <!-- ============================================================ -->
     <h2>Individual Results Directory Guide</h2>
     <table class="config-table">
       <tr><th>Directory</th><th>Description</th></tr>
@@ -259,6 +319,10 @@
       <tr><td><code>results/tabular_models/tabpfn_subject_eval_dependent_external/</code></td><td>TabPFN, pipeline + external data, subject-dependent evaluation</td></tr>
       <tr><td><code>results/tabular_models/tabpfn_subject_eval_independent_external/</code></td><td>TabPFN, pipeline + external data, subject-independent evaluation</td></tr>
       <tr><td><code>results/tabular_models/xgboost_2015_2022/</code></td><td>XGBoost, older dataset (2015&ndash;2022 only), for historical comparison</td></tr>
+      <tr><td><code>results/tabular_models/strain/xgboost_strain1_subject_eval_dependent_external/</code></td><td>XGBoost, external strain 1 only, subject-dependent</td></tr>
+      <tr><td><code>results/tabular_models/strain/xgboost_strain1_subject_eval_independent_external/</code></td><td>XGBoost, external strain 1 only, subject-independent</td></tr>
+      <tr><td><code>results/tabular_models/strain/xgboost_strain2_subject_eval_dependent_external/</code></td><td>XGBoost, external strain 2 only, subject-dependent</td></tr>
+      <tr><td><code>results/tabular_models/strain/xgboost_strain2_subject_eval_independent_external/</code></td><td>XGBoost, external strain 2 only, subject-independent</td></tr>
     </table>
     <p>Each directory contains: <code>logs/out.txt</code> (full log), <code>plots/</code>
     (confusion matrices, training curves where applicable), <code>model/</code> (saved model),

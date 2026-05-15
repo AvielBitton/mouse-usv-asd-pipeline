@@ -48,10 +48,10 @@ python src/classification/tabular/train_classifier.py
 | `--data-csv PATH` | Available | Train on an explicit 48-column aggregate CSV. Overrides the default selected by `--external`. Useful for filtered variants. |
 | `--group-split` | Available | Use subject-independent evaluation by splitting train/validation/test by mouse identity. |
 | `--independent` | Available | Preferred alias for `--group-split`. Use this name in new commands and docs. |
-| `--strain {1,2}` | Planned, Issue #28 | Filter rows by `pup_strain` before splitting and training. Intended for per-strain external runs. |
+| `--strain {1,2}` | Available | Filter rows by `pup_strain` before splitting and training. Drops `pup_strain` from features (constant). Default output under `results/tabular_models/strain/`. |
 | `--results-dir DIR` | Available | Write results to an explicit output directory instead of the default path. |
 
-Planned strain runs from Issue #28:
+Strain runs (Issue #28):
 
 ```bash
 python src/classification/tabular/train_classifier.py --external --strain 1
@@ -60,7 +60,7 @@ python src/classification/tabular/train_classifier.py --external --strain 2
 python src/classification/tabular/train_classifier.py --external --strain 2 --independent
 ```
 
-Planned default output layout for strain runs:
+Default output layout for strain runs:
 
 ```text
 results/tabular_models/strain/

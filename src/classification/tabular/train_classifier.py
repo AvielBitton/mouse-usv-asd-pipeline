@@ -38,10 +38,15 @@ def resolve_training_csv_path(args: argparse.Namespace) -> str:
     return os.path.abspath(ALL_DATA_CSV)
 
 
-def default_results_subdir(model_name: str, group_split: bool, data_csv_abspath: str) -> str:
+def default_results_subdir(
+    model_name: str,
+    group_split: bool,
+    data_csv_abspath: str,
+    strain: int | None = None,
+) -> str:
     """Build ``results/tabular_models/<subdir>`` name from data source."""
-    subdir = model_name
-    subdir += (
+    prefix = f"{model_name}_strain{strain}" if strain else model_name
+    subdir = prefix + (
         "_subject_eval_independent" if group_split else "_subject_eval_dependent"
     )
     ext_abs = os.path.abspath(ALL_DATA_EXTERNAL_CSV)
@@ -54,6 +59,8 @@ def default_results_subdir(model_name: str, group_split: bool, data_csv_abspath:
         stem = os.path.splitext(os.path.basename(data_csv_abspath))[0]
         safe = re.sub(r"[^0-9a-zA-Z_-]+", "_", stem).strip("_")[:48] or "custom"
         subdir += "_data_" + safe
+    if strain:
+        return os.path.join("strain", subdir)
     return subdir
 
 
@@ -108,6 +115,15 @@ def parse_args():
         help='Path to the tabular training CSV (48 columns, no header). '
              'Use this to train on a specific aggregate (e.g. a filtered variant). '
              'When set, overrides the path implied by --external / internal default.',
+    )
+    parser.add_argument(
+        '--strain',
+        type=int,
+        choices=[1, 2],
+        default=None,
+        help='Keep only rows where pup_strain equals this value (1 or 2). '
+             'Applied after loading CSV and before train/val/test split. '
+             'Default output goes under results/tabular_models/strain/.',
     )
     parser.add_argument(
         '--results-dir',
@@ -261,7 +277,8 @@ def main():
     if args.results_dir:
         results_dir = args.results_dir
     else:
-        subdir = default_results_subdir(model_name, args.group_split, data_csv)
+        subdir = default_results_subdir(model_name, args.group_split, data_csv,
+                                        strain=args.strain)
         results_dir = os.path.join('results', 'tabular_models', subdir)
 
     plots_dir = os.path.join(results_dir, 'plots')
@@ -284,6 +301,8 @@ def main():
         active_flags.append('--external')
     if args.data_csv:
         active_flags.append(f'--data-csv {args.data_csv}')
+    if args.strain is not None:
+        active_flags.append(f'--strain {args.strain}')
     print(f'Active flags: {active_flags if active_flags else "none (baseline)"}')
     print(f'Model: {model_name}')
     print(f'Results directory: {results_dir}')
@@ -291,9 +310,25 @@ def main():
     # --- load data -----------------------------------------------------------
     print(f'Data source: {data_csv}')
     dataset = pd.read_csv(data_csv, header=None, names=COL_NAMES)
-    X = dataset.iloc[:, :-2]
-    y = dataset.iloc[:, -2]
-    groups = dataset.iloc[:, -1]
+
+    if args.strain is not None:
+        total_before = len(dataset)
+        dataset = dataset[dataset['pup_strain'] == args.strain].reset_index(drop=True)
+        print(f'Strain filter: kept {len(dataset)}/{total_before} rows '
+              f'(pup_strain == {args.strain})')
+        print(f'Mice after filter: {dataset["mouse_idx"].nunique()}')
+        print(f'pup_gen balance: {dataset["pup_gen"].value_counts().to_dict()}')
+        if len(dataset) == 0:
+            print('Error: no rows remain after strain filter.', file=sys.stderr)
+            sys.exit(1)
+
+    exclude = {'pup_gen', 'mouse_idx'}
+    if args.strain is not None:
+        exclude.add('pup_strain')
+    feature_cols = [c for c in COL_NAMES if c not in exclude]
+    X = dataset[feature_cols]
+    y = dataset['pup_gen']
+    groups = dataset['mouse_idx']
 
     seed = 100
 
@@ -378,29 +413,32 @@ def main():
         pickle.dump(model, fp)
 
     # --- per-strain evaluation -----------------------------------------------
-    strain1 = np.where(X_test['pup_strain'] == 1)
-    strain2 = np.where(X_test['pup_strain'] == 2)
-    y_test_arr = np.array(y_test)
+    if 'pup_strain' in X_test.columns:
+        strain1 = np.where(X_test['pup_strain'] == 1)
+        strain2 = np.where(X_test['pup_strain'] == 2)
+        y_test_arr = np.array(y_test)
 
-    print('\n Confusion Matrix - New pup:')
-    if len(strain1[0]) > 0:
-        plot_confusion_matrix(
-            confusion_matrix(y_test_arr[strain1[0]], pred_test[strain1[0]]),
-            plots_dir, numbers_type='numbers_and_percentage',
-            file_name='confusionmatrix_strain1.png',
-        )
-    else:
-        print('No strain 1 data in test set, skipping.')
+        print('\n Confusion Matrix - New pup:')
+        if len(strain1[0]) > 0:
+            plot_confusion_matrix(
+                confusion_matrix(y_test_arr[strain1[0]], pred_test[strain1[0]]),
+                plots_dir, numbers_type='numbers_and_percentage',
+                file_name='confusionmatrix_strain1.png',
+            )
+        else:
+            print('No strain 1 data in test set, skipping.')
 
-    print('\n Confusion Matrix - Old pup:')
-    if len(strain2[0]) > 0:
-        plot_confusion_matrix(
-            confusion_matrix(y_test_arr[strain2[0]], pred_test[strain2[0]]),
-            plots_dir, numbers_type='numbers_and_percentage',
-            file_name='confusionmatrix_strain2.png',
-        )
+        print('\n Confusion Matrix - Old pup:')
+        if len(strain2[0]) > 0:
+            plot_confusion_matrix(
+                confusion_matrix(y_test_arr[strain2[0]], pred_test[strain2[0]]),
+                plots_dir, numbers_type='numbers_and_percentage',
+                file_name='confusionmatrix_strain2.png',
+            )
+        else:
+            print('No strain 2 data in test set, skipping.')
     else:
-        print('No strain 2 data in test set, skipping.')
+        print(f'\nSingle-strain run (strain {args.strain}), skipping per-strain CM split.')
 
     # --- confusion matrix heatmap --------------------------------------------
     cf_matrix = confusion_matrix(y_test, pred_test)
@@ -426,7 +464,7 @@ def main():
 
         plt.figure()
         plt.bar(range(len(model.feature_importances_)), model.feature_importances_)
-        plt.xticks(range(len(model.feature_importances_)), COL_NAMES[:-2],
+        plt.xticks(range(len(model.feature_importances_)), list(X_train.columns),
                    rotation=45, ha="right")
         plt.savefig(os.path.join(plots_dir, 'feature_importances_0.png'), dpi=300)
 
