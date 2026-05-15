@@ -1,3 +1,4 @@
+import os
 import numpy as np
 from openpyxl import Workbook
 from legacy.Segmentation import (
@@ -134,12 +135,28 @@ def append_calls_to_sheet(sheet, signal_path, mother_value, matgen_value, name_v
       sheet.append(new_row)
 
 
-def run_segmentation(file_name, SignalVec, signal_name, rate, mother, matgen, name, sex, pupgen, age, session, rec_num, missing_count, logger):
+def run_segmentation(
+    file_name,
+    SignalVec,
+    signal_name,
+    rate,
+    mother,
+    matgen,
+    name,
+    sex,
+    pupgen,
+    age,
+    session,
+    rec_num,
+    missing_count,
+    outputs_dir="outputs/legacy",
+    logger=None,
+):
     """
     Run segmentation pipeline on recordings.
     
     Processes all recordings in SignalVec, detects syllables, and writes results
-    to an Excel workbook. The workbook is saved to outputs/{file_name}.
+    to an Excel workbook under the configured outputs directory.
     
     Uses segmentation constants defined in this module: FRAME_LENGTH, OVERLAP, THRESH, HARMONY_TH.
     
@@ -200,7 +217,8 @@ def run_segmentation(file_name, SignalVec, signal_name, rate, mother, matgen, na
     
     # Export segmentation results to Excel
     output_filename = get_output_filename(file_name)
-    output_xlsx = f'outputs/{output_filename}'
+    os.makedirs(outputs_dir, exist_ok=True)
+    output_xlsx = os.path.join(outputs_dir, output_filename)
     book.save(output_xlsx)
     logger.info(f"Segmentation finished (calls={siz}, exported to {output_xlsx})")
     

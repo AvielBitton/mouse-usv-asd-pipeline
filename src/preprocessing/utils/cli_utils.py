@@ -11,6 +11,21 @@ def parse_args() -> argparse.Namespace:
         type=str,
         help="Process a single metadata file (must exist in metadata directory)",
     )
+    parser.add_argument(
+        "--external-filter",
+        action="append",
+        choices=[
+            "invalid_sex",
+            "noise",
+            "supplement_offspring",
+            "undefined_syllable",
+        ],
+        default=[],
+        help=(
+            "Create an extra external aggregate variant with one exclusion filter. "
+            "Repeat this flag to generate multiple variants."
+        ),
+    )
     return parser.parse_args()
 
 

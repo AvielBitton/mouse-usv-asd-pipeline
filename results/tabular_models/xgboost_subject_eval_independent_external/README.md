@@ -1,6 +1,6 @@
 # Results — External Data, Subject-Independent Evaluation
 
-**Data source:** `outputs/aggregated_external/all_data_external.csv` (13,081 rows, 115 mice)
+**Data source:** `outputs/external/aggregated/all_data_external.csv` (13,081 rows, 115 mice)
 **Evaluation:** Subject-independent — group split by subject (no subject in more than one set)
 **Flags:** `--external --group-split` (or `--external --independent`)
 

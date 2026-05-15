@@ -25,6 +25,14 @@ This creates `Metadata Recording Mapping ({year}).xlsx` files under `metadata/ma
 python src/preprocessing/run_pipeline.py
 ```
 
+Generate one or more external filtered variants in the same run:
+
+```bash
+python src/preprocessing/run_pipeline.py \
+  --external-filter noise \
+  --external-filter supplement_offspring
+```
+
 ## Process Single File
 
 Use a **`Data {year} For Syl Segmentation_*.xlsx`** file at the top level of `metadata/` (these are what the pipeline is designed to run on):
@@ -39,20 +47,46 @@ The file must exist in the `metadata/` directory (not in subfolders). If not fou
 
 ## Output
 
-For each processed file in `outputs/`:
+Under `outputs/` there are two top-level areas: **`external/`** (your external
+dataset) and **`legacy/`** (metadata-driven pipeline outputs).
+
+**`outputs/external/`** has two roles:
+- **`input/`** — files **you place here** (e.g. `segmentation_classification_all_data.xlsx`).
+- **`aggregated/`** — **generated** tabular aggregates derived from that workbook
+  (`all_data_external_main.*`, optional `all_data_external_filter_*.*`).
+
+Everything else the metadata-driven pipeline produces (per-file workbooks,
+internal combined table, default log file) lives under **`outputs/legacy/`**. The
+`outputs/` root is only `external/`, `legacy/`, and any stray top-level logs you add.
+
+For each processed metadata file under `outputs/legacy/`:
 - `{filename}.xlsx` - Segmentation results, features, and enrichment columns
 - `{filename}.csv` - Extracted per-recording features
 - `{filename}.npy` - Classification samples (raw model predictions)
 
-After all files are processed, the pipeline also writes under `outputs/aggregated/` (overwrites if already present):
-- `outputs/aggregated/all_data.xlsx` - Combined data from all segmentation files
-- `outputs/aggregated/all_data.csv` - Combined per-recording features
+After all files are processed, the pipeline writes:
+- `outputs/legacy/aggregated/all_data.xlsx` - Combined data from all per-file segmentation workbooks
+- `outputs/legacy/aggregated/all_data.csv` - Combined per-recording features
 
-External aggregation (from `outputs/external/segmentation_classification_all_data.xlsx`) writes under `outputs/aggregated_external/` (`all_data_external.xlsx` / `all_data_external.csv`). Rows where **Mother Genotype** or **Offspring Genotype** is not **WT** or **HET** after `HT`→`HET` are dropped before feature extraction so the training CSV stays binary for `pup_gen`.
+External aggregation writes under `outputs/external/aggregated/`:
+- `all_data_external_main.xlsx`
+- `all_data_external_main.csv`
+
+When `--external-filter` is repeated, extra **single-filter** variants are generated:
+- `all_data_external_filter_<filter>.xlsx`
+- `all_data_external_filter_<filter>.csv`
+
+Before any aggregate is written, rows where **Mother Genotype** or **Offspring Genotype** is not **WT** or **HET** (after `HT`→`HET`) are **dropped**, so the tabular CSV stays **binary** for `pup_gen`.
+
+Supported `--external-filter` names (optional ablation variants only):
+- `invalid_sex`
+- `noise`
+- `supplement_offspring`
+- `undefined_syllable`
 
 The script skips already processed files (if outputs exist) for safe resumption.
 
-### Segmentation Excel columns (`outputs/segmentation_*.xlsx`)
+### Segmentation Excel columns (`outputs/legacy/segmentation_*.xlsx`)
 
 | # | Column | Description |
 |---|--------|-------------|
@@ -88,7 +122,7 @@ The script skips already processed files (if outputs exist) for safe resumption.
 | 30 | Complexity level | Complexity category: "Undefined", "Single Vowel", "Multiple Vowels", or "Advanced Harmonic" |
 | 31 | Complexity level (numeric) | Numeric complexity: 0 (Undefined), 1 (Single Vowel), 2 (Multiple Vowels), 3 (Advanced Harmonic) |
 
-> **Note about `Strain`.** The per-file `outputs/segmentation_*.xlsx` workbooks store `Strain` as a descriptive **text label** (`BALB/C` for 2015 / 2018, `BALB/C+BLACK/C57` for 2022 / 2023 / 2024) that mirrors the labels in the externally produced `outputs/external/segmentation_classification_all_data.xlsx`. The tabular feature-extraction step (`add_strain_column` / `add_strain_from_path` in `src/preprocessing/steps/extract_features.py`) **overwrites** this column to a numeric strain identifier (1 or 2 — defined by `STRAIN_1_YEARS` in `src/preprocessing/utils/io_utils.py`) before the data reaches `compute_features` and the training CSVs. This means the XGBoost / TabPFN trainer (`COL_NAMES['pup_strain']`) always receives the numeric value, while a human inspecting a `segmentation_*.xlsx` sees the readable strain label. The aggregated `outputs/aggregated/all_data.xlsx` also carries the numeric value because `add_strain_from_path` runs before that workbook is written.
+> **Note about `Strain`.** The per-file `outputs/legacy/segmentation_*.xlsx` workbooks store `Strain` as a descriptive **text label** (`BALB/C` for 2015 / 2018, `BALB/C+BLACK/C57` for 2022 / 2023 / 2024). In external aggregation, the tabular feature-extraction step maps the **table value** of `Strain` to the numeric classifier encoding (`BALB/C` → 2, `BALB/C+BLACK/C57` → 1). If a row has an unknown `Strain` text, the pipeline falls back to deriving strain from `Path` year and logs a warning.
 
 ### Pipeline Behaviour Notes
 

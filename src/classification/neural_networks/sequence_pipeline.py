@@ -34,7 +34,7 @@ from torch.utils.data import DataLoader, Dataset
 warnings.filterwarnings("ignore", category=FutureWarning)
 
 DATA_PATH = os.path.join(
-    "outputs", "external", "segmentation_classification_all_data.xlsx"
+    "outputs", "external", "input", "segmentation_classification_all_data.xlsx"
 )
 
 CONTINUOUS_FEATURES = [

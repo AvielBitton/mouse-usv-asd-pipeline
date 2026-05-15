@@ -4,6 +4,13 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Tuple
 import pandas as pd
 
+OUTPUTS_DIR = "outputs"
+OUTPUTS_EXTERNAL_DIR = os.path.join(OUTPUTS_DIR, "external")
+OUTPUTS_EXTERNAL_INPUT_DIR = os.path.join(OUTPUTS_EXTERNAL_DIR, "input")
+OUTPUTS_EXTERNAL_AGGREGATED_DIR = os.path.join(OUTPUTS_EXTERNAL_DIR, "aggregated")
+# Metadata-driven pipeline artifacts: per-file segmentations, internal aggregate, default logs.
+OUTPUTS_LEGACY_DIR = os.path.join(OUTPUTS_DIR, "legacy")
+
 
 def list_metadata_files(metadata_dir: str = "metadata") -> List[str]:
     """
@@ -36,13 +43,13 @@ def list_metadata_files(metadata_dir: str = "metadata") -> List[str]:
     return sorted(excel_files)
 
 
-def is_segmentation_file_exist(file_name: str, outputs_dir: str = "outputs") -> bool:
+def is_segmentation_file_exist(file_name: str, outputs_dir: str = OUTPUTS_LEGACY_DIR) -> bool:
     """
     Check if segmentation Excel file exists for a metadata file.
 
     Args:
         file_name: Name of the metadata file (e.g., "Data 2015 For Syl Segmentation_1.xlsx")
-        outputs_dir: Path to the outputs directory (default: "outputs")
+        outputs_dir: Path to the outputs directory (default: ``outputs/legacy``)
 
     Returns:
         True if the segmentation Excel file exists, False otherwise
@@ -53,18 +60,19 @@ def is_segmentation_file_exist(file_name: str, outputs_dir: str = "outputs") -> 
     return xlsx_file.exists()
 
 
-def is_already_processed(file_name: str, outputs_dir: str = "outputs") -> bool:
+def is_already_processed(file_name: str, outputs_dir: str = OUTPUTS_LEGACY_DIR) -> bool:
     """
     Check if a metadata file has already been fully processed.
 
-    A file is considered processed if all expected output files exist:
-    - outputs/<file_name> (xlsx)
-    - outputs/<stem>.csv
-    - outputs/<stem>.npy
+    A file is considered processed if all expected output files exist under
+    the selected ``outputs_dir``:
+    - <outputs_dir>/<file_name> (xlsx)
+    - <outputs_dir>/<stem>.csv
+    - <outputs_dir>/<stem>.npy
 
     Args:
         file_name: Name of the metadata file (e.g., "metadata_2022.xlsx")
-        outputs_dir: Path to the outputs directory (default: "outputs")
+        outputs_dir: Path to the outputs directory (default: ``outputs/legacy``)
 
     Returns:
         True if all expected output files exist, False otherwise

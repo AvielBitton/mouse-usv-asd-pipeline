@@ -14,6 +14,8 @@ from utils import (
     is_already_processed,
     is_segmentation_file_exist,
     get_output_filename,
+    OUTPUTS_LEGACY_DIR,
+    OUTPUTS_EXTERNAL_INPUT_DIR,
     parse_args,
     get_files_to_process,
 )
@@ -34,6 +36,12 @@ from steps import (
 #### 1: setup & file selection
 ##################################################
 logger = setup_logger()
+pipeline_outputs_dir = OUTPUTS_LEGACY_DIR
+external_input_file = os.path.join(
+    OUTPUTS_EXTERNAL_INPUT_DIR,
+    "segmentation_classification_all_data.xlsx",
+)
+
 
 # Normalize folder structure (day/session/ch dirs) before processing.
 # Only needed for 2023+ data which arrives with non-standard naming
@@ -63,7 +71,7 @@ for file_name in files_to_process:
     logger.info(f"Starting file: {file_name}")
 
     # Skip files with existing outputs (xlsx/csv/npy) to resume safely and avoid unnecessary reprocessing
-    if is_already_processed(file_name, "outputs"):
+    if is_already_processed(file_name, pipeline_outputs_dir):
       logger.info(f"Skipping file (already processed): {file_name}")
       continue
 
@@ -85,10 +93,10 @@ for file_name in files_to_process:
     siz = len(SignalVec)
 
     # Check if segmentation already exists - if so, skip segmentation step
-    if is_segmentation_file_exist(file_name, "outputs"):
+    if is_segmentation_file_exist(file_name, pipeline_outputs_dir):
       logger.info(f"Segmentation already exists for {file_name}, skipping segmentation step")
       output_filename = get_output_filename(file_name)
-      output_xlsx = f'outputs/{output_filename}'
+      output_xlsx = os.path.join(pipeline_outputs_dir, output_filename)
     else:
       # Run segmentation: process recordings, detect syllables, save to Excel
       output_xlsx = run_segmentation(
@@ -105,6 +113,7 @@ for file_name in files_to_process:
           session=session,
           rec_num=rec_num,
           missing_count=missing_count,
+          outputs_dir=pipeline_outputs_dir,
           logger=logger,
       )
 
@@ -118,11 +127,14 @@ for file_name in files_to_process:
     (
         motherSyl, matgenSyl, nameSyl, sexSyl, pupgenSyl,
         ageSyl, sessionSyl, rec_numSyl, startSyl, endSyl,
-    ) = read_segmentation_results(f'outputs/{output_filename}', logger=logger)
+    ) = read_segmentation_results(
+        os.path.join(pipeline_outputs_dir, output_filename),
+        logger=logger,
+    )
 
     # Compute basic features and add 3 columns to Excel: 'ISI_time', 'Start Point (Hz)', 'End Point (Hz)'
     compute_basic_features(
-        file_path=f'outputs/{output_filename}',
+        file_path=os.path.join(pipeline_outputs_dir, output_filename),
         signal_vec=SignalVec,
         siz=siz,
         mother=mother,
@@ -145,7 +157,7 @@ for file_name in files_to_process:
     #### 4: classification
     ##################################################
     output_xlsx, output_npy = run_classification(
-        file_path=f'outputs/{output_filename}',
+        file_path=os.path.join(pipeline_outputs_dir, output_filename),
         year=year,
         model_path='src/models/model_weights.h6',
         age_syl=ageSyl,
@@ -165,7 +177,7 @@ for file_name in files_to_process:
     #### 5: enrich segmentation columns
     ##################################################
     enrich_segmentation_columns(
-        file_path=f'outputs/{output_filename}',
+        file_path=os.path.join(pipeline_outputs_dir, output_filename),
         year=year,
         logger=logger,
     )
@@ -174,7 +186,7 @@ for file_name in files_to_process:
     #### 6: feature extraction (per file)
     ##################################################
     output_csv = run_feature_extraction(
-        file_path=f'outputs/{output_filename}',
+        file_path=os.path.join(pipeline_outputs_dir, output_filename),
         year=year,
         logger=logger,
     )
@@ -191,8 +203,9 @@ for file_name in files_to_process:
 #### 7: aggregation (all files)
 ##################################################
 if __name__ == "__main__":
-  run_aggregated_feature_extraction(outputs_dir='outputs', logger=logger)
+  run_aggregated_feature_extraction(outputs_dir=pipeline_outputs_dir, logger=logger)
   run_external_aggregated_feature_extraction(
-      external_file="outputs/external/segmentation_classification_all_data.xlsx",
+      external_file=external_input_file,
+      enabled_filters=args.external_filter,
       logger=logger,
   )
