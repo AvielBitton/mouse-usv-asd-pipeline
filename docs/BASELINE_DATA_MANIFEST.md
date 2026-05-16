@@ -87,3 +87,9 @@ Same numbers in [`BASELINE_DATA_MANIFEST.json`](BASELINE_DATA_MANIFEST.json) for
 ## Executive reporting (Issue #42 / #52)
 
 When building per-scenario packs or the master comparison table, include the configuration and row-count fields from this manifest. Full checklist and templates: [`EXECUTIVE_REPORTING.md`](EXECUTIVE_REPORTING.md).
+
+## Validation runs (2026-05-16)
+
+| Run | Report |
+|-----|--------|
+| XGBoost `--baseline` dependent + independent | [`outputs/reports/baseline_validation/xgboost_baseline_summary.md`](../outputs/reports/baseline_validation/xgboost_baseline_summary.md) |

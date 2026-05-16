@@ -4,6 +4,7 @@ import os
 import pickle
 import re
 import sys
+from typing import Optional
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -47,7 +48,7 @@ def default_results_subdir(
     model_name: str,
     group_split: bool,
     data_csv_abspath: str,
-    strain: int | None = None,
+    strain: Optional[int] = None,
 ) -> str:
     """Build ``results/tabular_models/<subdir>`` name from data source."""
     prefix = f"{model_name}_strain{strain}" if strain else model_name
