@@ -45,5 +45,8 @@
     "main_xlsx": "outputs/external/aggregated/all_data_external_main.xlsx",
     "baseline_csv": "outputs/external/aggregated/all_data_external_baseline.csv",
     "baseline_xlsx": "outputs/external/aggregated/all_data_external_baseline.xlsx"
-  }
+  },
+  "executive_reporting_doc": "docs/EXECUTIVE_REPORTING.md",
+  "legacy_results_archive": "results/legacy/",
+  "matrix_results_root": "results/"
 }

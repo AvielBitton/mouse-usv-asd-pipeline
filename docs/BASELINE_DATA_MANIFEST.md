@@ -81,3 +81,9 @@ Filter definitions: [`BASELINE_DATA_FILTERS.md`](BASELINE_DATA_FILTERS.md)
 ## Machine-readable snapshot
 
 Same numbers in [`BASELINE_DATA_MANIFEST.json`](BASELINE_DATA_MANIFEST.json) for scripts and run metadata.
+
+---
+
+## Executive reporting (Issue #42 / #52)
+
+When building per-scenario packs or the master comparison table, include the configuration and row-count fields from this manifest. Full checklist and templates: [`EXECUTIVE_REPORTING.md`](EXECUTIVE_REPORTING.md).
