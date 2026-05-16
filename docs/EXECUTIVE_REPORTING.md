@@ -55,6 +55,8 @@ Per-filter removals (syllable level): genotype −1,769; invalid_sex −3,343; n
 
 ### 1.2 Cohort filter (Phase B — Issue #47)
 
+Full specification: [`COHORT_DEFINITIONS.md`](COHORT_DEFINITIONS.md). Verification: `outputs/reports/cohort_verification/`.
+
 State explicitly for scenarios 2 and 3:
 
 | Scenario | Year filter | Strain label | Numeric `pup_strain` |

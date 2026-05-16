@@ -1,0 +1,20 @@
+============================================================
+COMPARISON VS BASELINE
+============================================================
+Active flags: --independent, --baseline, --strain 2
+
+Test Accuracy:   0.703  (baseline: 0.829, delta: -0.126)
+Train Accuracy:  0.842  (baseline: 0.880, delta: -0.038)
+Weighted F1:     0.720  (baseline: 0.830, delta: -0.110)
+
+--- WT ---
+  Precision: 0.855  (baseline: 0.920, delta: -0.065)
+  Recall:    0.740  (baseline: 0.780, delta: -0.040)
+  F1:        0.793  (baseline: 0.840, delta: -0.047)
+
+--- HT ---
+  Precision: 0.401  (baseline: 0.730, delta: -0.329)
+  Recall:    0.581  (baseline: 0.900, delta: -0.319)
+  F1:        0.475  (baseline: 0.810, delta: -0.335)
+
+============================================================

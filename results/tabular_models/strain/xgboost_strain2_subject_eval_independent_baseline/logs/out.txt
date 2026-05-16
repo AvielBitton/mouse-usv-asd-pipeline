@@ -1,0 +1,47 @@
+Active flags: ['--independent', '--baseline', '--strain 2']
+Model: xgboost
+Results directory: results/tabular_models/strain/xgboost_strain2_subject_eval_independent_baseline
+Data source: /home/aviel/dev/hit/mouse-usv-asd-pipeline/outputs/external/aggregated/all_data_external_baseline.csv
+Strain filter: kept 4651/11974 rows (pup_strain == 2)
+Mice after filter: 47
+pup_gen balance: {0.0: 3312, 1.0: 1339}
+
+=== Split Info ===
+Strategy: group-aware (by mouse_idx)
+Train: 2452 rows | Val: 1080 rows | Test: 1119 rows
+Train mice (27): [1.0, 3.0, 5.0, 15.0, 16.0, 28.0, 33.0, 38.0, 40.0, 41.0, 51.0, 52.0, 54.0, 64.0, 77.0, 82.0, 83.0, 84.0, 87.0, 88.0, 90.0, 95.0, 96.0, 97.0, 103.0, 104.0, 105.0]
+Val mice   (10): [13.0, 14.0, 26.0, 32.0, 34.0, 65.0, 67.0, 68.0, 69.0, 78.0]
+Test mice  (10): [11.0, 17.0, 22.0, 37.0, 42.0, 46.0, 47.0, 74.0, 76.0, 101.0]
+  Train labels: WT=1653 (67.4%), HT=799 (32.6%)
+  Val labels: WT=798 (73.9%), HT=282 (26.1%)
+  Test labels: WT=861 (76.9%), HT=258 (23.1%)
+==================
+
+Class balance: sample_weight=balanced, scale_pos_weight=2.0688 (n_WT/n_HT, HT=positive)
+Train Accuracy:  0.8421696574225123
+Test Accuracy:  0.7033065236818588
+Classification Report:
+              precision    recall  f1-score   support
+
+          WT       0.86      0.74      0.79       861
+          HT       0.40      0.58      0.47       258
+
+    accuracy                           0.70      1119
+   macro avg       0.63      0.66      0.63      1119
+weighted avg       0.75      0.70      0.72      1119
+
+
+ Confusion Matrix:
+Confusion matrix, without normalization
+
+Single-strain run (strain 2), skipping per-strain CM split.
+[[637 224]
+ [108 150]]
+[0.02086199 0.01783321 0.01209622 0.00942636 0.00846565 0.01130219
+ 0.         0.01182797 0.00780606 0.01110151 0.0246781  0.01838283
+ 0.03233167 0.01073196 0.00669468 0.0218099  0.00319699 0.0159647
+ 0.00923343 0.01048538 0.03960994 0.02107937 0.04471271 0.00523958
+ 0.00909444 0.01546476 0.         0.01395934 0.01413766 0.01098145
+ 0.01632259 0.02125197 0.01126036 0.01120117 0.00564404 0.00947977
+ 0.         0.01242485 0.00577194 0.01548965 0.2303727  0.15893686
+ 0.01831001 0.03023938 0.01478463]

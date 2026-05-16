@@ -50,12 +50,14 @@ Columns include:
 
 Located in `USD_Recordings/`.
 
-### 3. Mouse strain values
+### 3. Mouse strain values (`pup_strain` in aggregated CSV)
 
-Assigned manually based on year:
+Derived from recording year via `strain_from_year()` in `src/preprocessing/utils/io_utils.py`:
 
-* 2015, 2018 → 1
-* 2022 → 2
+* **2022, 2023, 2024** → `pup_strain` **1** (mixed: `BALB/C+BLACK/C57`)
+* **2015, 2018** (and other years) → `pup_strain` **2** (classic: `BALB/C`)
+
+See [`COHORT_DEFINITIONS.md`](COHORT_DEFINITIONS.md) for training-matrix cohorts.
 
 ---
 

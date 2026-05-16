@@ -167,10 +167,10 @@ results/tabular_models/<model>[_subject_eval_dependent|_subject_eval_independent
 | `--model tabpfn --external`                 | `results/tabular_models/tabpfn_subject_eval_dependent_external` |
 | `--group-split --external`                  | `results/tabular_models/xgboost_subject_eval_independent_external` |
 | `--model tabpfn --group-split --external`   | `results/tabular_models/tabpfn_subject_eval_independent_external` |
-| `--external --strain 1`                     | `results/tabular_models/strain/xgboost_strain1_subject_eval_dependent_external` |
-| `--external --strain 1 --independent`       | `results/tabular_models/strain/xgboost_strain1_subject_eval_independent_external` |
-| `--external --strain 2`                     | `results/tabular_models/strain/xgboost_strain2_subject_eval_dependent_external` |
-| `--external --strain 2 --independent`       | `results/tabular_models/strain/xgboost_strain2_subject_eval_independent_external` |
+| `--baseline --strain 1`                     | `results/tabular_models/strain/xgboost_strain1_subject_eval_dependent_baseline` |
+| `--baseline --strain 1 --independent`       | `results/tabular_models/strain/xgboost_strain1_subject_eval_independent_baseline` |
+| `--baseline --strain 2`                     | `results/tabular_models/strain/xgboost_strain2_subject_eval_dependent_baseline` |
+| `--baseline --strain 2 --independent`       | `results/tabular_models/strain/xgboost_strain2_subject_eval_independent_baseline` |
 
 ### Per-strain runs
 
@@ -180,10 +180,10 @@ performance and see if subject-independent evaluation affects each strain
 differently.
 
 ```bash
-python train_classifier.py --external --strain 1
-python train_classifier.py --external --strain 1 --independent
-python train_classifier.py --external --strain 2
-python train_classifier.py --external --strain 2 --independent
+python train_classifier.py --baseline --strain 1
+python train_classifier.py --baseline --strain 1 --independent
+python train_classifier.py --baseline --strain 2
+python train_classifier.py --baseline --strain 2 --independent
 ```
 
 Strain mapping (from the external `Strain` column):
