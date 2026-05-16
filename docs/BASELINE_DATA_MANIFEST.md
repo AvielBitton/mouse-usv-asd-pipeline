@@ -71,7 +71,8 @@ Companion syllable-level workbooks:
 
 | Pipeline | Flag | Data path |
 |----------|------|-----------|
-| Tabular | `--baseline` | `all_data_external_baseline.csv` |
+| Tabular | `--baseline` | `all_data_external_baseline.csv` (numeric: WT=0, HT=1) |
+| Tabular (human-readable) | — | `all_data_external_baseline_labeled.csv` (WT/HT strings) |
 | Sequence | `--baseline` | `all_data_external_baseline.xlsx` |
 
 Filter definitions: [`BASELINE_DATA_FILTERS.md`](BASELINE_DATA_FILTERS.md)

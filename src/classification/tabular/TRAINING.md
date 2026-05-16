@@ -50,14 +50,14 @@ Each row = **one recording** of one mouse. 48 columns total:
  10 – 19   syll{1..10}_e_freq    Avg end frequency per syllable type
  20 – 29   syll{1..10}_dist      Syllable distribution (sums to 1.0)
  30 – 39   syll{1..10}_dur       Avg duration per syllable type
- 40        mother_gen            Mother genotype (0=HET, 1=WT)
+ 40        mother_gen            Mother genotype (0=WT, 1=HT/HET)
  41        pup_sex               Pup sex (encoded)
  42        avg_ISI_time          Mean inter-syllable interval
  43        pup_age               Age in days
  44        session               Session number
  45        pup_strain            Strain (1=2022, 2=other)
  ──────────────────────────────────────────────────
- 46        pup_gen               TARGET — offspring genotype (WT/HET)
+ 46        pup_gen               TARGET — offspring genotype (0=WT, 1=HT/HET)
  47        mouse_idx             Mouse index (used for group split, not as a feature)
 ```
 
@@ -103,7 +103,7 @@ outputs differ.
 | learning_rate      | 0.1   |
 | reg_lambda         | 1.5   |
 | reg_alpha          | 0.05  |
-| scale_pos_weight   | 0.8   |
+| scale_pos_weight   | dynamic `n_WT / n_HT` on train (HT=1) |
 | colsample_bytree   | 0.6   |
 
 ### TabPFN notes
@@ -197,7 +197,7 @@ Strain mapping (from the external `Strain` column):
 
 - **Task:** Binary classification (WT vs HET offspring)
 - **Split:** 60% train / 20% validation / 20% test
-- **Class balancing:** `compute_sample_weight(class_weight='balanced')` (XGBoost only)
+- **Class balancing (XGBoost):** `sample_weight=balanced` + `scale_pos_weight=n_WT/n_HT` on train (HT=1)
 - **Metrics:** accuracy, classification report (precision/recall/F1), confusion matrix
 - **Per-strain CMs:** separate confusion matrices for strain 1 and strain 2
 

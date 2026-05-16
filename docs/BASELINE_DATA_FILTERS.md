@@ -93,12 +93,27 @@ when those are set intentionally for ablation runs.
 
 ---
 
+## Binary genotype encoding
+
+**Canonical rule (all pipelines):** `WT=0`, `HT/HET=1` (positive class = ASD model).
+
+- Input: `Mother Genotype (binary)`, `Offspring Genotype (binary)` in the syllable workbook.
+- Aggregated training CSV: numeric `mother_gen` / `pup_gen` (columns 40 and 46).
+- Human inspection: `all_data_external_baseline_labeled.csv` uses `WT` / `HT` strings.
+
+Verify input encoding:
+
+```bash
+.venv/bin/python scripts/normalize_input_genotype_encoding.py
+```
+
 ## Versioning
 
 When the source workbook (`segmentation_classification_all_data.xlsx`) is
 updated or regenerated, rerun external aggregation and update the manifest:
 
 ```bash
+.venv/bin/python scripts/normalize_input_genotype_encoding.py
 .venv/bin/python scripts/run_external_aggregation.py
 ```
 

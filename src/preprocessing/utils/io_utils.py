@@ -433,6 +433,23 @@ FEATURE_COLUMNS = [
     "Strain",
 ]
 
+# 48-column aggregated CSV (headerless training file); matches train_classifier.COL_NAMES
+AGGREGATE_COL_NAMES = [
+    'syll1_s_freq', 'syll2_s_freq', 'syll3_s_freq', 'syll4_s_freq', 'syll5_s_freq',
+    'syll6_s_freq', 'syll7_s_freq', 'syll8_s_freq', 'syll9_s_freq', 'syll10_s_freq',
+    'syll1_e_freq', 'syll2_e_freq', 'syll3_e_freq', 'syll4_e_freq', 'syll5_e_freq',
+    'syll6_e_freq', 'syll7_e_freq', 'syll8_e_freq', 'syll9_e_freq', 'syll10_e_freq',
+    'syll1_dist', 'syll2_dist', 'syll3_dist', 'syll4_dist', 'syll5_dist',
+    'syll6_dist', 'syll7_dist', 'syll8_dist', 'syll9_dist', 'syll10_dist',
+    'syll1_dur', 'syll2_dur', 'syll3_dur', 'syll4_dur', 'syll5_dur',
+    'syll6_dur', 'syll7_dur', 'syll8_dur', 'syll9_dur', 'syll10_dur',
+    'mother_gen', 'pup_sex', 'avg_ISI_time', 'pup_age', 'session', 'pup_strain',
+    'pup_gen', 'mouse_idx',
+]
+
+# Binary genotype in aggregated CSV: WT=0, HT/HET=1
+GENOTYPE_NUM_TO_LABEL = {0: 'WT', 1: 'HT'}
+
 # Year-to-strain mapping: 2022+ recordings are strain 1, 2015/2018 are strain 2.
 # Kept distinct from segmentation-app's text label ("BALB/C+BLACK/C57") because the
 # numeric Strain feeds the tabular classifier (see ``train_classifier.COL_NAMES``).

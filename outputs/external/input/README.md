@@ -8,6 +8,11 @@ Canonical syllable-level source for all **baseline** training runs (Issue #42 / 
 | `segmentation_classification_all_data.csv` | Synced copy (sequence pipeline cache) |
 | `backup/` | Previous input versions |
 
+**Binary genotype encoding (canonical):**
+
+- `Mother Genotype (binary)` / `Offspring Genotype (binary)`: **WT=0**, **HT/HET=1** (positive = ASD model)
+- Verify or apply: `.venv/bin/python scripts/normalize_input_genotype_encoding.py`
+
 **Requirements before regenerating aggregates:**
 
 1. Issue #34 corrections (commit `791aa05`)
