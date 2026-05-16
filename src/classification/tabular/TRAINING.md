@@ -118,7 +118,7 @@ outputs differ.
 ## CLI Flags
 
 ```
-python train_classifier.py [--model MODEL] [--group-split] [--external] [--data-csv PATH] [--results-dir DIR]
+python train_classifier.py [--model MODEL] [--group-split] [--external] [--strain {1,2}] [--data-csv PATH] [--results-dir DIR]
 ```
 
 | Flag            | Description                                                  |
@@ -126,6 +126,7 @@ python train_classifier.py [--model MODEL] [--group-split] [--external] [--data-
 | `--model`       | Model to train: `xgboost` (default), `tabpfn`               |
 | `--group-split` / `--independent` | Subject-independent evaluation: split by subject (mouse); no leakage across sets |
 | `--external`    | **Recommended.** Use the externally-validated dataset with correct individual genotyping (`all_data_external_main.csv`). This is the preferred data source. |
+| `--strain {1,2}` | Keep only rows where `pup_strain` equals the given value. Filters after CSV load and before train/val/test split. `pup_strain` is dropped from the feature matrix (constant column). Default output goes under `results/tabular_models/strain/`. |
 | `--data-csv`    | Explicit path to the training CSV (48 columns, no header). Use for a specific aggregate file (e.g. a filtered variant). When set, **overrides** the path implied by `--external` / the internal default. The file must exist or the script exits with an error. |
 | `--results-dir` | Override default results directory                           |
 
@@ -166,6 +167,31 @@ results/tabular_models/<model>[_subject_eval_dependent|_subject_eval_independent
 | `--model tabpfn --external`                 | `results/tabular_models/tabpfn_subject_eval_dependent_external` |
 | `--group-split --external`                  | `results/tabular_models/xgboost_subject_eval_independent_external` |
 | `--model tabpfn --group-split --external`   | `results/tabular_models/tabpfn_subject_eval_independent_external` |
+| `--external --strain 1`                     | `results/tabular_models/strain/xgboost_strain1_subject_eval_dependent_external` |
+| `--external --strain 1 --independent`       | `results/tabular_models/strain/xgboost_strain1_subject_eval_independent_external` |
+| `--external --strain 2`                     | `results/tabular_models/strain/xgboost_strain2_subject_eval_dependent_external` |
+| `--external --strain 2 --independent`       | `results/tabular_models/strain/xgboost_strain2_subject_eval_independent_external` |
+
+### Per-strain runs
+
+Filter the dataset to a single strain **before** splitting, so each model is
+trained and evaluated only on one strain. This lets you compare per-strain
+performance and see if subject-independent evaluation affects each strain
+differently.
+
+```bash
+python train_classifier.py --external --strain 1
+python train_classifier.py --external --strain 1 --independent
+python train_classifier.py --external --strain 2
+python train_classifier.py --external --strain 2 --independent
+```
+
+Strain mapping (from the external `Strain` column):
+
+| Value | Label | Years |
+|-------|-------|-------|
+| 1 | BALB/C+BLACK/C57 | 2022, 2023, 2024 |
+| 2 | BALB/C | 2015, 2018 |
 
 ## Common evaluation
 
