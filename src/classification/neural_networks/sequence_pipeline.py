@@ -36,6 +36,9 @@ warnings.filterwarnings("ignore", category=FutureWarning)
 DATA_PATH = os.path.join(
     "outputs", "external", "input", "segmentation_classification_all_data.xlsx"
 )
+BASELINE_DATA_PATH = os.path.join(
+    "outputs", "external", "aggregated", "all_data_external_baseline.xlsx"
+)
 
 CONTINUOUS_FEATURES = [
     "Start Point (Hz)",
@@ -640,6 +643,15 @@ def parse_args():
              "across sets (alias: --independent). Default is subject-dependent random split.",
     )
     parser.add_argument(
+        "--baseline",
+        action="store_true",
+        help="Use the official baseline dataset (all_data_external_baseline.xlsx) — "
+             "external data with invalid_sex, noise, and supplement_offspring removed "
+             "on top of the always-applied genotype binary filter. "
+             "Required data source for all training-matrix runs (Issue #42). "
+             "Takes precedence over --data-path when set.",
+    )
+    parser.add_argument(
         "--data-path", type=str, default=DATA_PATH,
         help="Path to the syllable-level Excel file.",
     )
@@ -661,6 +673,10 @@ def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Device: {device}")
 
+    # --baseline overrides --data-path
+    if getattr(args, "baseline", False):
+        args.data_path = BASELINE_DATA_PATH
+
     # --- results directory ---
     if args.results_dir:
         results_dir = args.results_dir
@@ -670,6 +686,8 @@ def main():
             subdir += "_subject_eval_independent"
         else:
             subdir += "_subject_eval_dependent"
+        if getattr(args, "baseline", False):
+            subdir += "_baseline"
         results_dir = os.path.join("results", "neural_networks", subdir)
 
     plots_dir = os.path.join(results_dir, "plots")
@@ -700,6 +718,8 @@ def main():
         active_flags.append(f"--model {args.model}")
     if args.group_split:
         active_flags.append("--independent")
+    if getattr(args, "baseline", False):
+        active_flags.append("--baseline")
     print(f"Active flags: {active_flags if active_flags else 'none (baseline)'}")
     print(f"Model: {args.model}")
     print(f"Results directory: {results_dir}")

@@ -207,6 +207,12 @@ def run_aggregated_feature_extraction(
 
 ALL_DATA_EXTERNAL_MAIN_XLSX_NAME = "all_data_external_main.xlsx"
 ALL_DATA_EXTERNAL_MAIN_CSV_NAME = "all_data_external_main.csv"
+ALL_DATA_EXTERNAL_BASELINE_XLSX_NAME = "all_data_external_baseline.xlsx"
+ALL_DATA_EXTERNAL_BASELINE_CSV_NAME = "all_data_external_baseline.csv"
+
+# Filters applied together to produce the official training baseline.
+# invalid_genotype is already enforced via drop_non_binary_genotype_rows_for_external.
+BASELINE_FILTERS = ("invalid_sex", "noise", "supplement_offspring")
 
 EXTERNAL_FILTERS: Dict[str, str] = {
     "invalid_sex": "invalid_sex",
@@ -485,6 +491,27 @@ def run_external_aggregated_feature_extraction(
 
     if logger:
         logger.info(f"Finished main external aggregation: {main_csv}")
+
+    # --- official baseline export (always generated) ----------------------------
+    # Applies invalid_sex + noise + supplement_offspring on top of the genotype
+    # binary drop that is already embedded in `dataset`.  This is the required
+    # data source for all training-matrix runs (Issue #42 / #46).
+    baseline = dataset.copy()
+    for _f in BASELINE_FILTERS:
+        baseline, _removed = apply_single_external_filter(baseline, _f, logger=logger)
+    baseline_csv = save_external_aggregate_outputs(
+        dataset=baseline,
+        output_dir=output_dir,
+        xlsx_name=ALL_DATA_EXTERNAL_BASELINE_XLSX_NAME,
+        csv_name=ALL_DATA_EXTERNAL_BASELINE_CSV_NAME,
+        logger=logger,
+    )
+    if logger:
+        logger.info(
+            f"Finished baseline external aggregation "
+            f"({len(baseline)} rows remaining): {baseline_csv}"
+        )
+    # ---------------------------------------------------------------------------
 
     requested = list(dict.fromkeys(enabled_filters or []))
     requested = [name for name in requested if name in EXTERNAL_FILTERS]

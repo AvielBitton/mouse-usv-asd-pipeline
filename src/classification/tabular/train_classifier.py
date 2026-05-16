@@ -27,12 +27,17 @@ ALL_DATA_CSV = os.path.join("outputs", "legacy", "aggregated", "all_data.csv")
 ALL_DATA_EXTERNAL_CSV = os.path.join(
     "outputs", "external", "aggregated", "all_data_external_main.csv"
 )
+ALL_DATA_EXTERNAL_BASELINE_CSV = os.path.join(
+    "outputs", "external", "aggregated", "all_data_external_baseline.csv"
+)
 
 
 def resolve_training_csv_path(args: argparse.Namespace) -> str:
     """Return absolute path to the tabular CSV; ``--data-csv`` wins over defaults."""
     if getattr(args, "data_csv", None):
         return os.path.abspath(args.data_csv)
+    if getattr(args, "baseline", False):
+        return os.path.abspath(ALL_DATA_EXTERNAL_BASELINE_CSV)
     if args.external:
         return os.path.abspath(ALL_DATA_EXTERNAL_CSV)
     return os.path.abspath(ALL_DATA_CSV)
@@ -50,8 +55,11 @@ def default_results_subdir(
         "_subject_eval_independent" if group_split else "_subject_eval_dependent"
     )
     ext_abs = os.path.abspath(ALL_DATA_EXTERNAL_CSV)
+    baseline_abs = os.path.abspath(ALL_DATA_EXTERNAL_BASELINE_CSV)
     int_abs = os.path.abspath(ALL_DATA_CSV)
-    if data_csv_abspath == ext_abs:
+    if data_csv_abspath == baseline_abs:
+        subdir += "_baseline"
+    elif data_csv_abspath == ext_abs:
         subdir += "_external"
     elif data_csv_abspath == int_abs:
         pass
@@ -124,6 +132,15 @@ def parse_args():
         help='Keep only rows where pup_strain equals this value (1 or 2). '
              'Applied after loading CSV and before train/val/test split. '
              'Default output goes under results/tabular_models/strain/.',
+    )
+    parser.add_argument(
+        '--baseline',
+        action='store_true',
+        help='Use the official baseline dataset (all_data_external_baseline.csv) — '
+             'external data with invalid_sex, noise, and supplement_offspring removed '
+             'on top of the always-applied genotype binary filter. '
+             'Required data source for all training-matrix runs (Issue #42). '
+             'Takes precedence over --external when both are set; ignored when --data-csv is set.',
     )
     parser.add_argument(
         '--results-dir',
@@ -297,7 +314,9 @@ def main():
         active_flags.append(f'--model {model_name}')
     if args.group_split:
         active_flags.append('--independent')
-    if args.external:
+    if getattr(args, 'baseline', False):
+        active_flags.append('--baseline')
+    elif args.external:
         active_flags.append('--external')
     if args.data_csv:
         active_flags.append(f'--data-csv {args.data_csv}')
