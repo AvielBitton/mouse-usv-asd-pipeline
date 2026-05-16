@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Executive Summary — Mouse USV ASD Classification</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', sans-serif; color: #1a1a2e; background: #f8f9fb; padding: 40px; line-height: 1.6; }
+  .container { max-width: 900px; margin: 0 auto; background: #fff; border-radius: 12px; box-shadow: 0 2px 20px rgba(0,0,0,0.06); overflow: hidden; }
+  .header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: #fff; padding: 36px 44px; }
+  .header h1 { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+  .header p { font-size: 13px; color: #a8b2d1; }
+  .body { padding: 36px 44px; }
+  h2 { font-size: 15px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #16213e; margin: 28px 0 12px; border-bottom: 2px solid #e8ecf4; padding-bottom: 6px; }
+  h2:first-child { margin-top: 0; }
+  p, li { font-size: 14px; color: #333; }
+  ul { padding-left: 20px; margin: 8px 0; }
+  li { margin-bottom: 6px; }
+  .metrics { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin: 16px 0; }
+  .metric-card { background: #f4f6fb; border-radius: 8px; padding: 18px; text-align: center; }
+  .metric-card .value { font-size: 28px; font-weight: 700; color: #16213e; }
+  .metric-card .label { font-size: 12px; color: #666; margin-top: 4px; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 13px; }
+  th { background: #16213e; color: #fff; padding: 10px 14px; text-align: left; font-weight: 600; }
+  td { padding: 9px 14px; border-bottom: 1px solid #e8ecf4; }
+  tr:last-child td { border-bottom: none; }
+  .highlight { color: #e63946; font-weight: 600; }
+  .good { color: #2a9d8f; font-weight: 600; }
+  .img-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 16px 0; }
+  .img-row img { width: 100%; border-radius: 8px; border: 1px solid #e8ecf4; }
+  .img-full img { width: 100%; border-radius: 8px; border: 1px solid #e8ecf4; margin: 12px 0; }
+  .footer { padding: 20px 44px; background: #f4f6fb; font-size: 11px; color: #888; text-align: center; }
+  @media print {
+    body { padding: 0; background: #fff; }
+    .container { box-shadow: none; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <h1>Executive Summary — Mouse USV ASD Classification</h1>
+    <p>XGBoost Binary Classifier &nbsp;|&nbsp; Generated March 28, 2026</p>
+  </div>
+
+  <div class="body">
+
+    <h2>Objective</h2>
+    <p>Classify mouse pups as <strong>Wild-Type (WT)</strong> or <strong>ASD-model</strong> based on ultrasonic vocalization (USV) features extracted from audio recordings.</p>
+
+    <h2>Dataset</h2>
+    <ul>
+      <li><strong>7,322</strong> syllable-sequence samples from aggregated recordings</li>
+      <li><strong>46 features</strong> per sample (syllable frequencies, durations, distances, ISI, sex, age, strain)</li>
+      <li>Split: 60% train / 20% validation / 20% test</li>
+      <li>Class ratio in test: 473 WT vs 992 ASD (~1:2)</li>
+    </ul>
+
+    <h2>Key Results</h2>
+    <div class="metrics">
+      <div class="metric-card">
+        <div class="value">76.0%</div>
+        <div class="label">Test Accuracy</div>
+      </div>
+      <div class="metric-card">
+        <div class="value">0.77</div>
+        <div class="label">Weighted F1-Score</div>
+      </div>
+      <div class="metric-card">
+        <div class="value">79.8%</div>
+        <div class="label">Train Accuracy</div>
+      </div>
+    </div>
+
+    <h2>Per-Class Performance</h2>
+    <table>
+      <tr><th>Class</th><th>Precision</th><th>Recall</th><th>F1-Score</th><th>Support</th></tr>
+      <tr><td>0 — WT</td><td>0.58</td><td class="good">0.92</td><td>0.71</td><td>473</td></tr>
+      <tr><td>1 — ASD</td><td class="good">0.94</td><td class="highlight">0.69</td><td>0.80</td><td>992</td></tr>
+      <tr style="background:#f4f6fb; font-weight:600;"><td>Weighted Avg</td><td>0.83</td><td>0.76</td><td>0.77</td><td>1,465</td></tr>
+    </table>
+
+    <h2>Confusion Matrix</h2>
+    <table>
+      <tr><th></th><th>Predicted WT</th><th>Predicted ASD</th></tr>
+      <tr><td><strong>Actual WT</strong></td><td class="good">433</td><td>40</td></tr>
+      <tr><td><strong>Actual ASD</strong></td><td class="highlight">311</td><td class="good">681</td></tr>
+    </table>
+
+    <h2>Strengths</h2>
+    <ul>
+      <li>High WT recall (<span class="good">92%</span>) — almost all healthy mice are correctly identified.</li>
+      <li>High ASD precision (<span class="good">94%</span>) — when the model predicts ASD, it is almost always correct.</li>
+      <li>Small train-test gap (79.8% vs 76.0%) — no significant overfitting.</li>
+    </ul>
+
+    <h2>Weaknesses</h2>
+    <ul>
+      <li>ASD recall is only <span class="highlight">69%</span> — the model misses ~31% of ASD mice (311 false negatives).</li>
+      <li>WT precision is low (58%) — many predicted-WT samples are actually ASD.</li>
+      <li>Class imbalance (1:2) may bias the model toward predicting WT too often.</li>
+    </ul>
+
+    <h2>Top Feature</h2>
+    <p>The single most important feature is <strong>avg_ISI_time</strong> (average inter-syllable interval), contributing <strong>46%</strong> of total feature importance. This suggests that vocalization timing patterns are the strongest differentiator between WT and ASD mice.</p>
+
+    <h2>Training Curves &amp; Feature Importance</h2>
+    <div class="img-row">
+      <img src="../plots/AUC_error.png" alt="AUC and Error curves">
+      <img src="../plots/conf_matrix.png" alt="Confusion Matrix Heatmap">
+    </div>
+    <div class="img-full">
+      <img src="../plots/feature_importance_1.png" alt="Feature Importance">
+    </div>
+
+    <h2>Conclusion</h2>
+    <p>The model achieves reasonable classification performance (76% accuracy, 0.77 weighted F1) for a biological signal task. The main limitation is the <span class="highlight">31% miss-rate on ASD mice</span>. For screening purposes where missing ASD cases is costly, the recall on class 1 should be improved — possible directions include threshold tuning, feature engineering on temporal patterns, or ensemble methods.</p>
+
+  </div>
+
+  <div class="footer">
+    Mouse USV ASD Pipeline &nbsp;·&nbsp; HIT — Holon Institute of Technology &nbsp;·&nbsp; 2026
+  </div>
+
+</div>
+</body>
+</html>

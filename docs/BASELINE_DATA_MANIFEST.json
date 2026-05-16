@@ -1,0 +1,52 @@
+{
+  "manifest_version": 1,
+  "updated": "2026-05-16",
+  "issues": ["#46", "#42", "#34"],
+  "input": {
+    "source_commit": "791aa05ac4b89f2de69909fcb09af25964902e1f",
+    "xlsx": "outputs/external/input/segmentation_classification_all_data.xlsx",
+    "csv": "outputs/external/input/segmentation_classification_all_data.csv",
+    "backup_dir": "outputs/external/input/backup",
+    "session_zero_to_one_replaced": 919,
+    "issue_34_checks": {
+      "14164P_1C_rows": 985,
+      "14164P_1C_offspring_genotype": "HT",
+      "08146L_rows": 97,
+      "08146L_sex": "F",
+      "08146L_offspring_genotype": "WT"
+    }
+  },
+  "aggregation": {
+    "script": "scripts/run_external_aggregation.py",
+    "run_date": "2026-05-16",
+    "exit_code": 0,
+    "runtime_minutes_approx": 19
+  },
+  "syllable_rows": {
+    "raw_input": 125576,
+    "after_invalid_genotype": 123807,
+    "invalid_genotype_removed": 1769,
+    "after_invalid_sex": 120464,
+    "invalid_sex_removed": 3343,
+    "after_noise": 110130,
+    "noise_removed": 10334,
+    "after_supplement_offspring": 102035,
+    "supplement_offspring_removed": 8095,
+    "baseline_pool": 102035,
+    "total_removed_from_raw": 23541
+  },
+  "recording_rows": {
+    "main": 13342,
+    "baseline": 11974,
+    "main_minus_baseline": 1368
+  },
+  "outputs": {
+    "main_csv": "outputs/external/aggregated/all_data_external_main.csv",
+    "main_xlsx": "outputs/external/aggregated/all_data_external_main.xlsx",
+    "baseline_csv": "outputs/external/aggregated/all_data_external_baseline.csv",
+    "baseline_xlsx": "outputs/external/aggregated/all_data_external_baseline.xlsx"
+  },
+  "executive_reporting_doc": "docs/EXECUTIVE_REPORTING.md",
+  "legacy_results_archive": "results/legacy/",
+  "matrix_results_root": "results/"
+}

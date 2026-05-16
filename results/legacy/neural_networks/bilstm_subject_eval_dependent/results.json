@@ -1,0 +1,41 @@
+{
+  "model": "bilstm",
+  "group_split": false,
+  "test_accuracy": 0.7640449438202247,
+  "test_auc": 0.7415966386554622,
+  "train_accuracy": 0.7575757575757576,
+  "classification_report": {
+    "0.0": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1-score": 0.0,
+      "support": 21.0
+    },
+    "1.0": {
+      "precision": 0.7640449438202247,
+      "recall": 1.0,
+      "f1-score": 0.8662420382165605,
+      "support": 68.0
+    },
+    "accuracy": 0.7640449438202247,
+    "macro avg": {
+      "precision": 0.38202247191011235,
+      "recall": 0.5,
+      "f1-score": 0.43312101910828027,
+      "support": 89.0
+    },
+    "weighted avg": {
+      "precision": 0.5837646761772503,
+      "recall": 0.7640449438202247,
+      "f1-score": 0.661847849423889,
+      "support": 89.0
+    }
+  },
+  "num_train": 264,
+  "num_val": 89,
+  "num_test": 89,
+  "total_params": 148953,
+  "epochs_trained": 16,
+  "best_val_auc": 0.8277310924369747,
+  "subject_eval_independent": false
+}

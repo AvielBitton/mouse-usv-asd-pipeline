@@ -36,3 +36,4 @@ outputs_temp_backup/
 src/models/model_weights.h6/variables/variables.data-00000-of-00001
 # TabPFN model pickles are >100MB
 results/tabular_models/tabpfn*/model/tabpfn_model.pkl
+results/legacy/tabular_models/tabpfn*/model/tabpfn_model.pkl

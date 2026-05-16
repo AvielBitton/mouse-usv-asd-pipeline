@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Group-Aware Split — External Data — Executive Summary</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', sans-serif; color: #1a1a2e; background: #f8f9fb; padding: 40px; line-height: 1.6; }
+  .container { max-width: 960px; margin: 0 auto; background: #fff; border-radius: 12px; box-shadow: 0 2px 20px rgba(0,0,0,0.06); overflow: hidden; }
+  .header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: #fff; padding: 36px 44px; }
+  .header h1 { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+  .header p { font-size: 13px; color: #a8b2d1; }
+  .body { padding: 36px 44px; }
+  h2 { font-size: 15px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #16213e; margin: 28px 0 12px; border-bottom: 2px solid #e8ecf4; padding-bottom: 6px; }
+  h2:first-child { margin-top: 0; }
+  h3 { font-size: 14px; font-weight: 700; color: #16213e; margin: 20px 0 8px; }
+  p, li { font-size: 14px; color: #333; }
+  ul { padding-left: 20px; margin: 8px 0; }
+  li { margin-bottom: 6px; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 13px; }
+  th { background: #16213e; color: #fff; padding: 10px 14px; text-align: left; font-weight: 600; }
+  td { padding: 9px 14px; border-bottom: 1px solid #e8ecf4; }
+  tr:last-child td { border-bottom: none; }
+  .highlight { color: #e63946; font-weight: 600; }
+  .good { color: #2a9d8f; font-weight: 600; }
+  .banner { border-radius: 8px; padding: 20px 24px; margin: 16px 0; }
+  .banner-info { background: linear-gradient(135deg, #457b9d 0%, #1d3557 100%); color: #fff; }
+  .banner-info p { color: #d4e4f0; }
+  .banner-info h3 { color: #fff; margin-top: 0; }
+  .footer { padding: 20px 44px; background: #f4f6fb; font-size: 11px; color: #888; text-align: center; }
+  @media print {
+    body { padding: 0; background: #fff; }
+    .container { box-shadow: none; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <h1>Group-Aware Split &mdash; External Data &mdash; Executive Summary</h1>
+    <p>XGBoost Binary Classifier &nbsp;|&nbsp; <code>--external --group-split</code> &nbsp;|&nbsp; April 2026</p>
+  </div>
+
+  <div class="body">
+
+    <h2>Configuration</h2>
+    <table>
+      <tr><th></th><th>Value</th></tr>
+      <tr><td>Data source</td><td>External (<code>all_data_external.csv</code>) &mdash; correct individual genotyping</td></tr>
+      <tr><td>Split strategy</td><td>Group-aware by mouse (no mouse overlap between train/test)</td></tr>
+      <tr><td>Total feature rows</td><td>13,081</td></tr>
+      <tr><td>Unique mice</td><td>115 (27 HET / 88 WT)</td></tr>
+    </table>
+
+    <h2>Results &mdash; External Random vs Group Split</h2>
+    <table>
+      <tr><th>Metric</th><th>External Random</th><th>External Group</th><th>Delta</th></tr>
+      <tr><td>Test Accuracy</td><td class="good">70.7%</td><td>56.1%</td><td class="highlight">&minus;14.6%</td></tr>
+      <tr><td>Weighted F1</td><td class="good">0.73</td><td>0.60</td><td class="highlight">&minus;0.13</td></tr>
+      <tr><td>HET F1</td><td>0.62</td><td>0.45</td><td class="highlight">&minus;0.17</td></tr>
+      <tr><td>WT F1</td><td class="good">0.76</td><td>0.63</td><td class="highlight">&minus;0.13</td></tr>
+      <tr><td>HET Recall</td><td class="good">0.97</td><td class="good">0.90</td><td>&minus;0.07</td></tr>
+      <tr><td>HET Precision</td><td>0.46</td><td class="highlight">0.30</td><td class="highlight">&minus;0.16</td></tr>
+    </table>
+
+    <p>The 14.6% accuracy drop from random to group split confirms the model relies on
+    mouse-level features rather than acoustic patterns that generalize to unseen mice.</p>
+
+    <div class="banner banner-info">
+      <h3>Conclusion</h3>
+      <p>At 56.1% accuracy with group-aware split, the model does not generalize well to unseen mice.
+      The comprehensive comparison across all 4 configurations is available in
+      <code>results/executive_summaries/tabular_by_experiment/xgboost_subject_eval_dependent_external/executive_summary.html</code>.</p>
+    </div>
+
+  </div>
+
+  <div class="footer">
+    Mouse USV ASD Pipeline &middot; HIT &mdash; Holon Institute of Technology &middot; 2026
+  </div>
+
+</div>
+</body>
+</html>

@@ -10,7 +10,9 @@ import pandas as pd
 
 from legacy.audio_feature_extraction_reduction_by_recording import feature_extraction
 from utils import (
+    AGGREGATE_COL_NAMES,
     FEATURE_COLUMNS,
+    GENOTYPE_NUM_TO_LABEL,
     OUTPUTS_EXTERNAL_AGGREGATED_DIR,
     replace_extension,
     strain_from_year,
@@ -207,6 +209,12 @@ def run_aggregated_feature_extraction(
 
 ALL_DATA_EXTERNAL_MAIN_XLSX_NAME = "all_data_external_main.xlsx"
 ALL_DATA_EXTERNAL_MAIN_CSV_NAME = "all_data_external_main.csv"
+ALL_DATA_EXTERNAL_BASELINE_XLSX_NAME = "all_data_external_baseline.xlsx"
+ALL_DATA_EXTERNAL_BASELINE_CSV_NAME = "all_data_external_baseline.csv"
+
+# Filters applied together to produce the official training baseline.
+# invalid_genotype is already enforced via drop_non_binary_genotype_rows_for_external.
+BASELINE_FILTERS = ("invalid_sex", "noise", "supplement_offspring")
 
 EXTERNAL_FILTERS: Dict[str, str] = {
     "invalid_sex": "invalid_sex",
@@ -399,6 +407,23 @@ def apply_single_external_filter(
     return filtered, removed
 
 
+def save_labeled_aggregate_csv(
+    mouse_final_data: np.ndarray,
+    output_csv: str,
+    logger: Optional[logging.Logger] = None,
+) -> str:
+    """Write human-readable aggregate CSV with HT/WT genotype labels."""
+    base, ext = os.path.splitext(output_csv)
+    labeled_path = f"{base}_labeled{ext}"
+    df = pd.DataFrame(mouse_final_data, columns=AGGREGATE_COL_NAMES)
+    for col in ("mother_gen", "pup_gen"):
+        df[col] = df[col].map(GENOTYPE_NUM_TO_LABEL)
+    df.to_csv(labeled_path, index=False)
+    if logger:
+        logger.info(f"Wrote labeled aggregate: {labeled_path}")
+    return labeled_path
+
+
 def save_external_aggregate_outputs(
     dataset: pd.DataFrame,
     output_dir: str,
@@ -406,7 +431,7 @@ def save_external_aggregate_outputs(
     csv_name: str,
     logger: Optional[logging.Logger] = None,
 ) -> str:
-    """Save one external aggregate pair (xlsx + csv)."""
+    """Save one external aggregate pair (xlsx + csv + labeled csv)."""
     os.makedirs(output_dir, exist_ok=True)
     output_xlsx = os.path.join(output_dir, xlsx_name)
     output_csv = os.path.join(output_dir, csv_name)
@@ -421,6 +446,7 @@ def save_external_aggregate_outputs(
     if logger and os.path.isfile(output_csv):
         logger.info(f"Overwriting existing file: {output_csv}")
     np.savetxt(output_csv, X=mouse_final_data, delimiter=",")
+    save_labeled_aggregate_csv(mouse_final_data, output_csv, logger=logger)
 
     return output_csv
 
@@ -485,6 +511,27 @@ def run_external_aggregated_feature_extraction(
 
     if logger:
         logger.info(f"Finished main external aggregation: {main_csv}")
+
+    # --- official baseline export (always generated) ----------------------------
+    # Applies invalid_sex + noise + supplement_offspring on top of the genotype
+    # binary drop that is already embedded in `dataset`.  This is the required
+    # data source for all training-matrix runs (Issue #42 / #46).
+    baseline = dataset.copy()
+    for _f in BASELINE_FILTERS:
+        baseline, _removed = apply_single_external_filter(baseline, _f, logger=logger)
+    baseline_csv = save_external_aggregate_outputs(
+        dataset=baseline,
+        output_dir=output_dir,
+        xlsx_name=ALL_DATA_EXTERNAL_BASELINE_XLSX_NAME,
+        csv_name=ALL_DATA_EXTERNAL_BASELINE_CSV_NAME,
+        logger=logger,
+    )
+    if logger:
+        logger.info(
+            f"Finished baseline external aggregation "
+            f"({len(baseline)} rows remaining): {baseline_csv}"
+        )
+    # ---------------------------------------------------------------------------
 
     requested = list(dict.fromkeys(enabled_filters or []))
     requested = [name for name in requested if name in EXTERNAL_FILTERS]

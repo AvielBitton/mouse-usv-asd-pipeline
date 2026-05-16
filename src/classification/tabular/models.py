@@ -8,12 +8,13 @@ their factory functions.
 from xgboost import XGBClassifier
 
 
-def create_xgboost(seed):
+def create_xgboost(seed, scale_pos_weight=1.0):
+    """XGBoost binary classifier. HT=1 is the positive class (scale_pos_weight target)."""
     return XGBClassifier(
         n_estimators=50, random_state=seed, learning_rate=0.1, max_depth=5,
         objective='binary:logistic', booster='gbtree',
         reg_lambda=1.5, reg_alpha=0.05, min_child_weight=0.1,
-        scale_pos_weight=0.8, colsample_bytree=0.6,
+        scale_pos_weight=scale_pos_weight, colsample_bytree=0.6,
         eval_metric=["auc", "error"],
     )
 

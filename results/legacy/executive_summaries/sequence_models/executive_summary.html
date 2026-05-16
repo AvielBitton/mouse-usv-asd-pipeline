@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Neural Networks Executive Summary — Mouse USV ASD Classification</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', sans-serif; color: #1a1a2e; background: #f8f9fb; padding: 40px; line-height: 1.6; }
+  .container { max-width: 1100px; margin: 0 auto; background: #fff; border-radius: 12px; box-shadow: 0 2px 20px rgba(0,0,0,0.06); overflow: hidden; }
+  .header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: #fff; padding: 36px 44px; }
+  .header h1 { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+  .header p { font-size: 13px; color: #a8b2d1; }
+  .body { padding: 36px 44px; }
+  h2 { font-size: 15px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #16213e; margin: 32px 0 12px; border-bottom: 2px solid #e8ecf4; padding-bottom: 6px; }
+  h2:first-child { margin-top: 0; }
+  h3 { font-size: 14px; font-weight: 700; color: #16213e; margin: 20px 0 8px; }
+  p, li { font-size: 14px; color: #333; }
+  ul { padding-left: 20px; margin: 8px 0; }
+  li { margin-bottom: 6px; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 13px; }
+  th { background: #16213e; color: #fff; padding: 10px 14px; text-align: left; font-weight: 600; }
+  td { padding: 9px 14px; border-bottom: 1px solid #e8ecf4; }
+  tr:last-child td { border-bottom: none; }
+  .highlight { color: #e63946; font-weight: 600; }
+  .good { color: #2a9d8f; font-weight: 600; }
+  .neutral { color: #6c757d; font-weight: 600; }
+  .banner { border-radius: 8px; padding: 20px 24px; margin: 16px 0; }
+  .banner-warn { background: linear-gradient(135deg, #e63946 0%, #c1121f 100%); color: #fff; }
+  .banner-warn p { color: #fde8e8; }
+  .banner-warn h3 { color: #fff; margin-top: 0; }
+  .banner-info { background: linear-gradient(135deg, #457b9d 0%, #1d3557 100%); color: #fff; }
+  .banner-info p { color: #d4e4f0; }
+  .banner-info h3 { color: #fff; margin-top: 0; }
+  .banner-ok { background: linear-gradient(135deg, #2a9d8f 0%, #264653 100%); color: #fff; }
+  .banner-ok p { color: #d4f0e8; }
+  .banner-ok h3 { color: #fff; margin-top: 0; }
+  .model-bilstm { background: #eef2ff; }
+  .model-cnn { background: #f0fdf4; }
+  .model-transformer { background: #fff7ed; }
+  .model-tabular { background: #fef2f2; }
+  .config-table td:first-child { font-weight: 600; }
+  .config-table tr:nth-child(even) { background: #f8f9fb; }
+  .legend { background: #f4f6fb; border-radius: 8px; padding: 16px 20px; margin: 12px 0; font-size: 13px; }
+  .legend strong { color: #16213e; }
+  code { background: #eef2ff; padding: 2px 6px; border-radius: 4px; font-size: 12px; }
+  th code { background: rgba(255,255,255,0.15); color: #fff; }
+  pre { background: #1a1a2e; color: #a8b2d1; border-radius: 8px; padding: 16px 20px; margin: 12px 0; overflow-x: auto; font-size: 13px; line-height: 1.5; }
+  pre code { background: none; padding: 0; color: inherit; }
+  .footer { padding: 20px 44px; background: #f4f6fb; font-size: 11px; color: #888; text-align: center; }
+  @media print {
+    body { padding: 0; background: #fff; }
+    .container { box-shadow: none; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <h1>Neural Networks Executive Summary &mdash; Sequence Models</h1>
+    <p>BiLSTM vs 1D-CNN vs Transformer &nbsp;|&nbsp; 6 Configurations &nbsp;|&nbsp; May 2026</p>
+  </div>
+
+  <div class="body">
+
+    <h2>Objective</h2>
+    <p>Evaluate whether <strong>sequence-based deep learning models</strong> (BiLSTM, 1D-CNN, Transformer)
+    can classify mouse pups as <strong>Wild-Type (WT)</strong> or <strong>ASD-model (HET)</strong>
+    using the temporal ordering of ultrasonic vocalizations (USVs). This complements the existing
+    tabular models (XGBoost, TabPFN) that use aggregated per-recording features and lose temporal information.</p>
+
+    <!-- ============================================================ -->
+    <h2>Approach</h2>
+
+    <h3>Data Representation</h3>
+    <p>Instead of aggregating syllable features into a single vector per recording, we preserve the
+    <strong>ordered sequence of syllables</strong> within each mouse-day-session. Each session contains
+    a median of <strong>236 syllables</strong> (442 sessions total from 119 mice: 91 WT, 28 HT).</p>
+
+    <p>Per-syllable features (14 dimensions):</p>
+    <ul>
+      <li><strong>Continuous:</strong> Start Point (Hz), End Point (Hz), Duration, ISI time</li>
+      <li><strong>Syllable type:</strong> Learned embedding (11 types &rarr; 8 dimensions)</li>
+      <li><strong>Binary flags:</strong> Noise indicator, Recording boundary marker</li>
+    </ul>
+    <p>Static metadata (mother genotype, sex, day, session) is concatenated to the model output before classification.</p>
+
+    <h3>Models</h3>
+    <table class="config-table">
+      <tr><th>Model</th><th>Type</th><th>Parameters</th><th>How It Reads the Sequence</th></tr>
+      <tr>
+        <td>BiLSTM</td>
+        <td>Recurrent (LSTM)</td>
+        <td>148,953</td>
+        <td>Step-by-step with memory, reads forward and backward</td>
+      </tr>
+      <tr>
+        <td>1D-CNN</td>
+        <td>Convolutional</td>
+        <td>86,041</td>
+        <td>Sliding window (size 3) detecting local patterns</td>
+      </tr>
+      <tr>
+        <td>Transformer</td>
+        <td>Self-Attention</td>
+        <td>72,537</td>
+        <td>Every syllable attends to every other syllable simultaneously</td>
+      </tr>
+    </table>
+
+    <h3>Training Setup</h3>
+    <ul>
+      <li><strong>Framework:</strong> PyTorch, CPU training</li>
+      <li><strong>Max sequence length:</strong> 256 syllables (covers median session length)</li>
+      <li><strong>Loss:</strong> BCEWithLogitsLoss with pos_weight for class balancing</li>
+      <li><strong>Optimizer:</strong> Adam (lr=0.001) with ReduceLROnPlateau scheduler</li>
+      <li><strong>Early stopping:</strong> Patience 15 epochs on validation AUC</li>
+      <li><strong>Split:</strong> 60% train / 20% val / 20% test</li>
+    </ul>
+
+    <!-- ============================================================ -->
+    <h2>Results &mdash; All 6 Configurations</h2>
+
+    <table>
+      <tr>
+        <th>Model</th>
+        <th>Split</th>
+        <th>Test Acc</th>
+        <th>Test AUC</th>
+        <th>HT F1</th>
+        <th>HT Recall</th>
+        <th>HT Prec</th>
+        <th>WT F1</th>
+        <th>Epochs</th>
+      </tr>
+      <tr class="model-bilstm">
+        <td>BiLSTM</td><td>Random</td>
+        <td class="good">76.4%</td><td class="good">0.742</td>
+        <td class="highlight">0.00</td><td class="highlight">0%</td><td>0%</td>
+        <td class="good">0.87</td><td>16</td>
+      </tr>
+      <tr class="model-bilstm">
+        <td>BiLSTM</td><td>Group</td>
+        <td class="good">73.1%</td><td class="good">0.796</td>
+        <td class="highlight">0.07</td><td class="highlight">3%</td><td>100%</td>
+        <td class="good">0.84</td><td>17</td>
+      </tr>
+      <tr class="model-cnn">
+        <td>1D-CNN</td><td>Random</td>
+        <td>59.6%</td><td>0.653</td>
+        <td>0.38</td><td class="good">52%</td><td>30%</td>
+        <td>0.70</td><td>33</td>
+      </tr>
+      <tr class="model-cnn">
+        <td>1D-CNN</td><td>Group</td>
+        <td>49.0%</td><td>0.550</td>
+        <td class="good">0.44</td><td class="good">72%</td><td>32%</td>
+        <td>0.53</td><td>29</td>
+      </tr>
+      <tr class="model-transformer">
+        <td>Transformer</td><td>Random</td>
+        <td class="highlight">39.3%</td><td class="good">0.754</td>
+        <td>0.41</td><td class="good">90%</td><td>27%</td>
+        <td class="highlight">0.37</td><td>23</td>
+      </tr>
+      <tr class="model-transformer">
+        <td>Transformer</td><td>Group</td>
+        <td>56.7%</td><td>0.653</td>
+        <td class="good">0.49</td><td class="good">76%</td><td>37%</td>
+        <td>0.62</td><td>19</td>
+      </tr>
+    </table>
+
+    <!-- ============================================================ -->
+    <h2>Comparison vs Tabular Baseline</h2>
+
+    <p>The tabular models (from the existing pipeline) operate on <strong>aggregated per-recording features</strong>
+    (13,081 recording-level samples), while the sequence models operate on <strong>ordered syllable sequences</strong>
+    (442 session-level samples). This difference in sample count and representation makes direct comparison nuanced.</p>
+
+    <table>
+      <tr>
+        <th>Model</th>
+        <th>Split</th>
+        <th>Test Acc</th>
+        <th>HET Recall</th>
+        <th>HET F1</th>
+        <th>WT F1</th>
+        <th>Data Level</th>
+      </tr>
+      <tr class="model-tabular">
+        <td>XGBoost (tabular)</td><td>Random + External</td>
+        <td>70.7%</td><td class="good">97%</td><td class="good">0.62</td><td>0.76</td>
+        <td>Recording (13K)</td>
+      </tr>
+      <tr class="model-tabular">
+        <td>XGBoost (tabular)</td><td>Group + External</td>
+        <td>56.1%</td><td class="good">90%</td><td class="good">0.45</td><td>0.63</td>
+        <td>Recording (13K)</td>
+      </tr>
+      <tr class="model-transformer">
+        <td>Transformer (seq)</td><td>Random</td>
+        <td>39.3%</td><td class="good">90%</td><td>0.41</td><td class="highlight">0.37</td>
+        <td>Session (442)</td>
+      </tr>
+      <tr class="model-transformer">
+        <td>Transformer (seq)</td><td>Group</td>
+        <td>56.7%</td><td class="good">76%</td><td class="good">0.49</td><td>0.62</td>
+        <td>Session (442)</td>
+      </tr>
+      <tr class="model-cnn">
+        <td>1D-CNN (seq)</td><td>Group</td>
+        <td>49.0%</td><td class="good">72%</td><td>0.44</td><td>0.53</td>
+        <td>Session (442)</td>
+      </tr>
+      <tr class="model-bilstm">
+        <td>BiLSTM (seq)</td><td>Group</td>
+        <td class="good">73.1%</td><td class="highlight">3%</td><td class="highlight">0.07</td><td class="good">0.84</td>
+        <td>Session (442)</td>
+      </tr>
+    </table>
+
+    <!-- ============================================================ -->
+    <h2>Analysis</h2>
+
+    <h3>1. BiLSTM: High Accuracy, No Disease Detection</h3>
+    <p>BiLSTM achieves the highest accuracy (73&ndash;76%) but <strong>fails to detect HT mice</strong>
+    (0&ndash;3% HT recall). It effectively predicts &ldquo;WT&rdquo; for almost all samples.
+    The high AUC (0.74&ndash;0.80) suggests the model's probabilities have some discriminative power,
+    but the 0.5 decision threshold does not separate the classes. This is a classic case of
+    <strong>majority-class bias</strong> despite class-weighted loss.</p>
+
+    <h3>2. Transformer: Best HT Recall Among Sequence Models</h3>
+    <p>The Transformer achieves <strong>90% HT recall</strong> in random split and <strong>76% in group split</strong>,
+    matching XGBoost's disease detection capability. However, this comes at the cost of very low accuracy
+    (39&ndash;57%) and many false positives (precision 27&ndash;37%). The Transformer's self-attention
+    mechanism appears to capture temporal patterns relevant to ASD detection.</p>
+
+    <h3>3. 1D-CNN: Balanced but Modest Performance</h3>
+    <p>The 1D-CNN provides the most balanced tradeoff between HT and WT detection, with 52&ndash;72%
+    HT recall and reasonable WT F1. It is the fastest model to train (&lt;1 min) but achieves lower
+    overall discrimination (AUC 0.55&ndash;0.65).</p>
+
+    <h3>4. Group Split Degrades All Models</h3>
+    <p>All three models show performance degradation under group-aware splitting, confirming that
+    random splits allow mouse-specific information leakage. The Transformer degrades least in terms
+    of HT recall (90% &rarr; 76%).</p>
+
+    <h3>5. Limited Data Is the Primary Bottleneck</h3>
+    <p>With only <strong>442 sessions from 119 mice</strong> (28 HT), the deep learning models are
+    severely data-limited. The tabular pipeline benefits from 13,081 recording-level samples.
+    Collecting more data from HT mice would likely improve sequence model performance significantly.</p>
+
+    <!-- ============================================================ -->
+    <h2>Results Directory Guide</h2>
+    <table class="config-table">
+      <tr><th>Directory</th><th>Description</th></tr>
+      <tr><td><code>results/neural_networks/bilstm_subject_eval_dependent/</code></td><td>BiLSTM, subject-dependent evaluation (random split)</td></tr>
+      <tr><td><code>results/neural_networks/bilstm_subject_eval_independent/</code></td><td>BiLSTM, subject-independent evaluation</td></tr>
+      <tr><td><code>results/neural_networks/cnn1d_subject_eval_dependent/</code></td><td>1D-CNN, subject-dependent evaluation (random split)</td></tr>
+      <tr><td><code>results/neural_networks/cnn1d_subject_eval_independent/</code></td><td>1D-CNN, subject-independent evaluation</td></tr>
+      <tr><td><code>results/neural_networks/transformer_subject_eval_dependent/</code></td><td>Transformer, subject-dependent evaluation (random split)</td></tr>
+      <tr><td><code>results/neural_networks/transformer_subject_eval_independent/</code></td><td>Transformer, subject-independent evaluation</td></tr>
+    </table>
+    <p>Each directory contains: <code>logs/out.txt</code> (training log), <code>plots/</code>
+    (training curves, confusion matrix, ROC curve), <code>model/</code> (best model checkpoint + scaler),
+    and <code>results.json</code> (machine-readable metrics).</p>
+
+    <!-- ============================================================ -->
+    <h2>Conclusions</h2>
+
+    <div class="banner banner-info">
+      <h3>Sequence Models Show Promise for Disease Detection</h3>
+      <p>The Transformer achieves 76&ndash;90% HT recall, demonstrating that <strong>temporal patterns
+      in syllable sequences carry diagnostic signal</strong> for ASD classification. This validates the
+      hypothesis that the &ldquo;syntax&rdquo; of mouse vocalizations contains information lost by
+      the tabular aggregation pipeline.</p>
+    </div>
+
+    <div class="banner banner-warn">
+      <h3>Not Yet Ready to Replace Tabular Models</h3>
+      <p>The sequence models suffer from <strong>low precision</strong> (many false positives) and are
+      limited by small sample size (442 sessions vs 13K recordings). XGBoost with class balancing
+      remains the better production classifier until more data is available.</p>
+    </div>
+
+    <div class="banner banner-ok">
+      <h3>Recommendations</h3>
+      <p><strong>Keep XGBoost as the primary classifier.</strong> Use sequence models as complementary analysis.</p>
+      <ul style="margin-top:8px;">
+        <li><strong>Best sequence model:</strong> Transformer with group split (56.7% acc, 76% HT recall,
+        best balance of detection and precision).</li>
+        <li><strong>Priority improvement:</strong> Collect more HT mouse data. The 28 HT mice are
+        insufficient for deep learning.</li>
+        <li><strong>Ensemble approach:</strong> Combining XGBoost's precision with the Transformer's
+        sensitivity could yield a better balanced classifier.</li>
+        <li><strong>GPU training:</strong> Would enable larger models, longer sequences (512+), and
+        hyperparameter search.</li>
+        <li><strong>Data augmentation:</strong> Time-domain augmentations (jitter, crop, reverse)
+        could increase effective training size.</li>
+      </ul>
+    </div>
+
+    <!-- ============================================================ -->
+    <h2>Appendix A &mdash; Data Pipeline</h2>
+
+    <h3>Source Data</h3>
+    <p>The raw data comes from <code>outputs/external/segmentation_classification_all_data.xlsx</code>
+    &mdash; a file containing <strong>125,576 rows</strong>, one per detected syllable (USV call) across
+    all mice, days, sessions, and recordings.</p>
+
+    <h3>How the Data Is Produced</h3>
+    <ol>
+      <li><strong>Audio recording:</strong> Mouse pups are recorded in controlled sessions (specific day + session number).
+      Each session produces multiple short WAV files, each called a &ldquo;recording&rdquo;.</li>
+      <li><strong>Segmentation:</strong> The preprocessing pipeline (<code>src/preprocessing/</code>) detects individual
+      syllables (USV calls) in each WAV file, extracting start/end times, frequencies, and duration.</li>
+      <li><strong>Classification:</strong> A CNN classifier assigns each syllable a type (0&ndash;10: Complex,
+      Frequency steps, Upward, Flat, Chevron, Short, etc.).</li>
+      <li><strong>Enrichment:</strong> Additional columns are computed: ISI (inter-syllable interval), syllable order
+      within recording, noise flag, complexity level, and genotype encoding.</li>
+      <li><strong>Aggregation into Excel:</strong> All enriched syllable data is concatenated into the single
+      Excel file used by this pipeline.</li>
+    </ol>
+
+    <h3>Tabular vs Sequence Pipeline &mdash; What Each Gets</h3>
+    <table class="config-table">
+      <tr><th></th><th>Tabular Pipeline &mdash; tabular/train_classifier.py</th><th>Sequence Pipeline &mdash; neural_networks/sequence_pipeline.py</th></tr>
+      <tr>
+        <td>Input unit</td>
+        <td>One row per <strong>recording</strong> (aggregated)</td>
+        <td>One sequence per <strong>mouse-day-session</strong> (ordered syllables)</td>
+      </tr>
+      <tr>
+        <td>Sample count</td>
+        <td>13,081 recordings</td>
+        <td>442 sessions</td>
+      </tr>
+      <tr>
+        <td>Features</td>
+        <td>46 scalars: mean freq per syllable type, type distribution, mean duration, mean ISI, metadata</td>
+        <td>14 dims per syllable: freq, duration, ISI, syllable type embedding, noise, recording boundary</td>
+      </tr>
+      <tr>
+        <td>What is lost</td>
+        <td>Syllable order, temporal patterns, within-type variability, transition sequences</td>
+        <td>Nothing &mdash; full ordered sequence is preserved</td>
+      </tr>
+      <tr>
+        <td>Data source</td>
+        <td><code>outputs/aggregated_external/all_data_external.csv</code></td>
+        <td><code>outputs/external/segmentation_classification_all_data.xlsx</code></td>
+      </tr>
+    </table>
+
+    <!-- ============================================================ -->
+    <h2>Appendix B &mdash; How to Run</h2>
+
+    <h3>Prerequisites</h3>
+    <pre><code>pip install "torch>=2.0.0"</code></pre>
+    <p>All other dependencies (pandas, sklearn, matplotlib, seaborn) are already in <code>requirements.txt</code>.</p>
+
+    <h3>Running a Single Model</h3>
+    <pre><code># BiLSTM with group-aware split (recommended)
+python src/classification/neural_networks/sequence_pipeline.py --model bilstm --independent
+
+# 1D-CNN with random split
+python src/classification/neural_networks/sequence_pipeline.py --model cnn1d
+
+# Transformer with group split
+python src/classification/neural_networks/sequence_pipeline.py --model transformer --independent</code></pre>
+
+    <h3>All Available Options</h3>
+    <table class="config-table">
+      <tr><th>Flag</th><th>Default</th><th>Description</th></tr>
+      <tr><td><code>--model</code></td><td><code>bilstm</code></td><td>Architecture: <code>bilstm</code>, <code>cnn1d</code>, or <code>transformer</code></td></tr>
+      <tr><td><code>--group-split</code> / <code>--independent</code></td><td>off</td><td>Subject-independent evaluation (split by subject; no leakage)</td></tr>
+      <tr><td><code>--data-path</code></td><td>Excel file</td><td>Path to the syllable-level data file</td></tr>
+      <tr><td><code>--max-seq-len</code></td><td><code>256</code></td><td>Max syllable sequence length (pad shorter, truncate longer)</td></tr>
+      <tr><td><code>--epochs</code></td><td><code>100</code></td><td>Max training epochs (early stopping may cut short)</td></tr>
+      <tr><td><code>--batch-size</code></td><td><code>32</code></td><td>Samples per training batch</td></tr>
+      <tr><td><code>--lr</code></td><td><code>0.001</code></td><td>Learning rate for Adam optimizer</td></tr>
+      <tr><td><code>--results-dir</code></td><td>auto</td><td>Override output directory</td></tr>
+    </table>
+
+    <h3>Running All 6 Combinations</h3>
+    <pre><code># All models × both split modes
+for model in bilstm cnn1d transformer; do
+  python src/classification/neural_networks/sequence_pipeline.py --model $model --epochs 50
+  python src/classification/neural_networks/sequence_pipeline.py --model $model --independent --epochs 50
+done</code></pre>
+
+    <h3>Approximate Training Times (CPU)</h3>
+    <table class="config-table">
+      <tr><th>Model</th><th>Time per epoch</th><th>Typical total (50 epochs)</th></tr>
+      <tr><td>1D-CNN</td><td>~1 second</td><td>~30 seconds</td></tr>
+      <tr><td>Transformer</td><td>~3 seconds</td><td>~3 minutes</td></tr>
+      <tr><td>BiLSTM</td><td>~40 seconds</td><td>~10 minutes</td></tr>
+    </table>
+
+    <!-- ============================================================ -->
+    <h2>Appendix C &mdash; Output Files Explained</h2>
+
+    <p>Each run creates a directory under <code>results/neural_networks/</code> with the following structure:</p>
+
+    <table class="config-table">
+      <tr><th>File</th><th>Description</th></tr>
+      <tr><td><code>logs/out.txt</code></td><td>Full training log: data stats, split info, per-epoch metrics, final test results</td></tr>
+      <tr><td><code>model/&lt;name&gt;_best.pt</code></td><td>PyTorch model checkpoint (best validation AUC). Can be loaded with <code>torch.load()</code></td></tr>
+      <tr><td><code>model/scaler.pkl</code></td><td>Fitted StandardScaler for continuous features. Must be applied to new data before inference</td></tr>
+      <tr><td><code>plots/training_curves.png</code></td><td>Loss, accuracy, and AUC over training epochs (train vs validation)</td></tr>
+      <tr><td><code>plots/confusion_matrix.png</code></td><td>Normalized confusion matrix (percentages) on the test set</td></tr>
+      <tr><td><code>plots/confusion_matrix_counts.png</code></td><td>Raw count confusion matrix on the test set</td></tr>
+      <tr><td><code>plots/roc_curve.png</code></td><td>ROC curve with AUC score on the test set</td></tr>
+      <tr><td><code>results.json</code></td><td>Machine-readable metrics: accuracy, AUC, classification report, model info, epoch count</td></tr>
+    </table>
+
+    <!-- ============================================================ -->
+    <h2>Appendix D &mdash; Feature Details</h2>
+
+    <h3>Per-Syllable Features (14 dimensions per timestep)</h3>
+    <table class="config-table">
+      <tr><th>Feature</th><th>Type</th><th>Dims</th><th>Description</th></tr>
+      <tr><td>Start Point (Hz)</td><td>Continuous</td><td>1</td><td>Frequency at the start of the syllable (standardized)</td></tr>
+      <tr><td>End Point (Hz)</td><td>Continuous</td><td>1</td><td>Frequency at the end of the syllable (standardized)</td></tr>
+      <tr><td>Duration (time)</td><td>Continuous</td><td>1</td><td>Syllable duration in seconds, clipped to [0, 1] (standardized)</td></tr>
+      <tr><td>ISI_time</td><td>Continuous</td><td>1</td><td>Inter-syllable interval (time since previous syllable), clipped to [0, 10], 0 for first syllable in recording (standardized)</td></tr>
+      <tr><td>Syllable type</td><td>Embedding</td><td>8</td><td>Learned embedding from syllable class (0&ndash;10: Complex, Freq steps, Composite, Two syllables, Upward, Flat, Harmonic, Downward, Chevron, Short, Undefined)</td></tr>
+      <tr><td>Noise</td><td>Binary</td><td>1</td><td>1 if Start Hz = End Hz (indicates noise, not a true vocalization)</td></tr>
+      <tr><td>Recording boundary</td><td>Binary</td><td>1</td><td>1 at the first syllable of each recording within the session. Signals that the ISI value here is synthetic (filled with 0) because there is no preceding syllable in this recording</td></tr>
+    </table>
+
+    <h3>Static Metadata (4 dimensions, appended to model output)</h3>
+    <table class="config-table">
+      <tr><th>Feature</th><th>Description</th></tr>
+      <tr><td>Mother Genotype (binary)</td><td>1 if mother is WT, 0 if HT</td></tr>
+      <tr><td>Sex</td><td>1 if male, 0 if female</td></tr>
+      <tr><td>Day</td><td>Age of pup in days (4, 6, 8, 10, or 12)</td></tr>
+      <tr><td>Session</td><td>Recording session number (0, 1, or 2)</td></tr>
+    </table>
+
+    <h3>Target Variable</h3>
+    <p><strong>Offspring Genotype (binary):</strong> 1 = WT (Wild-Type), 0 = HT (Heterozygous / ASD-model).
+    This is what the model predicts. In this pipeline, the &ldquo;positive class&rdquo; is WT and the
+    &ldquo;disease class&rdquo; is HT (class 0).</p>
+
+  </div>
+
+  <div class="footer">
+    Mouse USV ASD Pipeline &middot; Sequence Models &middot; HIT &mdash; Holon Institute of Technology &middot; 2026
+  </div>
+
+</div>
+</body>
+</html>

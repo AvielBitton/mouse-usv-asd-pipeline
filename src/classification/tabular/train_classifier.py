@@ -4,6 +4,7 @@ import os
 import pickle
 import re
 import sys
+from typing import Optional
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -27,12 +28,21 @@ ALL_DATA_CSV = os.path.join("outputs", "legacy", "aggregated", "all_data.csv")
 ALL_DATA_EXTERNAL_CSV = os.path.join(
     "outputs", "external", "aggregated", "all_data_external_main.csv"
 )
+ALL_DATA_EXTERNAL_BASELINE_CSV = os.path.join(
+    "outputs", "external", "aggregated", "all_data_external_baseline.csv"
+)
+
+# Binary genotype in training CSV: WT=0, HT/HET=1 (positive = ASD model)
+CLASS_NAMES = ["WT", "HT"]
+GENOTYPE_NUM_TO_LABEL = {0: "WT", 1: "HT"}
 
 
 def resolve_training_csv_path(args: argparse.Namespace) -> str:
     """Return absolute path to the tabular CSV; ``--data-csv`` wins over defaults."""
     if getattr(args, "data_csv", None):
         return os.path.abspath(args.data_csv)
+    if getattr(args, "baseline", False):
+        return os.path.abspath(ALL_DATA_EXTERNAL_BASELINE_CSV)
     if args.external:
         return os.path.abspath(ALL_DATA_EXTERNAL_CSV)
     return os.path.abspath(ALL_DATA_CSV)
@@ -42,7 +52,7 @@ def default_results_subdir(
     model_name: str,
     group_split: bool,
     data_csv_abspath: str,
-    strain: int | None = None,
+    strain: Optional[int] = None,
 ) -> str:
     """Build ``results/tabular_models/<subdir>`` name from data source."""
     prefix = f"{model_name}_strain{strain}" if strain else model_name
@@ -50,8 +60,11 @@ def default_results_subdir(
         "_subject_eval_independent" if group_split else "_subject_eval_dependent"
     )
     ext_abs = os.path.abspath(ALL_DATA_EXTERNAL_CSV)
+    baseline_abs = os.path.abspath(ALL_DATA_EXTERNAL_BASELINE_CSV)
     int_abs = os.path.abspath(ALL_DATA_CSV)
-    if data_csv_abspath == ext_abs:
+    if data_csv_abspath == baseline_abs:
+        subdir += "_baseline"
+    elif data_csv_abspath == ext_abs:
         subdir += "_external"
     elif data_csv_abspath == int_abs:
         pass
@@ -126,6 +139,15 @@ def parse_args():
              'Default output goes under results/tabular_models/strain/.',
     )
     parser.add_argument(
+        '--baseline',
+        action='store_true',
+        help='Use the official baseline dataset (all_data_external_baseline.csv) — '
+             'external data with invalid_sex, noise, and supplement_offspring removed '
+             'on top of the always-applied genotype binary filter. '
+             'Required data source for all training-matrix runs (Issue #42). '
+             'Takes precedence over --external when both are set; ignored when --data-csv is set.',
+    )
+    parser.add_argument(
         '--results-dir',
         type=str,
         default=None,
@@ -137,11 +159,13 @@ def parse_args():
 
 
 def plot_confusion_matrix(cnf_matrix, plots_dir, numbers_type='normalized',
-                          class_names=[], title='Confusion matrix',
+                          class_names=None, title='Confusion matrix',
                           cmap=plt.cm.Blues, file_name='confusionmatrix.png'):
     """Plot and save a confusion matrix figure.
     Normalization can be applied by setting `normalize=True`.
     """
+    if class_names is None:
+        class_names = CLASS_NAMES
     cnf_matrix_normalized = cnf_matrix.astype('float') / cnf_matrix.sum(axis=1)[:, np.newaxis]
     if numbers_type == 'normalized':
         print("Normalized confusion matrix")
@@ -257,7 +281,10 @@ def log_split_info(X_train, y_train, X_val, y_val, X_test, y_test,
     for name, y_sub in [('Train', y_train), ('Val', y_val), ('Test', y_test)]:
         counts = y_sub.value_counts().sort_index()
         total = len(y_sub)
-        parts = [f'class {int(lbl)}={cnt} ({100*cnt/total:.1f}%)' for lbl, cnt in counts.items()]
+        parts = [
+            f'{GENOTYPE_NUM_TO_LABEL.get(int(lbl), lbl)}={cnt} ({100*cnt/total:.1f}%)'
+            for lbl, cnt in counts.items()
+        ]
         print(f'  {name} labels: {", ".join(parts)}')
 
     print('==================\n')
@@ -297,7 +324,9 @@ def main():
         active_flags.append(f'--model {model_name}')
     if args.group_split:
         active_flags.append('--independent')
-    if args.external:
+    if getattr(args, 'baseline', False):
+        active_flags.append('--baseline')
+    elif args.external:
         active_flags.append('--external')
     if args.data_csv:
         active_flags.append(f'--data-csv {args.data_csv}')
@@ -344,7 +373,18 @@ def main():
                    groups, args.group_split)
 
     # --- train ---------------------------------------------------------------
-    model = MODEL_REGISTRY[model_name](seed)
+    # Class balance (both_dynamic): sample_weight=balanced + scale_pos_weight=n_WT/n_HT
+    if model_name == 'xgboost':
+        n_wt = int((y_train == 0).sum())
+        n_ht = int((y_train == 1).sum())
+        scale_pos_weight = n_wt / max(n_ht, 1)
+        print(
+            f'Class balance: sample_weight=balanced, '
+            f'scale_pos_weight={scale_pos_weight:.4f} (n_WT/n_HT, HT=positive)'
+        )
+        model = MODEL_REGISTRY[model_name](seed, scale_pos_weight=scale_pos_weight)
+    else:
+        model = MODEL_REGISTRY[model_name](seed)
 
     fit_kwargs = extra_fit_kwargs(model_name)
     if supports_sample_weight(model_name):
@@ -367,9 +407,13 @@ def main():
     print('Test Accuracy: ', test_acc)
 
     print('Classification Report:')
-    print(classification_report(y_test, pred_test, zero_division=0))
-    report_dict = classification_report(y_test, pred_test, zero_division=0,
-                                        output_dict=True)
+    print(classification_report(
+        y_test, pred_test, zero_division=0, target_names=CLASS_NAMES,
+    ))
+    report_dict = classification_report(
+        y_test, pred_test, zero_division=0, target_names=CLASS_NAMES,
+        output_dict=True,
+    )
 
     # --- AUC / error curves (XGBoost only) ------------------------------------
     if has_training_curves(model_name):
@@ -402,8 +446,10 @@ def main():
 
     # --- confusion matrices --------------------------------------------------
     print('\n Confusion Matrix:')
-    plot_confusion_matrix(confusion_matrix(y_test, pred_test), plots_dir,
-                          numbers_type='numbers_and_percentage')
+    plot_confusion_matrix(
+        confusion_matrix(y_test, pred_test), plots_dir,
+        numbers_type='numbers_and_percentage', class_names=CLASS_NAMES,
+    )
 
     plt.rcParams['figure.figsize'] = [15, 10]
 
@@ -423,6 +469,7 @@ def main():
             plot_confusion_matrix(
                 confusion_matrix(y_test_arr[strain1[0]], pred_test[strain1[0]]),
                 plots_dir, numbers_type='numbers_and_percentage',
+                class_names=CLASS_NAMES,
                 file_name='confusionmatrix_strain1.png',
             )
         else:
@@ -433,6 +480,7 @@ def main():
             plot_confusion_matrix(
                 confusion_matrix(y_test_arr[strain2[0]], pred_test[strain2[0]]),
                 plots_dir, numbers_type='numbers_and_percentage',
+                class_names=CLASS_NAMES,
                 file_name='confusionmatrix_strain2.png',
             )
         else:
@@ -450,8 +498,8 @@ def main():
     ax.set_title('Confusion matrix', fontsize=20)
     ax.set_xlabel('Predicted label', fontsize=18)
     ax.set_ylabel('True label', fontsize=18)
-    ax.xaxis.set_ticklabels(['0', '1'])
-    ax.yaxis.set_ticklabels(['0', '1'])
+    ax.xaxis.set_ticklabels(CLASS_NAMES)
+    ax.yaxis.set_ticklabels(CLASS_NAMES)
     ax.tick_params(axis='both', which='major', labelsize=16)
     plt.savefig(os.path.join(plots_dir, 'conf_matrix.png'), dpi=300)
     plt.show()

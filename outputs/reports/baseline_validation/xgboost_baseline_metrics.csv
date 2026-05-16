@@ -1,0 +1,3 @@
+scenario_id,split,model,data_path,encoding,class_balance,scale_pos_weight_train,train_rows,val_rows,test_rows,test_accuracy,ht_recall,ht_precision,ht_f1,wt_recall,wt_precision,wt_f1,results_dir
+C1_full_dependent,dependent,xgboost,outputs/external/aggregated/all_data_external_baseline.csv,WT=0_HT=1,both_dynamic,3.1145,7184,2395,2395,0.713,0.989,0.481,0.648,0.612,0.993,0.758,results/tabular_models/xgboost_subject_eval_dependent_baseline
+C1_full_independent,independent,xgboost,outputs/external/aggregated/all_data_external_baseline.csv,WT=0_HT=1,both_dynamic,2.9344,6893,2595,2486,0.584,0.978,0.416,0.584,0.416,0.977,0.584,results/tabular_models/xgboost_subject_eval_independent_baseline

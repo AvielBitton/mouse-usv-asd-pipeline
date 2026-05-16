@@ -86,25 +86,26 @@ def feature_extraction(X):
   X["Mother Genotype"] = X["Mother Genotype"].replace("HT", "HET")
   X["Offspring Genotype"] = X["Offspring Genotype"].replace("HT", "HET")
 
-  # encode binary feature - mother genotype
-  y = X[["Mother Genotype"]]
-  # print(y)
-  # encode labels
-  l1 = LabelEncoder()
-  l1.fit(y)
-  y = l1.transform(y)
-  X["Mother Genotype"] = y
-  # print(X)
+  # Binary genotype: WT=0, HET=1 (positive class = ASD model). Do not use LabelEncoder
+  # (alphabetical order would assign HET=0, WT=1).
+  _GENOTYPE_BINARY = {"HET": 1, "WT": 0}
 
-  # encode binary feature - offspring genotype
-  y = X[["Offspring Genotype"]]
-  # print(y)
-  # encode labels
-  l1 = LabelEncoder()
-  l1.fit(y)
-  y = l1.transform(y)
-  X["Offspring Genotype"] = y
-  # print(X)
+  def _genotype_to_binary(series):
+    mapped = series.map(_GENOTYPE_BINARY)
+    if mapped.isna().any():
+      bad = series[mapped.isna()].unique()
+      raise ValueError(f"Non-binary genotype values: {bad}")
+    return mapped
+
+  if "Mother Genotype (binary)" in X.columns:
+    X["Mother Genotype"] = X["Mother Genotype (binary)"].astype(int)
+  else:
+    X["Mother Genotype"] = _genotype_to_binary(X["Mother Genotype"])
+
+  if "Offspring Genotype (binary)" in X.columns:
+    X["Offspring Genotype"] = X["Offspring Genotype (binary)"].astype(int)
+  else:
+    X["Offspring Genotype"] = _genotype_to_binary(X["Offspring Genotype"])
 
   # encode binary feature - sex
   y = X[["Sex"]]
