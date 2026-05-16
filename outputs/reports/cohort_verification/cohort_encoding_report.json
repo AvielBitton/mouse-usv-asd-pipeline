@@ -1,0 +1,71 @@
+{
+  "generated_at": "2026-05-16T14:04:12Z",
+  "input_path": "outputs/external/input/segmentation_classification_all_data.xlsx",
+  "pass": true,
+  "summary": "Classic years [2015, 2018] → pup_strain=2: OK. Mixed years [2022, 2023, 2024] → pup_strain=1: OK. Total strain text mismatches: 0.",
+  "input": {
+    "by_year": [
+      {
+        "year": 2015,
+        "syllable_rows": 35680,
+        "recording_keys": 2526,
+        "dominant_strain_text": "balb/c",
+        "expected_pup_strain": 2,
+        "strain_text_mismatches": 0,
+        "path_year_mismatches": 0,
+        "cohort": "classic_balbc"
+      },
+      {
+        "year": 2018,
+        "syllable_rows": 10730,
+        "recording_keys": 961,
+        "dominant_strain_text": "balb/c",
+        "expected_pup_strain": 2,
+        "strain_text_mismatches": 0,
+        "path_year_mismatches": 0,
+        "cohort": "classic_balbc"
+      },
+      {
+        "year": 2022,
+        "syllable_rows": 30894,
+        "recording_keys": 1815,
+        "dominant_strain_text": "balb/c+black/c57",
+        "expected_pup_strain": 1,
+        "strain_text_mismatches": 0,
+        "path_year_mismatches": 0,
+        "cohort": "mixed"
+      },
+      {
+        "year": 2023,
+        "syllable_rows": 21543,
+        "recording_keys": 1501,
+        "dominant_strain_text": "balb/c+black/c57",
+        "expected_pup_strain": 1,
+        "strain_text_mismatches": 0,
+        "path_year_mismatches": 0,
+        "cohort": "mixed"
+      },
+      {
+        "year": 2024,
+        "syllable_rows": 26729,
+        "recording_keys": 1655,
+        "dominant_strain_text": "balb/c+black/c57",
+        "expected_pup_strain": 1,
+        "strain_text_mismatches": 0,
+        "path_year_mismatches": 0,
+        "cohort": "mixed"
+      }
+    ],
+    "mismatches": [],
+    "mismatch_total": 0
+  },
+  "baseline": {
+    "recording_rows": 11974,
+    "pup_strain_counts": {
+      "1": 7323,
+      "2": 4651
+    },
+    "strain_1_mixed_cohort": 7323,
+    "strain_2_classic_cohort": 4651
+  }
+}

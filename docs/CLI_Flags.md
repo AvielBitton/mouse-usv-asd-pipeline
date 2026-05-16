@@ -65,23 +65,28 @@ python src/classification/tabular/train_classifier.py
 | `--strain {1,2}` | Available | Filter rows by `pup_strain` before splitting and training. Drops `pup_strain` from features (constant). Default output under `results/tabular_models/strain/`. |
 | `--results-dir DIR` | Available | Write results to an explicit output directory instead of the default path. |
 
-Strain runs (Issue #28):
+Cohort strain runs (Issue #47 — use with `--baseline`):
 
 ```bash
-python src/classification/tabular/train_classifier.py --external --strain 1
-python src/classification/tabular/train_classifier.py --external --strain 1 --independent
-python src/classification/tabular/train_classifier.py --external --strain 2
-python src/classification/tabular/train_classifier.py --external --strain 2 --independent
+# Scenario 2 — Classic BALB/C (pup_strain=2)
+python src/classification/tabular/train_classifier.py --baseline --strain 2 --model xgboost
+python src/classification/tabular/train_classifier.py --baseline --strain 2 --independent --model xgboost
+
+# Scenario 3 — Mixed (pup_strain=1)
+python src/classification/tabular/train_classifier.py --baseline --strain 1 --model xgboost
+python src/classification/tabular/train_classifier.py --baseline --strain 1 --independent --model xgboost
 ```
 
-Default output layout for strain runs:
+See [`COHORT_DEFINITIONS.md`](COHORT_DEFINITIONS.md) for the full 3×2 matrix.
+
+Default output layout for baseline strain runs:
 
 ```text
 results/tabular_models/strain/
-  xgboost_strain1_subject_eval_dependent_external/
-  xgboost_strain1_subject_eval_independent_external/
-  xgboost_strain2_subject_eval_dependent_external/
-  xgboost_strain2_subject_eval_independent_external/
+  xgboost_strain1_subject_eval_dependent_baseline/
+  xgboost_strain1_subject_eval_independent_baseline/
+  xgboost_strain2_subject_eval_dependent_baseline/
+  xgboost_strain2_subject_eval_independent_baseline/
 ```
 
 ## Sequence Models

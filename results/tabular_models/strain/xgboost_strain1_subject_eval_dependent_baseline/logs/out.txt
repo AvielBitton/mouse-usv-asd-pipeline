@@ -1,0 +1,45 @@
+Active flags: ['--baseline', '--strain 1']
+Model: xgboost
+Results directory: results/tabular_models/strain/xgboost_strain1_subject_eval_dependent_baseline
+Data source: /home/aviel/dev/hit/mouse-usv-asd-pipeline/outputs/external/aggregated/all_data_external_baseline.csv
+Strain filter: kept 7323/11974 rows (pup_strain == 1)
+Mice after filter: 59
+pup_gen balance: {0.0: 5683, 1.0: 1640}
+
+=== Split Info ===
+Strategy: random (row-level)
+Train: 4393 rows | Val: 1465 rows | Test: 1465 rows
+WARNING: mouse overlap -- train/val: 59, train/test: 59, val/test: 59 shared mice
+  Train labels: WT=3421 (77.9%), HT=972 (22.1%)
+  Val labels: WT=1133 (77.3%), HT=332 (22.7%)
+  Test labels: WT=1129 (77.1%), HT=336 (22.9%)
+==================
+
+Class balance: sample_weight=balanced, scale_pos_weight=3.5195 (n_WT/n_HT, HT=positive)
+Train Accuracy:  0.7587070339175962
+Test Accuracy:  0.7549488054607508
+Classification Report:
+              precision    recall  f1-score   support
+
+          WT       1.00      0.68      0.81      1129
+          HT       0.48      0.99      0.65       336
+
+    accuracy                           0.75      1465
+   macro avg       0.74      0.84      0.73      1465
+weighted avg       0.88      0.75      0.77      1465
+
+
+ Confusion Matrix:
+Confusion matrix, without normalization
+
+Single-strain run (strain 1), skipping per-strain CM split.
+[[773 356]
+ [  3 333]]
+[0.00860064 0.00470938 0.00772212 0.00707198 0.02081366 0.00688763
+ 0.00665256 0.00844815 0.00743463 0.00703548 0.00691757 0.00785221
+ 0.00976481 0.00543603 0.00842654 0.00890092 0.01208149 0.00655732
+ 0.00658765 0.00975667 0.00843015 0.00744522 0.00833363 0.00585159
+ 0.00300943 0.00778554 0.00684267 0.00750065 0.0069818  0.00979783
+ 0.00573758 0.00760097 0.0076574  0.00480063 0.00554393 0.00549082
+ 0.00642514 0.00769536 0.00472472 0.00703366 0.66263634 0.01423478
+ 0.00554979 0.00836186 0.00687121]

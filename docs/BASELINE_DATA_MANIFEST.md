@@ -77,6 +77,13 @@ Companion syllable-level workbooks:
 
 Filter definitions: [`BASELINE_DATA_FILTERS.md`](BASELINE_DATA_FILTERS.md)
 
+Cohort definitions (Phase B / #47): [`COHORT_DEFINITIONS.md`](COHORT_DEFINITIONS.md)
+
+| `pup_strain` | Cohort | Recording rows (baseline) |
+|--------------|--------|---------------------------|
+| 1 | Mixed (2022–2024) | 7,323 |
+| 2 | Classic BALB/C (2015/2018) | 4,651 |
+
 ---
 
 ## Machine-readable snapshot
@@ -93,4 +100,6 @@ When building per-scenario packs or the master comparison table, include the con
 
 | Run | Report |
 |-----|--------|
-| XGBoost `--baseline` dependent + independent | [`outputs/reports/baseline_validation/xgboost_baseline_summary.md`](../outputs/reports/baseline_validation/xgboost_baseline_summary.md) |
+| XGBoost `--baseline` dependent + independent (Scenario 1) | [`outputs/reports/baseline_validation/xgboost_baseline_summary.md`](../outputs/reports/baseline_validation/xgboost_baseline_summary.md) |
+| Cohort encoding verification | [`outputs/reports/cohort_verification/`](../outputs/reports/cohort_verification/) |
+| XGBoost cohort Scenarios 2–3 | [`outputs/reports/cohort_verification/xgboost_cohort_summary.md`](../outputs/reports/cohort_verification/xgboost_cohort_summary.md) |
