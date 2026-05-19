@@ -1,47 +1,47 @@
 Active flags: ['--independent', '--baseline', '--strain 2']
 Model: xgboost
-Results directory: results/tabular_models/strain/xgboost_strain2_subject_eval_independent_baseline
-Data source: /home/aviel/dev/hit/mouse-usv-asd-pipeline/outputs/external/aggregated/all_data_external_baseline.csv
-Strain filter: kept 4651/11974 rows (pup_strain == 2)
+Results directory: results\tabular_models\strain\xgboost_strain2_subject_eval_independent_baseline
+Data source: C:\Users\chenah\OneDrive - Cloud Valley (Comm-IT)\Desktop\OOO\HIT\Final Project\mouse-usv-asd-pipeline\outputs\external\aggregated\all_data_external_baseline.csv
+Strain filter: kept 4751/12323 rows (pup_strain == 2)
 Mice after filter: 47
-pup_gen balance: {0.0: 3312, 1.0: 1339}
+pup_gen balance: {0.0: 3392, 1.0: 1359}
 
 === Split Info ===
 Strategy: group-aware (by mouse_idx)
-Train: 2452 rows | Val: 1080 rows | Test: 1119 rows
-Train mice (27): [1.0, 3.0, 5.0, 15.0, 16.0, 28.0, 33.0, 38.0, 40.0, 41.0, 51.0, 52.0, 54.0, 64.0, 77.0, 82.0, 83.0, 84.0, 87.0, 88.0, 90.0, 95.0, 96.0, 97.0, 103.0, 104.0, 105.0]
-Val mice   (10): [13.0, 14.0, 26.0, 32.0, 34.0, 65.0, 67.0, 68.0, 69.0, 78.0]
-Test mice  (10): [11.0, 17.0, 22.0, 37.0, 42.0, 46.0, 47.0, 74.0, 76.0, 101.0]
-  Train labels: WT=1653 (67.4%), HT=799 (32.6%)
-  Val labels: WT=798 (73.9%), HT=282 (26.1%)
-  Test labels: WT=861 (76.9%), HT=258 (23.1%)
+Train: 2844 rows | Val: 731 rows | Test: 1176 rows
+Train mice (27): [0.0, 1.0, 4.0, 8.0, 24.0, 37.0, 44.0, 48.0, 51.0, 52.0, 54.0, 59.0, 61.0, 64.0, 65.0, 85.0, 88.0, 89.0, 91.0, 92.0, 94.0, 95.0, 99.0, 100.0, 101.0, 102.0, 105.0]
+Val mice   (10): [17.0, 18.0, 21.0, 38.0, 46.0, 55.0, 66.0, 76.0, 77.0, 78.0]
+Test mice  (10): [9.0, 30.0, 35.0, 42.0, 50.0, 56.0, 57.0, 83.0, 90.0, 97.0]
+  Train labels: WT=2025 (71.2%), HT=819 (28.8%)
+  Val labels: WT=506 (69.2%), HT=225 (30.8%)
+  Test labels: WT=861 (73.2%), HT=315 (26.8%)
 ==================
 
-Class balance: sample_weight=balanced, scale_pos_weight=2.0688 (n_WT/n_HT, HT=positive)
-Train Accuracy:  0.8421696574225123
-Test Accuracy:  0.7033065236818588
+Class balance: scale_pos_weight=2.4725 (n_WT/n_HT, HT=positive; corrected single-weighting)
+Train Accuracy:  0.9163150492264416
+Test Accuracy:  0.657312925170068
 Classification Report:
               precision    recall  f1-score   support
 
-          WT       0.86      0.74      0.79       861
-          HT       0.40      0.58      0.47       258
+          WT       0.72      0.87      0.79       861
+          HT       0.19      0.09      0.12       315
 
-    accuracy                           0.70      1119
-   macro avg       0.63      0.66      0.63      1119
-weighted avg       0.75      0.70      0.72      1119
+    accuracy                           0.66      1176
+   macro avg       0.46      0.48      0.45      1176
+weighted avg       0.58      0.66      0.61      1176
 
 
  Confusion Matrix:
 Confusion matrix, without normalization
 
 Single-strain run (strain 2), skipping per-strain CM split.
-[[637 224]
- [108 150]]
-[0.02086199 0.01783321 0.01209622 0.00942636 0.00846565 0.01130219
- 0.         0.01182797 0.00780606 0.01110151 0.0246781  0.01838283
- 0.03233167 0.01073196 0.00669468 0.0218099  0.00319699 0.0159647
- 0.00923343 0.01048538 0.03960994 0.02107937 0.04471271 0.00523958
- 0.00909444 0.01546476 0.         0.01395934 0.01413766 0.01098145
- 0.01632259 0.02125197 0.01126036 0.01120117 0.00564404 0.00947977
- 0.         0.01242485 0.00577194 0.01548965 0.2303727  0.15893686
- 0.01831001 0.03023938 0.01478463]
+[[745 116]
+ [287  28]]
+[0.01281329 0.01089436 0.00785341 0.00622259 0.00441914 0.01273182
+ 0.00198675 0.0107202  0.00534255 0.00853148 0.01174949 0.00889515
+ 0.01934523 0.00904109 0.00637386 0.00487015 0.00615383 0.00745003
+ 0.00696057 0.0048725  0.01349789 0.01961697 0.01674978 0.00896361
+ 0.01332378 0.00284033 0.         0.02499002 0.00552216 0.00704816
+ 0.01301191 0.01413496 0.00725704 0.00489605 0.01214425 0.01481463
+ 0.         0.00610642 0.00603632 0.0079173  0.25183573 0.33251908
+ 0.0148374  0.02850326 0.00620545]

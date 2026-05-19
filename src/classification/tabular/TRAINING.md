@@ -128,6 +128,7 @@ python train_classifier.py [--model MODEL] [--group-split] [--external] [--strai
 | `--external`    | **Recommended.** Use the externally-validated dataset with correct individual genotyping (`all_data_external_main.csv`). This is the preferred data source. |
 | `--strain {1,2}` | Keep only rows where `pup_strain` equals the given value. Filters after CSV load and before train/val/test split. `pup_strain` is dropped from the feature matrix (constant column). Default output goes under `results/tabular_models/strain/`. |
 | `--data-csv`    | Explicit path to the training CSV (48 columns, no header). Use for a specific aggregate file (e.g. a filtered variant). When set, **overrides** the path implied by `--external` / the internal default. The file must exist or the script exits with an error. |
+| `--legacy`      | XGBoost only. Reproduce the pre-fix recipe (`sample_weight=balanced` + `scale_pos_weight`). Use only for parity with older runs; the corrected single-weighting (default) is recommended. Output goes under `xgboost_legacy_*`. |
 | `--results-dir` | Override default results directory                           |
 
 ### Choosing a specific aggregate CSV
@@ -197,7 +198,7 @@ Strain mapping (from the external `Strain` column):
 
 - **Task:** Binary classification (WT vs HET offspring)
 - **Split:** 60% train / 20% validation / 20% test
-- **Class balancing (XGBoost):** `sample_weight=balanced` + `scale_pos_weight=n_WT/n_HT` on train (HT=1)
+- **Class balancing (XGBoost):** `scale_pos_weight=n_WT/n_HT` on train (HT=1). Pass `--legacy` to additionally apply `sample_weight=balanced` (pre-fix double-weighting; kept for reproducibility — produces effective HT:WT ratio of `(n_WT/n_HT)^2`).
 - **Metrics:** accuracy, classification report (precision/recall/F1), confusion matrix
 - **Per-strain CMs:** separate confusion matrices for strain 1 and strain 2
 

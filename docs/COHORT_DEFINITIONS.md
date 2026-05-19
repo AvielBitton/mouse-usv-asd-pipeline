@@ -58,11 +58,11 @@ python src/classification/tabular/train_classifier.py --baseline --strain 1 --in
 
 ## Baseline pool (recording level)
 
-| `pup_strain` | Cohort | Recordings (2026-05-16) |
-|--------------|--------|-------------------------|
-| 1 | Mixed (2022–2024) | 7,323 |
-| 2 | Classic BALB/C (2015/2018) | 4,651 |
-| **Total** | Full | **11,974** |
+| `pup_strain` | Cohort | Recordings (2026-05-19 baseline) |
+|--------------|--------|----------------------------------|
+| 1 | Mixed (2022–2024) | 7,572 |
+| 2 | Classic BALB/C (2015/2018) | 4,751 |
+| **Total** | Full | **12,323** |
 
 No separate per-cohort CSV files — filter at train time with `--strain`.
 

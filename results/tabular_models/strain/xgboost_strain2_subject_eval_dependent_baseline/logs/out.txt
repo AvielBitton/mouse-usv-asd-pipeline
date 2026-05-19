@@ -1,45 +1,45 @@
 Active flags: ['--baseline', '--strain 2']
 Model: xgboost
-Results directory: results/tabular_models/strain/xgboost_strain2_subject_eval_dependent_baseline
-Data source: /home/aviel/dev/hit/mouse-usv-asd-pipeline/outputs/external/aggregated/all_data_external_baseline.csv
-Strain filter: kept 4651/11974 rows (pup_strain == 2)
+Results directory: results\tabular_models\strain\xgboost_strain2_subject_eval_dependent_baseline
+Data source: C:\Users\chenah\OneDrive - Cloud Valley (Comm-IT)\Desktop\OOO\HIT\Final Project\mouse-usv-asd-pipeline\outputs\external\aggregated\all_data_external_baseline.csv
+Strain filter: kept 4751/12323 rows (pup_strain == 2)
 Mice after filter: 47
-pup_gen balance: {0.0: 3312, 1.0: 1339}
+pup_gen balance: {0.0: 3392, 1.0: 1359}
 
 === Split Info ===
 Strategy: random (row-level)
-Train: 2790 rows | Val: 930 rows | Test: 931 rows
+Train: 2850 rows | Val: 950 rows | Test: 951 rows
 WARNING: mouse overlap -- train/val: 47, train/test: 47, val/test: 47 shared mice
-  Train labels: WT=1972 (70.7%), HT=818 (29.3%)
-  Val labels: WT=677 (72.8%), HT=253 (27.2%)
-  Test labels: WT=663 (71.2%), HT=268 (28.8%)
+  Train labels: WT=2023 (71.0%), HT=827 (29.0%)
+  Val labels: WT=684 (72.0%), HT=266 (28.0%)
+  Test labels: WT=685 (72.0%), HT=266 (28.0%)
 ==================
 
-Class balance: sample_weight=balanced, scale_pos_weight=2.4108 (n_WT/n_HT, HT=positive)
-Train Accuracy:  0.7405017921146954
-Test Accuracy:  0.6702470461868958
+Class balance: scale_pos_weight=2.4462 (n_WT/n_HT, HT=positive; corrected single-weighting)
+Train Accuracy:  0.844561403508772
+Test Accuracy:  0.7476340694006309
 Classification Report:
               precision    recall  f1-score   support
 
-          WT       0.95      0.57      0.71       663
-          HT       0.46      0.93      0.62       268
+          WT       0.91      0.72      0.81       685
+          HT       0.53      0.81      0.64       266
 
-    accuracy                           0.67       931
-   macro avg       0.71      0.75      0.66       931
-weighted avg       0.81      0.67      0.68       931
+    accuracy                           0.75       951
+   macro avg       0.72      0.77      0.72       951
+weighted avg       0.80      0.75      0.76       951
 
 
  Confusion Matrix:
 Confusion matrix, without normalization
 
 Single-strain run (strain 2), skipping per-strain CM split.
-[[375 288]
- [ 19 249]]
-[0.01384413 0.01513756 0.00850581 0.01602581 0.00523648 0.03574799
- 0.         0.01199055 0.0066824  0.01279339 0.01513493 0.01169775
- 0.02110174 0.00660938 0.00875354 0.03030753 0.0064532  0.00985186
- 0.00964713 0.01008536 0.01505823 0.01415111 0.02670503 0.00960024
- 0.00789946 0.02551898 0.00179606 0.01253344 0.01290828 0.01025688
- 0.01262423 0.01418877 0.00947945 0.010658   0.00878874 0.01129621
- 0.         0.01568852 0.00405937 0.01163456 0.34521472 0.09730303
- 0.01442359 0.03434668 0.01825993]
+[[496 189]
+ [ 51 215]]
+[0.01597834 0.01218603 0.0070784  0.00854235 0.00762569 0.02435636
+ 0.00558036 0.01247582 0.00834427 0.0128412  0.01461926 0.01438867
+ 0.03053207 0.01175333 0.0084734  0.0137356  0.         0.01004129
+ 0.0069546  0.00983266 0.01571214 0.01537105 0.02351685 0.00581138
+ 0.00901273 0.02592346 0.         0.01152958 0.00895158 0.01494397
+ 0.01832161 0.01921143 0.01222634 0.01093504 0.00545551 0.
+ 0.         0.01266626 0.00891462 0.01124966 0.3531969  0.12175447
+ 0.01666076 0.02972927 0.0135658 ]

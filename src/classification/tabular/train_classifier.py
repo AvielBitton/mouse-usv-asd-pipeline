@@ -16,6 +16,7 @@ from sklearn.utils.class_weight import compute_sample_weight
 
 from models import (
     MODEL_REGISTRY,
+    XGBOOST_FAMILY,
     extra_fit_kwargs,
     has_feature_importance,
     has_training_curves,
@@ -53,9 +54,11 @@ def default_results_subdir(
     group_split: bool,
     data_csv_abspath: str,
     strain: Optional[int] = None,
+    legacy: bool = False,
 ) -> str:
     """Build ``results/tabular_models/<subdir>`` name from data source."""
-    prefix = f"{model_name}_strain{strain}" if strain else model_name
+    base = f"{model_name}_legacy" if legacy else model_name
+    prefix = f"{base}_strain{strain}" if strain else base
     subdir = prefix + (
         "_subject_eval_independent" if group_split else "_subject_eval_dependent"
     )
@@ -142,10 +145,18 @@ def parse_args():
         '--baseline',
         action='store_true',
         help='Use the official baseline dataset (all_data_external_baseline.csv) — '
-             'external data with invalid_sex, noise, and supplement_offspring removed '
-             'on top of the always-applied genotype binary filter. '
+             'external data with invalid_sex and supplement_offspring removed '
+             '(Noise==1 syllables retained) on top of the genotype binary filter. '
              'Required data source for all training-matrix runs (Issue #42). '
              'Takes precedence over --external when both are set; ignored when --data-csv is set.',
+    )
+    parser.add_argument(
+        '--legacy',
+        action='store_true',
+        help='XGBoost only. Reproduce the pre-fix class-balance recipe: '
+             'sample_weight=balanced PLUS scale_pos_weight=n_WT/n_HT (double-weighting). '
+             'Default (without --legacy) applies only scale_pos_weight, which is the '
+             'corrected behavior. Output goes under results/tabular_models/xgboost_legacy_*.',
     )
     parser.add_argument(
         '--results-dir',
@@ -305,7 +316,7 @@ def main():
         results_dir = args.results_dir
     else:
         subdir = default_results_subdir(model_name, args.group_split, data_csv,
-                                        strain=args.strain)
+                                        strain=args.strain, legacy=args.legacy)
         results_dir = os.path.join('results', 'tabular_models', subdir)
 
     plots_dir = os.path.join(results_dir, 'plots')
@@ -332,6 +343,8 @@ def main():
         active_flags.append(f'--data-csv {args.data_csv}')
     if args.strain is not None:
         active_flags.append(f'--strain {args.strain}')
+    if args.legacy:
+        active_flags.append('--legacy')
     print(f'Active flags: {active_flags if active_flags else "none (baseline)"}')
     print(f'Model: {model_name}')
     print(f'Results directory: {results_dir}')
@@ -373,21 +386,33 @@ def main():
                    groups, args.group_split)
 
     # --- train ---------------------------------------------------------------
-    # Class balance (both_dynamic): sample_weight=balanced + scale_pos_weight=n_WT/n_HT
-    if model_name == 'xgboost':
+    # Class balance: scale_pos_weight=n_WT/n_HT (HT=positive).
+    # --legacy ALSO applies sample_weight=balanced (pre-fix double-weighting).
+    if model_name in XGBOOST_FAMILY:
         n_wt = int((y_train == 0).sum())
         n_ht = int((y_train == 1).sum())
         scale_pos_weight = n_wt / max(n_ht, 1)
-        print(
-            f'Class balance: sample_weight=balanced, '
-            f'scale_pos_weight={scale_pos_weight:.4f} (n_WT/n_HT, HT=positive)'
-        )
+        if args.legacy:
+            balance_desc = (
+                f'sample_weight=balanced + scale_pos_weight={scale_pos_weight:.4f} '
+                f'(LEGACY double-weighting; effective HT:WT ratio ~ '
+                f'(n_WT/n_HT)^2 = {scale_pos_weight**2:.2f})'
+            )
+        else:
+            balance_desc = (
+                f'scale_pos_weight={scale_pos_weight:.4f} '
+                f'(n_WT/n_HT, HT=positive; corrected single-weighting)'
+            )
+        print(f'Class balance: {balance_desc}')
         model = MODEL_REGISTRY[model_name](seed, scale_pos_weight=scale_pos_weight)
     else:
+        if args.legacy:
+            print('Warning: --legacy has no effect for non-XGBoost models; ignoring.',
+                  file=sys.stderr)
         model = MODEL_REGISTRY[model_name](seed)
 
     fit_kwargs = extra_fit_kwargs(model_name)
-    if supports_sample_weight(model_name):
+    if supports_sample_weight(model_name) and args.legacy:
         fit_kwargs['sample_weight'] = compute_sample_weight(
             class_weight='balanced', y=y_train,
         )

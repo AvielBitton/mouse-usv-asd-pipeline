@@ -1,0 +1,41 @@
+== XGBoost hyperparameter search (independent) ==
+CSV:        C:\Users\chenah\OneDrive - Cloud Valley (Comm-IT)\Desktop\OOO\HIT\Final Project\mouse-usv-asd-pipeline\outputs\external\aggregated\all_data_external_baseline.csv
+Trials:     200
+CV folds:   5
+Top-K test: 5
+Seed:       42
+
+Holdout split: trainval=10184, test=2139
+  trainval labels: WT=7723 HT=2461
+  test     labels: WT=1560 HT=579
+
+  [ 10/200] elapsed=  14.8s  best CV bal_acc so far=0.7801
+  [ 20/200] elapsed=  28.5s  best CV bal_acc so far=0.7840
+  [ 30/200] elapsed=  41.6s  best CV bal_acc so far=0.7850
+  [ 40/200] elapsed=  55.0s  best CV bal_acc so far=0.7850
+  [ 50/200] elapsed=  70.1s  best CV bal_acc so far=0.7861
+  [ 60/200] elapsed=  82.7s  best CV bal_acc so far=0.7861
+  [ 70/200] elapsed=  98.3s  best CV bal_acc so far=0.7861
+  [ 80/200] elapsed= 116.2s  best CV bal_acc so far=0.7861
+  [ 90/200] elapsed= 135.7s  best CV bal_acc so far=0.7861
+  [100/200] elapsed= 153.1s  best CV bal_acc so far=0.7861
+  [110/200] elapsed= 171.0s  best CV bal_acc so far=0.7861
+  [120/200] elapsed= 187.1s  best CV bal_acc so far=0.7861
+  [130/200] elapsed= 199.3s  best CV bal_acc so far=0.7861
+  [140/200] elapsed= 211.9s  best CV bal_acc so far=0.7861
+  [150/200] elapsed= 224.8s  best CV bal_acc so far=0.7861
+  [160/200] elapsed= 238.7s  best CV bal_acc so far=0.7861
+  [170/200] elapsed= 253.0s  best CV bal_acc so far=0.7861
+  [180/200] elapsed= 265.3s  best CV bal_acc so far=0.7861
+  [190/200] elapsed= 278.6s  best CV bal_acc so far=0.7861
+  [200/200] elapsed= 291.5s  best CV bal_acc so far=0.7861
+
+Refitting top-K configs on full trainval and scoring on test...
+  rank 1: CV bal_acc=0.7861 -> test acc=0.7078 HT_recall=0.9965 WT_recall=0.6006
+  rank 2: CV bal_acc=0.7850 -> test acc=0.7069 HT_recall=0.9948 WT_recall=0.6000
+  rank 3: CV bal_acc=0.7847 -> test acc=0.7101 HT_recall=0.9948 WT_recall=0.6045
+  rank 4: CV bal_acc=0.7845 -> test acc=0.7073 HT_recall=0.9775 WT_recall=0.6071
+  rank 5: CV bal_acc=0.7840 -> test acc=0.7083 HT_recall=0.9965 WT_recall=0.6013
+
+Saved 200 trials -> C:\Users\chenah\OneDrive - Cloud Valley (Comm-IT)\Desktop\OOO\HIT\Final Project\mouse-usv-asd-pipeline\outputs\reports\xgboost_tuning\trials_independent.csv
+Saved top-5 test-evaluated configs -> C:\Users\chenah\OneDrive - Cloud Valley (Comm-IT)\Desktop\OOO\HIT\Final Project\mouse-usv-asd-pipeline\outputs\reports\xgboost_tuning\top_configs_independent.json

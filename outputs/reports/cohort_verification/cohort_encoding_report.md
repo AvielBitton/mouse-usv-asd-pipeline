@@ -1,7 +1,7 @@
 # Cohort encoding verification
 
-**Generated:** 2026-05-16T14:04:12Z
-**Input:** `outputs/external/input/segmentation_classification_all_data.xlsx`
+**Generated:** 2026-05-19T17:32:18Z
+**Input:** `outputs\external\input\segmentation_classification_all_data.xlsx`
 **Status:** PASS
 
 ## Summary
@@ -20,6 +20,6 @@ Classic years [2015, 2018] → pup_strain=2: OK. Mixed years [2022, 2023, 2024] 
 
 ## Baseline aggregate (`pup_strain`)
 
-- Recording rows: **11,974**
-- `pup_strain=1` (Mixed cohort): **7,323**
-- `pup_strain=2` (Classic BALB/C): **4,651**
+- Recording rows: **12,323**
+- `pup_strain=1` (Mixed cohort): **7,572**
+- `pup_strain=2` (Classic BALB/C): **4,751**

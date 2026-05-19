@@ -49,9 +49,9 @@ Copy or link these fields so every run is reproducible and comparable.
 |-------|---------------|-----------------------------|
 | Raw input (post-791aa05 + Session) | 125,576 | — |
 | After genotype filter (main pool) | 123,807 | 13,342 (main export) |
-| **Official baseline pool** | **102,035** | **11,974** (baseline export) |
+| **Official baseline pool** | **112,234** | **12,323** (baseline export) |
 
-Per-filter removals (syllable level): genotype −1,769; invalid_sex −3,343; noise −10,334; supplement_offspring −8,095.
+Per-filter removals (syllable level): genotype −1,769; invalid_sex −3,343; supplement_offspring (see manifest). **`Noise == 1` syllables are included** in the baseline; use `all_data_external_filter_noise` to exclude them.
 
 ### 1.2 Cohort filter (Phase B — Issue #47)
 
