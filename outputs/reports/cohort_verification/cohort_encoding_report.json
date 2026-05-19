@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-05-16T14:04:12Z",
-  "input_path": "outputs/external/input/segmentation_classification_all_data.xlsx",
+  "generated_at": "2026-05-19T17:32:18Z",
+  "input_path": "outputs\\external\\input\\segmentation_classification_all_data.xlsx",
   "pass": true,
   "summary": "Classic years [2015, 2018] → pup_strain=2: OK. Mixed years [2022, 2023, 2024] → pup_strain=1: OK. Total strain text mismatches: 0.",
   "input": {
@@ -60,12 +60,12 @@
     "mismatch_total": 0
   },
   "baseline": {
-    "recording_rows": 11974,
+    "recording_rows": 12323,
     "pup_strain_counts": {
-      "1": 7323,
-      "2": 4651
+      "1": 7572,
+      "2": 4751
     },
-    "strain_1_mixed_cohort": 7323,
-    "strain_2_classic_cohort": 4651
+    "strain_1_mixed_cohort": 7572,
+    "strain_2_classic_cohort": 4751
   }
 }
