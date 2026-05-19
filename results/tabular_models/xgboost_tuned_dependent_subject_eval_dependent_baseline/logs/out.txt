@@ -1,0 +1,46 @@
+Active flags: ['--model xgboost_tuned_dependent', '--baseline']
+Model: xgboost_tuned_dependent
+Results directory: results\tabular_models\xgboost_tuned_dependent_subject_eval_dependent_baseline
+Data source: C:\Users\chenah\OneDrive - Cloud Valley (Comm-IT)\Desktop\OOO\HIT\Final Project\mouse-usv-asd-pipeline\outputs\external\aggregated\all_data_external_baseline.csv
+
+=== Split Info ===
+Strategy: random (row-level)
+Train: 7393 rows | Val: 2465 rows | Test: 2465 rows
+WARNING: mouse overlap -- train/val: 106, train/test: 105, val/test: 105 shared mice
+  Train labels: WT=5600 (75.7%), HT=1793 (24.3%)
+  Val labels: WT=1865 (75.7%), HT=600 (24.3%)
+  Test labels: WT=1818 (73.8%), HT=647 (26.2%)
+==================
+
+Class balance: scale_pos_weight=3.1233 (n_WT/n_HT, HT=positive; corrected single-weighting)
+Train Accuracy:  0.8754226971459489
+Test Accuracy:  0.7724137931034483
+Classification Report:
+              precision    recall  f1-score   support
+
+          WT       0.93      0.75      0.83      1818
+          HT       0.54      0.84      0.66       647
+
+    accuracy                           0.77      2465
+   macro avg       0.74      0.80      0.74      2465
+weighted avg       0.83      0.77      0.78      2465
+
+
+ Confusion Matrix:
+Confusion matrix, without normalization
+
+ Confusion Matrix - New pup:
+Confusion matrix, without normalization
+
+ Confusion Matrix - Old pup:
+Confusion matrix, without normalization
+[[1358  460]
+ [ 101  546]]
+[0.00816955 0.00751283 0.0072073  0.00750529 0.00684821 0.01365322
+ 0.00669493 0.00743228 0.00773489 0.00661029 0.00874641 0.0073188
+ 0.01014761 0.008086   0.00852935 0.01377812 0.00932427 0.0072352
+ 0.00719797 0.0078832  0.0090503  0.01104482 0.00755658 0.00754859
+ 0.00819364 0.01209056 0.00998076 0.00774503 0.0077618  0.00779262
+ 0.00704509 0.00710819 0.00824073 0.00622509 0.00847024 0.00458463
+ 0.01158264 0.00859118 0.00730555 0.00625528 0.5953546  0.01665341
+ 0.00745314 0.01606346 0.00760617 0.02508021]
