@@ -24,4 +24,6 @@ Canonical syllable-level source for all **baseline** training runs (Issue #42 / 
 .venv/bin/python scripts/run_external_aggregation.py
 ```
 
+**Baseline filters:** invalid genotype (always), then `invalid_sex` + `supplement_offspring`. **`Noise == 1` rows are kept** in `all_data_external_baseline.*`.
+
 **Row counts and provenance:** [`docs/BASELINE_DATA_MANIFEST.md`](../../../docs/BASELINE_DATA_MANIFEST.md)

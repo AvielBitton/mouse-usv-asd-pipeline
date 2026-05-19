@@ -142,8 +142,8 @@ def parse_args():
         '--baseline',
         action='store_true',
         help='Use the official baseline dataset (all_data_external_baseline.csv) — '
-             'external data with invalid_sex, noise, and supplement_offspring removed '
-             'on top of the always-applied genotype binary filter. '
+             'external data with invalid_sex and supplement_offspring removed '
+             '(Noise==1 syllables retained) on top of the genotype binary filter. '
              'Required data source for all training-matrix runs (Issue #42). '
              'Takes precedence over --external when both are set; ignored when --data-csv is set.',
     )

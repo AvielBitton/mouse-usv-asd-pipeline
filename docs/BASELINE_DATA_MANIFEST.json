@@ -1,7 +1,8 @@
 {
-  "manifest_version": 1,
-  "updated": "2026-05-16",
+  "manifest_version": 2,
+  "updated": "2026-05-19",
   "issues": ["#46", "#42", "#34"],
+  "baseline_definition_note": "Official baseline retains Noise==1 syllables; invalid_sex and supplement_offspring only.",
   "input": {
     "source_commit": "791aa05ac4b89f2de69909fcb09af25964902e1f",
     "xlsx": "outputs/external/input/segmentation_classification_all_data.xlsx",
@@ -18,9 +19,9 @@
   },
   "aggregation": {
     "script": "scripts/run_external_aggregation.py",
-    "run_date": "2026-05-16",
+    "run_date": "2026-05-19",
     "exit_code": 0,
-    "runtime_minutes_approx": 19
+    "runtime_minutes_approx": 11
   },
   "syllable_rows": {
     "raw_input": 125576,
@@ -28,23 +29,29 @@
     "invalid_genotype_removed": 1769,
     "after_invalid_sex": 120464,
     "invalid_sex_removed": 3343,
-    "after_noise": 110130,
-    "noise_removed": 10334,
-    "after_supplement_offspring": 102035,
-    "supplement_offspring_removed": 8095,
-    "baseline_pool": 102035,
-    "total_removed_from_raw": 23541
+    "after_supplement_offspring": 112234,
+    "supplement_offspring_removed": 8230,
+    "baseline_pool": 112234,
+    "baseline_noise_eq_1_in_pool": 10199,
+    "total_removed_from_raw": 13342,
+    "optional_filter_noise_pool": 110130,
+    "optional_filter_noise_removed": 10334
   },
   "recording_rows": {
     "main": 13342,
-    "baseline": 11974,
-    "main_minus_baseline": 1368
+    "baseline": 12323,
+    "main_minus_baseline": 1019,
+    "baseline_strain_1": 7572,
+    "baseline_strain_2": 4751
   },
   "outputs": {
     "main_csv": "outputs/external/aggregated/all_data_external_main.csv",
     "main_xlsx": "outputs/external/aggregated/all_data_external_main.xlsx",
     "baseline_csv": "outputs/external/aggregated/all_data_external_baseline.csv",
-    "baseline_xlsx": "outputs/external/aggregated/all_data_external_baseline.xlsx"
+    "baseline_xlsx": "outputs/external/aggregated/all_data_external_baseline.xlsx",
+    "baseline_labeled_csv": "outputs/external/aggregated/all_data_external_baseline_labeled.csv",
+    "filter_noise_csv": "outputs/external/aggregated/all_data_external_filter_noise.csv",
+    "filter_noise_xlsx": "outputs/external/aggregated/all_data_external_filter_noise.xlsx"
   },
   "executive_reporting_doc": "docs/EXECUTIVE_REPORTING.md",
   "legacy_results_archive": "results/legacy/",

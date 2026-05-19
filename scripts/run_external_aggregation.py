@@ -4,6 +4,7 @@ Runs ONLY the external aggregation step — no legacy pipeline, no TensorFlow.
 Produces:
   outputs/external/aggregated/all_data_external_main.csv / .xlsx
   outputs/external/aggregated/all_data_external_baseline.csv / .xlsx
+    (baseline retains Noise==1 syllables; see docs/BASELINE_DATA_FILTERS.md)
 
 Usage:
     .venv/bin/python scripts/run_external_aggregation.py

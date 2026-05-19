@@ -44,27 +44,28 @@ Filters are applied in order to every syllable-level row before aggregation.
 |---|-------------|-----------|--------------|
 | 1 | `invalid_genotype` | `Mother Genotype`, `Offspring Genotype` | Either genotype is not `WT` or `HET` after `HT`→`HET` normalization (e.g. `UNK`, `NAN`, empty) |
 | 2 | `invalid_sex` | `Sex` | Value is not `M` or `F` (e.g. `U`, missing) |
-| 3 | `noise` | `Noise` | `Noise == 1` (syllable where start frequency equals end frequency) |
-| 4 | `supplement_offspring` | `Supplement (Offspring)`, `Name` | Pup belongs to a litter flagged as supplement offspring |
+| 3 | `supplement_offspring` | `Supplement (Offspring)`, `Name` | Pup belongs to a litter flagged as supplement offspring |
 
-**Note:** Filter 1 (`invalid_genotype`) is always applied to every external
-aggregate, not just the baseline. Filters 2–4 are the additional layer that
-defines the baseline.
+**Not removed in baseline:** syllables with `Noise == 1` (start frequency equals end frequency). These rows are part of the true baseline pool. To train on data **without** noise syllables, use the optional aggregate variant `all_data_external_filter_noise.csv` / `.xlsx` (`--external-filter noise` during preprocessing).
+
+**Noise column:** computed during enrichment as `Start Point (Hz) == End Point (Hz)` (integer 0/1).
 
 ---
 
 ## Implementation
 
-All four filters are applied inside
-`src/preprocessing/steps/extract_features.py`:
+Baseline filters are applied inside `src/preprocessing/steps/extract_features.py`:
 
-- `drop_non_binary_genotype_rows_for_external` — filter 1, always runs
+- `drop_non_binary_genotype_rows_for_external` — filter 1, always runs on every external export
 - `apply_single_external_filter("invalid_sex", ...)` — filter 2
-- `apply_single_external_filter("noise", ...)` — filter 3
-- `apply_single_external_filter("supplement_offspring", ...)` — filter 4
+- `apply_single_external_filter("supplement_offspring", ...)` — filter 3
 
 The combined baseline export is triggered unconditionally in
 `run_external_aggregated_feature_extraction` via the `BASELINE_FILTERS` tuple.
+
+Optional single-filter variants (including `noise`) are written as
+`all_data_external_filter_<name>.{csv,xlsx}` when requested via `--external-filter`.
+
 Row counts before and after each filter step are written to the preprocessing log.
 
 ---
