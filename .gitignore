@@ -1,13 +1,16 @@
 .idea/
 /USV_Recordings/
 .venv/
+.venv_py38_backup/
 .venv-verify/
 venv/
 env/
+.claude/
 dumps/
 credentials.json
 token.json
 token.json.bak
+.env
 __pycache__/
 *.pyc
 dump/

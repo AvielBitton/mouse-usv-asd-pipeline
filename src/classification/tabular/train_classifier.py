@@ -6,6 +6,16 @@ import re
 import sys
 from typing import Optional
 
+# Load .env from repo root so TABPFN_TOKEN is available before any tabpfn import.
+_ENV_PATH = os.path.join(os.path.dirname(__file__), '..', '..', '..', '.env')
+if os.path.isfile(_ENV_PATH):
+    with open(_ENV_PATH) as _f:
+        for _line in _f:
+            _line = _line.strip()
+            if _line and not _line.startswith('#') and '=' in _line:
+                _k, _v = _line.split('=', 1)
+                os.environ.setdefault(_k.strip(), _v.strip())
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -20,6 +30,7 @@ from models import (
     extra_fit_kwargs,
     has_feature_importance,
     has_training_curves,
+    merges_val_into_train,
     supports_eval_set,
     supports_sample_weight,
 )
@@ -385,6 +396,17 @@ def main():
     log_split_info(X_train, y_train, X_val, y_val, X_test, y_test,
                    groups, args.group_split)
 
+    # TabPFN has no validation step (no early stopping, no hyperparameter tuning
+    # at fit time), so the val split is wasted for this model. Merging val back
+    # into train gives TabPFN 80% of the data instead of 60%, matching the
+    # effective training budget that XGBoost gets when val is used only for
+    # training-curve monitoring (not for any model selection decision).
+    if merges_val_into_train(model_name):
+        X_train = pd.concat([X_train, X_val])
+        y_train = pd.concat([y_train, y_val])
+        print(f'[tabpfn] val merged into train: {len(X_train)} train rows, '
+              f'{len(X_test)} test rows')
+
     # --- train ---------------------------------------------------------------
     # Class balance: scale_pos_weight=n_WT/n_HT (HT=positive).
     # --legacy ALSO applies sample_weight=balanced (pre-fix double-weighting).
@@ -410,6 +432,7 @@ def main():
             print('Warning: --legacy has no effect for non-XGBoost models; ignoring.',
                   file=sys.stderr)
         model = MODEL_REGISTRY[model_name](seed)
+
 
     fit_kwargs = extra_fit_kwargs(model_name)
     if supports_sample_weight(model_name) and args.legacy:
@@ -484,7 +507,7 @@ def main():
         pickle.dump(model, fp)
 
     # --- per-strain evaluation -----------------------------------------------
-    if 'pup_strain' in X_test.columns:
+    if hasattr(X_test, 'columns') and 'pup_strain' in X_test.columns:
         strain1 = np.where(X_test['pup_strain'] == 1)
         strain2 = np.where(X_test['pup_strain'] == 2)
         y_test_arr = np.array(y_test)

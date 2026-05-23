@@ -53,8 +53,23 @@ def create_xgboost_tuned_independent(seed, scale_pos_weight=1.0):
 
 
 def create_tabpfn(seed):
+    """TabPFN-3 classifier via tabpfn>=8.0 package.
+
+    Requires TABPFN_TOKEN in .env — obtain from https://ux.priorlabs.ai (Account → API Keys).
+    License must be accepted at https://ux.priorlabs.ai (Account → Licenses) before first use.
+    API usage and quota can be monitored at https://ux.priorlabs.ai/api/usage.
+
+    balance_probabilities=True: built-in class-imbalance correction —
+    equivalent goal to scale_pos_weight in XGBoost, handled natively by the model.
+    ignore_pretraining_limits=True: allows full training sets (TabPFN-3 supports
+    up to 1,000,000 rows; our datasets are well within range).
+    """
     from tabpfn import TabPFNClassifier
-    return TabPFNClassifier(seed=seed)
+    return TabPFNClassifier(
+        random_state=seed,
+        balance_probabilities=True,
+        ignore_pretraining_limits=True,
+    )
 
 
 MODEL_REGISTRY = {
@@ -77,10 +92,13 @@ _SUPPORTS_SAMPLE_WEIGHT = set(XGBOOST_FAMILY)
 _HAS_FEATURE_IMPORTANCE = set(XGBOOST_FAMILY)
 _HAS_TRAINING_CURVES = set(XGBOOST_FAMILY)
 
+# TabPFN has no validation step (no early stopping, no hyperparameter search at
+# fit time), so the val split is wasted. Merging it back into train gives the
+# model 80% of data instead of 60%.
+_MERGES_VAL_INTO_TRAIN = {"tabpfn"}
+
 # Extra keyword arguments passed to fit() per model.
-_EXTRA_FIT_KWARGS = {
-    "tabpfn": {"overwrite_warning": True},
-}
+_EXTRA_FIT_KWARGS: dict = {}
 
 
 def supports_eval_set(model_name):
@@ -97,6 +115,10 @@ def has_feature_importance(model_name):
 
 def has_training_curves(model_name):
     return model_name in _HAS_TRAINING_CURVES
+
+
+def merges_val_into_train(model_name):
+    return model_name in _MERGES_VAL_INTO_TRAIN
 
 
 def extra_fit_kwargs(model_name):
