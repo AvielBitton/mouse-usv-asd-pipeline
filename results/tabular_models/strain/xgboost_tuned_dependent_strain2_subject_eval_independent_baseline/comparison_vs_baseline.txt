@@ -1,0 +1,20 @@
+============================================================
+COMPARISON VS BASELINE
+============================================================
+Active flags: --model xgboost_tuned_dependent, --independent, --baseline, --strain 2
+
+Test Accuracy:   0.653  (baseline: 0.829, delta: -0.176)
+Train Accuracy:  0.950  (baseline: 0.880, delta: +0.070)
+Weighted F1:     0.597  (baseline: 0.830, delta: -0.233)
+
+--- WT ---
+  Precision: 0.716  (baseline: 0.920, delta: -0.204)
+  Recall:    0.871  (baseline: 0.780, delta: +0.091)
+  F1:        0.786  (baseline: 0.840, delta: -0.054)
+
+--- HT ---
+  Precision: 0.140  (baseline: 0.730, delta: -0.590)
+  Recall:    0.057  (baseline: 0.900, delta: -0.843)
+  F1:        0.081  (baseline: 0.810, delta: -0.729)
+
+============================================================
