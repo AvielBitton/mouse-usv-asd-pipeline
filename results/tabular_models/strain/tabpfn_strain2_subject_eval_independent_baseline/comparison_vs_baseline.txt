@@ -1,0 +1,20 @@
+============================================================
+COMPARISON VS BASELINE
+============================================================
+Active flags: --model tabpfn, --independent, --baseline, --strain 2
+
+Test Accuracy:   0.654  (baseline: 0.829, delta: -0.175)
+Train Accuracy:  0.941  (baseline: 0.880, delta: +0.061)
+Weighted F1:     0.659  (baseline: 0.830, delta: -0.171)
+
+--- WT ---
+  Precision: 0.775  (baseline: 0.920, delta: -0.145)
+  Recall:    0.743  (baseline: 0.780, delta: -0.037)
+  F1:        0.759  (baseline: 0.840, delta: -0.081)
+
+--- HT ---
+  Precision: 0.369  (baseline: 0.730, delta: -0.361)
+  Recall:    0.410  (baseline: 0.900, delta: -0.490)
+  F1:        0.388  (baseline: 0.810, delta: -0.422)
+
+============================================================

@@ -1,0 +1,37 @@
+Active flags: ['--model tabpfn', '--baseline', '--strain 1']
+Model: tabpfn
+Results directory: results/tabular_models/strain/tabpfn_strain1_subject_eval_dependent_baseline
+Data source: /home/aviel/dev/hit/mouse-usv-asd-pipeline/outputs/external/aggregated/all_data_external_baseline.csv
+Strain filter: kept 7572/12323 rows (pup_strain == 1)
+Mice after filter: 59
+pup_gen balance: {0.0: 5891, 1.0: 1681}
+
+=== Split Info ===
+Strategy: random (row-level)
+Train: 4542 rows | Val: 1515 rows | Test: 1515 rows
+WARNING: mouse overlap -- train/val: 59, train/test: 59, val/test: 59 shared mice
+  Train labels: WT=3539 (77.9%), HT=1003 (22.1%)
+  Val labels: WT=1194 (78.8%), HT=321 (21.2%)
+  Test labels: WT=1158 (76.4%), HT=357 (23.6%)
+==================
+
+[tabpfn] val merged into train: 6057 train rows, 1515 test rows
+Train Accuracy:  0.8474492322932144
+Test Accuracy:  0.7848184818481848
+Classification Report:
+              precision    recall  f1-score   support
+
+          WT       0.99      0.73      0.84      1158
+          HT       0.52      0.97      0.68       357
+
+    accuracy                           0.78      1515
+   macro avg       0.76      0.85      0.76      1515
+weighted avg       0.88      0.78      0.80      1515
+
+
+ Confusion Matrix:
+Confusion matrix, without normalization
+
+Single-strain run (strain 1), skipping per-strain CM split.
+[[843 315]
+ [ 11 346]]
