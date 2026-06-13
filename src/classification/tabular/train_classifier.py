@@ -38,10 +38,10 @@ from report import generate_comparison
 
 ALL_DATA_CSV = os.path.join("outputs", "legacy", "aggregated", "all_data.csv")
 ALL_DATA_EXTERNAL_CSV = os.path.join(
-    "outputs", "external", "aggregated", "all_data_external_main.csv"
+    "outputs", "external", "aggregated", "tabular", "all_data_external_main.csv"
 )
 ALL_DATA_EXTERNAL_BASELINE_CSV = os.path.join(
-    "outputs", "external", "aggregated", "all_data_external_baseline.csv"
+    "outputs", "external", "aggregated", "tabular", "all_data_external_baseline.csv"
 )
 
 # Binary genotype in training CSV: WT=0, HT/HET=1 (positive = ASD model)

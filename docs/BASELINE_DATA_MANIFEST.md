@@ -57,15 +57,15 @@ One row = one recording (aggregated features). No header in CSV.
 
 | Output | Recording rows | Path |
 |--------|----------------|------|
-| **main** | **13,342** | `outputs/external/aggregated/all_data_external_main.csv` |
-| **baseline** | **12,323** | `outputs/external/aggregated/all_data_external_baseline.csv` |
+| **main** | **13,342** | `outputs/external/aggregated/tabular/all_data_external_main.csv` |
+| **baseline** | **12,323** | `outputs/external/aggregated/tabular/all_data_external_baseline.csv` |
 | Delta (main − baseline) | **1,019** | Fewer recordings after baseline filters |
 
 Companion syllable-level workbooks:
 
-- `outputs/external/aggregated/all_data_external_main.xlsx`
-- `outputs/external/aggregated/all_data_external_baseline.xlsx`
-- `outputs/external/aggregated/all_data_external_baseline_labeled.csv` (human-readable genotypes)
+- `outputs/external/aggregated/sequence/all_data_external_main.xlsx`
+- `outputs/external/aggregated/sequence/all_data_external_baseline.xlsx`
+- `outputs/external/aggregated/tabular/all_data_external_baseline_labeled.csv` (human-readable genotypes)
 
 ---
 
@@ -73,9 +73,9 @@ Companion syllable-level workbooks:
 
 | Pipeline | Flag | Data path |
 |----------|------|-----------|
-| Tabular | `--baseline` | `all_data_external_baseline.csv` (numeric: WT=0, HT=1) |
-| Tabular (human-readable) | — | `all_data_external_baseline_labeled.csv` (WT/HT strings) |
-| Sequence | `--baseline` | `all_data_external_baseline.xlsx` |
+| Tabular | `--baseline` | `tabular/all_data_external_baseline.csv` (numeric: WT=0, HT=1) |
+| Tabular (human-readable) | — | `tabular/all_data_external_baseline_labeled.csv` (WT/HT strings) |
+| Sequence | `--baseline` | `sequence/all_data_external_baseline.xlsx` |
 
 Filter definitions: [`BASELINE_DATA_FILTERS.md`](BASELINE_DATA_FILTERS.md)
 

@@ -433,10 +433,22 @@ def save_external_aggregate_outputs(
     csv_name: str,
     logger: Optional[logging.Logger] = None,
 ) -> str:
-    """Save one external aggregate pair (xlsx + csv + labeled csv)."""
-    os.makedirs(output_dir, exist_ok=True)
-    output_xlsx = os.path.join(output_dir, xlsx_name)
-    output_csv = os.path.join(output_dir, csv_name)
+    """Save one external aggregate trio, routed by consumer to avoid name collisions:
+
+    - syllable-level ``xlsx`` -> ``<output_dir>/sequence/`` (read by the sequence pipeline)
+    - 48-column aggregate ``csv`` + labeled csv -> ``<output_dir>/tabular/`` (read by the
+      tabular pipeline)
+
+    Previously both were written side-by-side in ``output_dir``; the sequence pipeline
+    caches its xlsx as ``<name>.csv``, which clobbered the tabular ``<name>.csv``.
+    See docs/NEURAL_NETWORK_BASELINE.md.
+    """
+    tabular_dir = os.path.join(output_dir, "tabular")
+    sequence_dir = os.path.join(output_dir, "sequence")
+    os.makedirs(tabular_dir, exist_ok=True)
+    os.makedirs(sequence_dir, exist_ok=True)
+    output_xlsx = os.path.join(sequence_dir, xlsx_name)
+    output_csv = os.path.join(tabular_dir, csv_name)
 
     if logger and os.path.isfile(output_xlsx):
         logger.info(f"Overwriting existing file: {output_xlsx}")

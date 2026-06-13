@@ -40,8 +40,8 @@ Copy or link these fields so every run is reproducible and comparable.
 | **Input provenance** | Commit [`791aa05`](https://github.com/AvielBitton/mouse-usv-asd-pipeline/commit/791aa05ac4b89f2de69909fcb09af25964902e1f) (Issue #34: genotype/sex corrections) |
 | **Session normalization** | `Session=0 → 1` applied **in input file** (919 rows as of 2026-05-16) |
 | **Aggregation script** | `scripts/run_external_aggregation.py` |
-| **Tabular training data** | `outputs/external/aggregated/all_data_external_baseline.csv` |
-| **Sequence training data** | `outputs/external/aggregated/all_data_external_baseline.xlsx` |
+| **Tabular training data** | `outputs/external/aggregated/tabular/all_data_external_baseline.csv` |
+| **Sequence training data** | `outputs/external/aggregated/sequence/all_data_external_baseline.xlsx` |
 
 **Row counts to cite in reports** (syllable → recording):
 
@@ -230,8 +230,8 @@ Issue #42 references `outputs/external/segmentation_classification_all_data.*` a
 | Role | Path |
 |------|------|
 | Syllable input | `outputs/external/input/segmentation_classification_all_data.{xlsx,csv}` |
-| Tabular aggregate (baseline) | `outputs/external/aggregated/all_data_external_baseline.csv` |
-| Sequence aggregate (baseline) | `outputs/external/aggregated/all_data_external_baseline.xlsx` |
+| Tabular aggregate (baseline) | `outputs/external/aggregated/tabular/all_data_external_baseline.csv` |
+| Sequence aggregate (baseline) | `outputs/external/aggregated/sequence/all_data_external_baseline.xlsx` |
 
 Executive reports should use these paths, not the legacy root layout.
 

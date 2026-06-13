@@ -8,6 +8,11 @@ OUTPUTS_DIR = "outputs"
 OUTPUTS_EXTERNAL_DIR = os.path.join(OUTPUTS_DIR, "external")
 OUTPUTS_EXTERNAL_INPUT_DIR = os.path.join(OUTPUTS_EXTERNAL_DIR, "input")
 OUTPUTS_EXTERNAL_AGGREGATED_DIR = os.path.join(OUTPUTS_EXTERNAL_DIR, "aggregated")
+# Aggregated outputs are split by consumer so the two pipelines never collide on a
+# shared file name (see docs/NEURAL_NETWORK_BASELINE.md): the tabular pipeline reads the
+# 48-column aggregate CSVs, the sequence pipeline reads the syllable-level XLSX exports.
+OUTPUTS_EXTERNAL_AGGREGATED_TABULAR_DIR = os.path.join(OUTPUTS_EXTERNAL_AGGREGATED_DIR, "tabular")
+OUTPUTS_EXTERNAL_AGGREGATED_SEQUENCE_DIR = os.path.join(OUTPUTS_EXTERNAL_AGGREGATED_DIR, "sequence")
 # Metadata-driven pipeline artifacts: per-file segmentations, internal aggregate, default logs.
 OUTPUTS_LEGACY_DIR = os.path.join(OUTPUTS_DIR, "legacy")
 

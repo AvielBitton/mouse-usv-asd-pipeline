@@ -1,0 +1,69 @@
+Active flags: ['--model transformer', '--independent', '--baseline']
+Model: transformer
+Results directory: results/neural_networks/transformer_subject_eval_independent_baseline
+Loading from CSV cache: outputs/external/aggregated/sequence/all_data_external_baseline.seq_cache.csv
+Loaded 408 sessions from 106 mice
+Sequence lengths: min=1, median=236, max=1202, P95=704
+MAX_SEQ_LEN=256
+Labels: HT=97, WT=311
+
+=== Split Info ===
+Strategy: group-aware (by mouse)
+Train: 238 sessions | Val: 80 sessions | Test: 90 sessions
+  Train: 63 mice, HT=56 (24%), WT=182 (76%)
+  Val: 21 mice, HT=22 (28%), WT=58 (72%)
+  Test: 22 mice, HT=19 (21%), WT=71 (79%)
+==================
+
+Class balance in train: HT=56, WT=182, pos_weight=3.250
+Model parameters: 72,537
+Epoch   1/100 | Train Loss: 1.0941 Acc: 0.727 | Val Loss: 1.1180 Acc: 0.725 AUC: 0.654 | LR: 0.001000
+Epoch   2/100 | Train Loss: 1.0945 Acc: 0.399 | Val Loss: 1.0923 Acc: 0.287 AUC: 0.690 | LR: 0.001000
+Epoch   3/100 | Train Loss: 1.0731 Acc: 0.433 | Val Loss: 1.0936 Acc: 0.613 AUC: 0.708 | LR: 0.001000
+Epoch   4/100 | Train Loss: 1.0534 Acc: 0.609 | Val Loss: 1.0938 Acc: 0.762 AUC: 0.734 | LR: 0.001000
+Epoch   5/100 | Train Loss: 1.0493 Acc: 0.550 | Val Loss: 1.0535 Acc: 0.412 AUC: 0.765 | LR: 0.001000
+Epoch   6/100 | Train Loss: 1.0471 Acc: 0.483 | Val Loss: 1.0378 Acc: 0.600 AUC: 0.781 | LR: 0.001000
+Epoch   7/100 | Train Loss: 1.0303 Acc: 0.651 | Val Loss: 1.0602 Acc: 0.775 AUC: 0.770 | LR: 0.001000
+Epoch   8/100 | Train Loss: 1.0491 Acc: 0.588 | Val Loss: 1.0006 Acc: 0.600 AUC: 0.799 | LR: 0.001000
+Epoch   9/100 | Train Loss: 0.9783 Acc: 0.613 | Val Loss: 0.9956 Acc: 0.688 AUC: 0.774 | LR: 0.001000
+Epoch  10/100 | Train Loss: 1.0079 Acc: 0.668 | Val Loss: 0.9767 Acc: 0.713 AUC: 0.784 | LR: 0.001000
+Epoch  11/100 | Train Loss: 0.9579 Acc: 0.739 | Val Loss: 0.9540 Acc: 0.688 AUC: 0.788 | LR: 0.001000
+Epoch  12/100 | Train Loss: 0.9727 Acc: 0.613 | Val Loss: 0.9330 Acc: 0.713 AUC: 0.788 | LR: 0.001000
+Epoch  13/100 | Train Loss: 0.9528 Acc: 0.664 | Val Loss: 0.9358 Acc: 0.713 AUC: 0.798 | LR: 0.001000
+Epoch  14/100 | Train Loss: 0.8907 Acc: 0.651 | Val Loss: 0.8941 Acc: 0.700 AUC: 0.810 | LR: 0.001000
+Epoch  15/100 | Train Loss: 0.9692 Acc: 0.718 | Val Loss: 0.9024 Acc: 0.750 AUC: 0.800 | LR: 0.001000
+Epoch  16/100 | Train Loss: 0.9336 Acc: 0.550 | Val Loss: 0.8809 Acc: 0.688 AUC: 0.806 | LR: 0.001000
+Epoch  17/100 | Train Loss: 0.9059 Acc: 0.689 | Val Loss: 0.8822 Acc: 0.713 AUC: 0.808 | LR: 0.001000
+Epoch  18/100 | Train Loss: 0.8435 Acc: 0.672 | Val Loss: 0.9050 Acc: 0.750 AUC: 0.803 | LR: 0.001000
+Epoch  19/100 | Train Loss: 0.8693 Acc: 0.723 | Val Loss: 0.8772 Acc: 0.650 AUC: 0.793 | LR: 0.001000
+Epoch  20/100 | Train Loss: 0.7968 Acc: 0.681 | Val Loss: 1.0762 Acc: 0.787 AUC: 0.792 | LR: 0.000500
+Epoch  21/100 | Train Loss: 0.8323 Acc: 0.773 | Val Loss: 0.8745 Acc: 0.675 AUC: 0.808 | LR: 0.000500
+Epoch  22/100 | Train Loss: 0.8138 Acc: 0.647 | Val Loss: 0.8558 Acc: 0.662 AUC: 0.808 | LR: 0.000500
+Epoch  23/100 | Train Loss: 0.8065 Acc: 0.744 | Val Loss: 1.2445 Acc: 0.787 AUC: 0.789 | LR: 0.000500
+Epoch  24/100 | Train Loss: 0.8443 Acc: 0.769 | Val Loss: 0.9102 Acc: 0.688 AUC: 0.798 | LR: 0.000500
+Epoch  25/100 | Train Loss: 0.7452 Acc: 0.739 | Val Loss: 0.9248 Acc: 0.675 AUC: 0.790 | LR: 0.000500
+Epoch  26/100 | Train Loss: 0.7965 Acc: 0.752 | Val Loss: 0.9857 Acc: 0.700 AUC: 0.781 | LR: 0.000250
+Epoch  27/100 | Train Loss: 0.7675 Acc: 0.718 | Val Loss: 0.9452 Acc: 0.688 AUC: 0.782 | LR: 0.000250
+Epoch  28/100 | Train Loss: 0.7587 Acc: 0.697 | Val Loss: 0.9516 Acc: 0.688 AUC: 0.779 | LR: 0.000250
+Epoch  29/100 | Train Loss: 0.7772 Acc: 0.689 | Val Loss: 0.9148 Acc: 0.675 AUC: 0.784 | LR: 0.000250
+Early stopping at epoch 29 (best AUC: 0.810)
+Best validation AUC: 0.810
+
+=== Test Results ===
+Test Accuracy:  0.5444
+Test AUC-ROC:   0.6753
+Train Accuracy: 0.6050
+Train AUC-ROC:  0.8070
+
+Classification Report:
+              precision    recall  f1-score   support
+
+      WT (0)       0.89      0.48      0.62        71
+      HT (1)       0.29      0.79      0.42        19
+
+    accuracy                           0.54        90
+   macro avg       0.59      0.63      0.52        90
+weighted avg       0.77      0.54      0.58        90
+
+
+Done. Results saved to results/neural_networks/transformer_subject_eval_independent_baseline/

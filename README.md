@@ -20,11 +20,11 @@ All source code lives here:
 
 - **`src/classification/`** — ASD classification
   - **`tabular/`** — tabular (aggregated-feature) pipeline
-    - `train_classifier.py` — reads tabular CSV aggregates (default internal: `outputs/legacy/aggregated/all_data.csv`; default external: `outputs/external/aggregated/all_data_external_main.csv`), trains a classifier, and generates evaluation plots (confusion matrix, classification report). Supports multiple models via `--model` (default: XGBoost, also TabPFN), `--external` for the **preferred** externally-validated dataset, `--data-csv PATH` to train on a specific variant CSV, and `--group-split` / `--independent` for subject-independent evaluation (no leakage across subjects). Default outputs go under `results/tabular_models/`. See `src/classification/tabular/TRAINING.md` for details.
+    - `train_classifier.py` — reads tabular CSV aggregates (default internal: `outputs/legacy/aggregated/all_data.csv`; default external: `outputs/external/aggregated/tabular/all_data_external_main.csv`), trains a classifier, and generates evaluation plots (confusion matrix, classification report). Supports multiple models via `--model` (default: XGBoost, also TabPFN), `--external` for the **preferred** externally-validated dataset, `--data-csv PATH` to train on a specific variant CSV, and `--group-split` / `--independent` for subject-independent evaluation (no leakage across subjects). Default outputs go under `results/tabular_models/`. See `src/classification/tabular/TRAINING.md` for details.
     - `models.py` — model registry with factory functions for each supported classifier
     - `report.py` — generates comparison-vs-baseline summary
   - **`neural_networks/`** — sequence (deep learning) pipeline
-    - `sequence_pipeline.py` — trains BiLSTM / 1D-CNN / Transformer models on raw syllable sequences (`results/neural_networks/`). See `src/classification/neural_networks/SEQUENCE_TRAINING.md` for details.
+    - `sequence_pipeline.py` — trains BiLSTM / 1D-CNN / Transformer models on raw syllable sequences (`results/neural_networks/`). See `src/classification/neural_networks/SEQUENCE_TRAINING.md` for pipeline mechanics and `docs/NEURAL_NETWORK_BASELINE.md` for the baseline runs and how sequence data differs from the tabular approach.
 
 - **`src/models/`** — pre-trained model weights
   - `model_weights.h6` — CNN weights for syllable type classification (used by the preprocessing pipeline)
@@ -248,7 +248,7 @@ python train_classifier.py --model tabpfn --group-split --external
 # → results/tabular_models/tabpfn_subject_eval_independent_external/
 
 # Train on a specific aggregate variant CSV
-python train_classifier.py --data-csv "outputs/external/aggregated/all_data_external_filter_noise.csv"
+python train_classifier.py --data-csv "outputs/external/aggregated/tabular/all_data_external_filter_noise.csv"
 ```
 
 Each model produces the same evaluation outputs (accuracy, confusion matrix, classification report) for fair comparison. Model-specific outputs (e.g. XGBoost training curves, feature importance) are only generated when applicable.

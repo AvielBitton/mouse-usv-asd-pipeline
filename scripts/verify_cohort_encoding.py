@@ -21,7 +21,7 @@ from utils.io_utils import (  # noqa: E402
 
 INPUT_XLSX = REPO_ROOT / "outputs/external/input/segmentation_classification_all_data.xlsx"
 INPUT_CSV = REPO_ROOT / "outputs/external/input/segmentation_classification_all_data.csv"
-BASELINE_CSV = REPO_ROOT / "outputs/external/aggregated/all_data_external_baseline.csv"
+BASELINE_CSV = REPO_ROOT / "outputs/external/aggregated/tabular/all_data_external_baseline.csv"
 REPORT_DIR = REPO_ROOT / "outputs/reports/cohort_verification"
 
 CLASSIC_YEARS = {2015, 2018}

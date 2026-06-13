@@ -68,13 +68,15 @@ After all files are processed, the pipeline writes:
 - `outputs/legacy/aggregated/all_data.xlsx` - Combined data from all per-file segmentation workbooks
 - `outputs/legacy/aggregated/all_data.csv` - Combined per-recording features
 
-External aggregation writes under `outputs/external/aggregated/`:
-- `all_data_external_main.xlsx`
-- `all_data_external_main.csv`
+External aggregation writes under `outputs/external/aggregated/`, split by consumer
+(the tabular pipeline reads the CSV aggregates, the sequence pipeline reads the
+syllable-level XLSX — see [NEURAL_NETWORK_BASELINE.md](NEURAL_NETWORK_BASELINE.md)):
+- `sequence/all_data_external_main.xlsx`
+- `tabular/all_data_external_main.csv`
 
 When `--external-filter` is repeated, extra **single-filter** variants are generated:
-- `all_data_external_filter_<filter>.xlsx`
-- `all_data_external_filter_<filter>.csv`
+- `sequence/all_data_external_filter_<filter>.xlsx`
+- `tabular/all_data_external_filter_<filter>.csv`
 
 Before any aggregate is written, rows where **Mother Genotype** or **Offspring Genotype** is not **WT** or **HET** (after `HT`→`HET`) are **dropped**, so the tabular CSV stays **binary** for `pup_gen`.
 

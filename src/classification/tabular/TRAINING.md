@@ -38,7 +38,7 @@ When building `all_data_external.csv`, the pipeline **drops** syllable-level row
 
 Default CSV locations:
 - Internal: `outputs/legacy/aggregated/all_data.csv`
-- External (`--external`): `outputs/external/aggregated/all_data_external_main.csv`
+- External (`--external`): `outputs/external/aggregated/tabular/all_data_external_main.csv`
 - Specific variant: pass `--data-csv PATH` (overrides default selection)
 
 Each row = **one recording** of one mouse. 48 columns total:
@@ -137,7 +137,7 @@ Use `--data-csv` whenever you want to train on one exact aggregation output
 (for example, an external single-filter variant):
 
 ```bash
-python train_classifier.py --data-csv "outputs/external/aggregated/all_data_external_filter_noise.csv"
+python train_classifier.py --data-csv "outputs/external/aggregated/tabular/all_data_external_filter_noise.csv"
 ```
 
 `--data-csv` overrides the dataset implied by `--external`.
@@ -150,7 +150,7 @@ When `--results-dir` is not set, the output directory is composed automatically 
 results/tabular_models/<model>[_subject_eval_dependent|_subject_eval_independent][_external|_data_<stem>]
 ```
 
-- **`_external`** — data path resolves to the default `outputs/external/aggregated/all_data_external_main.csv` (with or without `--external` when that is the effective path).
+- **`_external`** — data path resolves to the default `outputs/external/aggregated/tabular/all_data_external_main.csv` (with or without `--external` when that is the effective path).
 - **`_data_<stem>`** — `--data-csv` points at any other file; `<stem>` is a sanitized basename (e.g. a variant CSV). Use `--results-dir` for full control of the output folder name.
 
 - **`_subject_eval_dependent`** — random row-level split; subjects may appear in multiple sets.

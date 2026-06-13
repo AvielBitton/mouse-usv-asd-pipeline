@@ -108,7 +108,7 @@ Combines all per-file outputs into `outputs/legacy/aggregated/all_data.xlsx` and
 
 ### ASD Classification (`src/classification/tabular/train_classifier.py`)
 
-Reads `outputs/legacy/aggregated/all_data.csv` for the internal default, or `outputs/external/aggregated/all_data_external_main.csv` with `--external` (or any path via `--data-csv`), trains an XGBoost model, and generates:
+Reads `outputs/legacy/aggregated/all_data.csv` for the internal default, or `outputs/external/aggregated/tabular/all_data_external_main.csv` with `--external` (or any path via `--data-csv`), trains an XGBoost model, and generates:
 
 * confusion matrix
 * AUC-ROC curve
