@@ -1,0 +1,41 @@
+{
+  "model": "cnn1d",
+  "subject_eval_independent": true,
+  "group_split": true,
+  "test_accuracy": 0.6333333333333333,
+  "test_auc": 0.609340252038547,
+  "train_accuracy": 0.7310924369747899,
+  "classification_report": {
+    "0.0": {
+      "precision": 0.796875,
+      "recall": 0.7183098591549296,
+      "f1-score": 0.7555555555555555,
+      "support": 71.0
+    },
+    "1.0": {
+      "precision": 0.23076923076923078,
+      "recall": 0.3157894736842105,
+      "f1-score": 0.26666666666666666,
+      "support": 19.0
+    },
+    "accuracy": 0.6333333333333333,
+    "macro avg": {
+      "precision": 0.5138221153846154,
+      "recall": 0.5170496664195701,
+      "f1-score": 0.5111111111111111,
+      "support": 90.0
+    },
+    "weighted avg": {
+      "precision": 0.6773637820512821,
+      "recall": 0.6333333333333333,
+      "f1-score": 0.6523456790123456,
+      "support": 90.0
+    }
+  },
+  "num_train": 238,
+  "num_val": 80,
+  "num_test": 90,
+  "total_params": 86041,
+  "epochs_trained": 17,
+  "best_val_auc": 0.7531347962382446
+}

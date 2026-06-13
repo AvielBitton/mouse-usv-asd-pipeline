@@ -37,7 +37,7 @@ DATA_PATH = os.path.join(
     "outputs", "external", "input", "segmentation_classification_all_data.xlsx"
 )
 BASELINE_DATA_PATH = os.path.join(
-    "outputs", "external", "aggregated", "all_data_external_baseline.xlsx"
+    "outputs", "external", "aggregated", "sequence", "all_data_external_baseline.xlsx"
 )
 
 CONTINUOUS_FEATURES = [
@@ -65,8 +65,12 @@ def set_seed(seed: int):
 # ---------------------------------------------------------------------------
 
 def _load_dataframe(data_path: str):
-    """Load data from CSV cache if available, otherwise from Excel."""
-    csv_path = data_path.replace(".xlsx", ".csv")
+    """Load data from CSV cache if available, otherwise from Excel.
+
+    The cache uses a ``.seq_cache.csv`` suffix (not a bare ``.csv``) so it never
+    collides with a sibling tabular aggregate CSV of the same base name.
+    """
+    csv_path = data_path.replace(".xlsx", ".seq_cache.csv")
     if os.path.exists(csv_path):
         print(f"Loading from CSV cache: {csv_path}")
         return pd.read_csv(csv_path)

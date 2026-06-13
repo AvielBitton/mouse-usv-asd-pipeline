@@ -45,13 +45,13 @@
     "baseline_strain_2": 4751
   },
   "outputs": {
-    "main_csv": "outputs/external/aggregated/all_data_external_main.csv",
-    "main_xlsx": "outputs/external/aggregated/all_data_external_main.xlsx",
-    "baseline_csv": "outputs/external/aggregated/all_data_external_baseline.csv",
-    "baseline_xlsx": "outputs/external/aggregated/all_data_external_baseline.xlsx",
-    "baseline_labeled_csv": "outputs/external/aggregated/all_data_external_baseline_labeled.csv",
-    "filter_noise_csv": "outputs/external/aggregated/all_data_external_filter_noise.csv",
-    "filter_noise_xlsx": "outputs/external/aggregated/all_data_external_filter_noise.xlsx"
+    "main_csv": "outputs/external/aggregated/tabular/all_data_external_main.csv",
+    "main_xlsx": "outputs/external/aggregated/sequence/all_data_external_main.xlsx",
+    "baseline_csv": "outputs/external/aggregated/tabular/all_data_external_baseline.csv",
+    "baseline_xlsx": "outputs/external/aggregated/sequence/all_data_external_baseline.xlsx",
+    "baseline_labeled_csv": "outputs/external/aggregated/tabular/all_data_external_baseline_labeled.csv",
+    "filter_noise_csv": "outputs/external/aggregated/tabular/all_data_external_filter_noise.csv",
+    "filter_noise_xlsx": "outputs/external/aggregated/sequence/all_data_external_filter_noise.xlsx"
   },
   "executive_reporting_doc": "docs/EXECUTIVE_REPORTING.md",
   "legacy_results_archive": "results/legacy/",

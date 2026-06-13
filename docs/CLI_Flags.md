@@ -40,9 +40,9 @@ in addition to the main external aggregate:
 
 | Output file | Description |
 |---|---|
-| `outputs/external/aggregated/all_data_external_main.csv` | All external data after genotype binary filter only. |
-| `outputs/external/aggregated/all_data_external_baseline.csv` | Official baseline: genotype + `invalid_sex` + `supplement_offspring` removed; **`Noise == 1` rows retained**. Use for all training-matrix runs. |
-| `outputs/external/aggregated/all_data_external_baseline.xlsx` | Syllable-level baseline export used by sequence models. |
+| `outputs/external/aggregated/tabular/all_data_external_main.csv` | All external data after genotype binary filter only. |
+| `outputs/external/aggregated/tabular/all_data_external_baseline.csv` | Official baseline: genotype + `invalid_sex` + `supplement_offspring` removed; **`Noise == 1` rows retained**. Use for all training-matrix runs. |
+| `outputs/external/aggregated/sequence/all_data_external_baseline.xlsx` | Syllable-level baseline export used by sequence models. |
 
 See `docs/BASELINE_DATA_FILTERS.md` for the full filter specification.
 

@@ -1,9 +1,11 @@
 """Generate external aggregates from the corrected input workbook.
 
 Runs ONLY the external aggregation step — no legacy pipeline, no TensorFlow.
-Produces:
-  outputs/external/aggregated/all_data_external_main.csv / .xlsx
-  outputs/external/aggregated/all_data_external_baseline.csv / .xlsx
+Produces (split by consumer so the two pipelines never collide on a file name):
+  outputs/external/aggregated/tabular/all_data_external_main.csv      (tabular pipeline)
+  outputs/external/aggregated/tabular/all_data_external_baseline.csv  (tabular pipeline)
+  outputs/external/aggregated/sequence/all_data_external_main.xlsx     (sequence pipeline)
+  outputs/external/aggregated/sequence/all_data_external_baseline.xlsx  (sequence pipeline)
     (baseline retains Noise==1 syllables; see docs/BASELINE_DATA_FILTERS.md)
 
 Usage:
@@ -55,10 +57,10 @@ def main():
 
     logger.info(f"Done. Main CSV: {main_csv}")
     baseline_csv = os.path.join(
-        OUTPUTS_EXTERNAL_AGGREGATED_DIR, "all_data_external_baseline.csv"
+        OUTPUTS_EXTERNAL_AGGREGATED_DIR, "tabular", "all_data_external_baseline.csv"
     )
     baseline_xlsx = os.path.join(
-        OUTPUTS_EXTERNAL_AGGREGATED_DIR, "all_data_external_baseline.xlsx"
+        OUTPUTS_EXTERNAL_AGGREGATED_DIR, "sequence", "all_data_external_baseline.xlsx"
     )
     logger.info(f"Baseline CSV:  {baseline_csv}  exists={os.path.isfile(baseline_csv)}")
     logger.info(f"Baseline XLSX: {baseline_xlsx}  exists={os.path.isfile(baseline_xlsx)}")

@@ -48,7 +48,7 @@ from sklearn.model_selection import (
 from xgboost import XGBClassifier
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-BASELINE_CSV = REPO_ROOT / "outputs" / "external" / "aggregated" / "all_data_external_baseline.csv"
+BASELINE_CSV = REPO_ROOT / "outputs" / "external" / "aggregated" / "tabular" / "all_data_external_baseline.csv"
 REPORTS_DIR = REPO_ROOT / "outputs" / "reports" / "xgboost_tuning"
 
 COL_NAMES = [
