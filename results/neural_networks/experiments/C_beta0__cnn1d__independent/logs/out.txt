@@ -1,0 +1,67 @@
+Active flags: ['--model cnn1d', '--independent', '--baseline', '--pos-weight-beta 0.0']
+Model: cnn1d
+Results directory: results/neural_networks/experiments/C_beta0__cnn1d__independent
+Loading from CSV cache: outputs/external/aggregated/sequence/all_data_external_baseline.seq_cache.csv
+Loaded 408 sessions from 106 mice
+Sequence lengths: min=1, median=236, max=1202, P95=704
+MAX_SEQ_LEN=256
+Labels: HT=97, WT=311
+
+=== Split Info ===
+Strategy: group-aware (by mouse)
+Train: 238 sessions | Val: 80 sessions | Test: 90 sessions
+  Train: 63 mice, HT=56 (24%), WT=182 (76%)
+  Val: 21 mice, HT=22 (28%), WT=58 (72%)
+  Test: 22 mice, HT=19 (21%), WT=71 (79%)
+==================
+
+Class balance in train: HT=56, WT=182, pos_weight=1.000 (beta=0.0, sampler=none, loss=bce)
+Epoch   1/100 | Train Loss: 0.5810 Acc: 0.761 | Val Loss: 0.6098 Acc: 0.725 AUC: 0.572 | LR: 0.001000
+Epoch   2/100 | Train Loss: 0.5403 Acc: 0.765 | Val Loss: 0.5649 Acc: 0.725 AUC: 0.667 | LR: 0.001000
+Epoch   3/100 | Train Loss: 0.5135 Acc: 0.765 | Val Loss: 0.5451 Acc: 0.725 AUC: 0.687 | LR: 0.001000
+Epoch   4/100 | Train Loss: 0.5116 Acc: 0.765 | Val Loss: 0.5433 Acc: 0.725 AUC: 0.701 | LR: 0.001000
+Epoch   5/100 | Train Loss: 0.5008 Acc: 0.769 | Val Loss: 0.5348 Acc: 0.725 AUC: 0.730 | LR: 0.001000
+Epoch   6/100 | Train Loss: 0.4999 Acc: 0.773 | Val Loss: 0.5278 Acc: 0.725 AUC: 0.739 | LR: 0.001000
+Epoch   7/100 | Train Loss: 0.4852 Acc: 0.765 | Val Loss: 0.5157 Acc: 0.738 AUC: 0.749 | LR: 0.001000
+Epoch   8/100 | Train Loss: 0.4849 Acc: 0.773 | Val Loss: 0.5278 Acc: 0.738 AUC: 0.750 | LR: 0.001000
+Epoch   9/100 | Train Loss: 0.4509 Acc: 0.773 | Val Loss: 0.5144 Acc: 0.750 AUC: 0.732 | LR: 0.001000
+Epoch  10/100 | Train Loss: 0.4339 Acc: 0.794 | Val Loss: 0.5431 Acc: 0.725 AUC: 0.752 | LR: 0.001000
+Epoch  11/100 | Train Loss: 0.4298 Acc: 0.803 | Val Loss: 0.5146 Acc: 0.762 AUC: 0.720 | LR: 0.001000
+Epoch  12/100 | Train Loss: 0.3868 Acc: 0.840 | Val Loss: 0.5315 Acc: 0.750 AUC: 0.724 | LR: 0.001000
+Epoch  13/100 | Train Loss: 0.3718 Acc: 0.828 | Val Loss: 0.5794 Acc: 0.762 AUC: 0.697 | LR: 0.001000
+Epoch  14/100 | Train Loss: 0.4006 Acc: 0.824 | Val Loss: 0.5667 Acc: 0.688 AUC: 0.699 | LR: 0.001000
+Epoch  15/100 | Train Loss: 0.3256 Acc: 0.845 | Val Loss: 0.5456 Acc: 0.750 AUC: 0.716 | LR: 0.001000
+Epoch  16/100 | Train Loss: 0.3191 Acc: 0.866 | Val Loss: 0.7099 Acc: 0.750 AUC: 0.693 | LR: 0.000500
+Epoch  17/100 | Train Loss: 0.3197 Acc: 0.845 | Val Loss: 0.5663 Acc: 0.700 AUC: 0.718 | LR: 0.000500
+Epoch  18/100 | Train Loss: 0.2663 Acc: 0.908 | Val Loss: 0.5615 Acc: 0.725 AUC: 0.719 | LR: 0.000500
+Epoch  19/100 | Train Loss: 0.2381 Acc: 0.903 | Val Loss: 0.5771 Acc: 0.700 AUC: 0.705 | LR: 0.000500
+Epoch  20/100 | Train Loss: 0.2663 Acc: 0.899 | Val Loss: 0.5699 Acc: 0.713 AUC: 0.727 | LR: 0.000500
+Epoch  21/100 | Train Loss: 0.2513 Acc: 0.908 | Val Loss: 0.6340 Acc: 0.762 AUC: 0.718 | LR: 0.000500
+Epoch  22/100 | Train Loss: 0.2343 Acc: 0.903 | Val Loss: 0.8263 Acc: 0.725 AUC: 0.707 | LR: 0.000250
+Epoch  23/100 | Train Loss: 0.2239 Acc: 0.903 | Val Loss: 0.6099 Acc: 0.688 AUC: 0.721 | LR: 0.000250
+Epoch  24/100 | Train Loss: 0.2067 Acc: 0.912 | Val Loss: 0.5953 Acc: 0.713 AUC: 0.723 | LR: 0.000250
+Epoch  25/100 | Train Loss: 0.1941 Acc: 0.916 | Val Loss: 0.6013 Acc: 0.700 AUC: 0.723 | LR: 0.000250
+Early stopping at epoch 25 (best AUC: 0.752)
+Best validation AUC: 0.752
+Model parameters: 86,041
+
+=== Test Results ===
+Test Accuracy:        0.6778
+Test Balanced Acc:    0.5452
+Test AUC-ROC:         0.5174
+Test PR-AUC:          0.2970
+Test MCC:             0.0859
+Train Accuracy:       0.8361
+
+Classification Report:
+              precision    recall  f1-score   support
+
+      WT (0)       0.81      0.77      0.79        71
+      HT (1)       0.27      0.32      0.29        19
+
+    accuracy                           0.68        90
+   macro avg       0.54      0.55      0.54        90
+weighted avg       0.70      0.68      0.69        90
+
+
+Done. Results saved to results/neural_networks/experiments/C_beta0__cnn1d__independent/

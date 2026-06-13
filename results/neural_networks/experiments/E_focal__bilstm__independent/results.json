@@ -1,0 +1,64 @@
+{
+  "model": "bilstm",
+  "subject_eval_independent": true,
+  "group_split": true,
+  "test_accuracy": 0.7444444444444445,
+  "test_auc": 0.6397331356560415,
+  "test_balanced_accuracy": 0.4911045218680504,
+  "test_average_precision": 0.28357880603488783,
+  "test_mcc": -0.029106500880714068,
+  "test_macro_f1": 0.4658064516129032,
+  "train_accuracy": 0.819327731092437,
+  "classification_report": {
+    "0.0": {
+      "precision": 0.7857142857142857,
+      "recall": 0.9295774647887324,
+      "f1-score": 0.8516129032258064,
+      "support": 71.0
+    },
+    "1.0": {
+      "precision": 0.16666666666666666,
+      "recall": 0.05263157894736842,
+      "f1-score": 0.08,
+      "support": 19.0
+    },
+    "accuracy": 0.7444444444444445,
+    "macro avg": {
+      "precision": 0.47619047619047616,
+      "recall": 0.4911045218680504,
+      "f1-score": 0.4658064516129032,
+      "support": 90.0
+    },
+    "weighted avg": {
+      "precision": 0.655026455026455,
+      "recall": 0.7444444444444445,
+      "f1-score": 0.6887168458781362,
+      "support": 90.0
+    }
+  },
+  "num_train": 238,
+  "num_val": 80,
+  "num_test": 90,
+  "total_params": 148953,
+  "epochs_trained": 27,
+  "best_val_auc": 0.8166144200626959,
+  "config": {
+    "pos_weight_beta": 0.0,
+    "sampler": "none",
+    "loss": "focal",
+    "focal_gamma": 2.0,
+    "weight_decay": 0.0,
+    "dropout": 0.3,
+    "hidden_size": 64,
+    "num_layers": 2,
+    "d_model": 64,
+    "label_smoothing": 0.0,
+    "augment_windows": 0,
+    "window_stride": 128,
+    "cv_folds": 0,
+    "max_seq_len": 256,
+    "epochs": 100,
+    "batch_size": 32,
+    "lr": 0.001
+  }
+}

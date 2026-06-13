@@ -56,8 +56,12 @@ class SummaryError(RuntimeError):
 
 # --- loading / parsing --------------------------------------------------------
 def find_runs(results_root: str) -> list[str]:
-    """Return the baseline run result.json paths, excluding the summaries dir."""
-    pattern = os.path.join(results_root, "*_subject_eval_*_baseline", "results.json")
+    """Return run result.json paths one level under the root, excluding summaries.
+
+    Matches both the baseline runs (``*_subject_eval_*_baseline/``) and the
+    experiment runs under an ``experiments/`` root with arbitrary dir names.
+    """
+    pattern = os.path.join(results_root, "*", "results.json")
     return sorted(p for p in glob.glob(pattern) if "executive_summaries" not in p)
 
 
@@ -105,8 +109,14 @@ def load_run(results_json: str, strict: bool) -> dict:
     return {
         "model": data["model"],
         "split": "independent" if independent else "dependent",
+        "label": os.path.basename(run_dir),
         "test_accuracy": data["test_accuracy"],
         "test_auc": data["test_auc"],
+        # balanced metrics (additive; None on older runs -> rendered as n/a)
+        "test_balanced_accuracy": data.get("test_balanced_accuracy"),
+        "test_average_precision": data.get("test_average_precision"),
+        "test_mcc": data.get("test_mcc"),
+        "test_macro_f1": data.get("test_macro_f1"),
         "train_accuracy": data.get("train_accuracy"),
         "ht_precision": ht["precision"], "ht_recall": ht["recall"], "ht_f1": ht["f1-score"],
         "ht_support": int(ht["support"]),
@@ -117,6 +127,7 @@ def load_run(results_json: str, strict: bool) -> dict:
         "total_params": data.get("total_params"),
         "num_train": data.get("num_train"), "num_val": data.get("num_val"),
         "num_test": data.get("num_test"),
+        "cv_folds": (data.get("cv") or {}).get("n_folds"),
         "results_dir": os.path.relpath(run_dir, REPO_ROOT),
         "ht_class_index": detected_idx,
     }
@@ -176,9 +187,11 @@ def cls(value, good_at, bad_below) -> str:
 
 # --- master table -------------------------------------------------------------
 MASTER_COLUMNS = [
-    "model", "split", "test_accuracy", "test_auc", "ht_recall", "ht_precision",
-    "ht_f1", "wt_f1", "epochs_trained", "total_params", "num_test",
-    "ht_support", "wt_support", "ht_class_index", "results_dir",
+    "label", "model", "split", "test_balanced_accuracy", "test_auc",
+    "test_average_precision", "test_mcc", "test_accuracy", "ht_recall",
+    "ht_precision", "ht_f1", "wt_f1", "test_macro_f1", "epochs_trained",
+    "total_params", "num_test", "ht_support", "wt_support", "cv_folds",
+    "ht_class_index", "results_dir",
 ]
 
 
@@ -192,16 +205,19 @@ def write_master_csv(runs: list[dict], path: str) -> None:
 
 
 def write_master_md(runs: list[dict], path: str) -> None:
-    head = ("| Model | Split | Test Acc | Test AUC | HT Recall | HT Prec | HT F1 "
-            "| WT F1 | Epochs | Params |")
-    sep = "|" + "---|" * 10
+    head = ("| Run | Model | Split | Bal Acc | AUC | PR-AUC | MCC | Acc "
+            "| HT Recall | HT Prec | WT F1 | Epochs |")
+    sep = "|" + "---|" * 12
     lines = [head, sep]
-    for r in runs:
+    # rank by balanced accuracy (the imbalance-robust metric) when available
+    ordered = sorted(runs, key=lambda r: (r.get("test_balanced_accuracy") or -1), reverse=True)
+    for r in ordered:
         lines.append(
-            f"| {MODEL_DISPLAY.get(r['model'], r['model'])} | {r['split']} "
-            f"| {pct(r['test_accuracy'])} | {f3(r['test_auc'])} | {pct(r['ht_recall'])} "
-            f"| {pct(r['ht_precision'])} | {f2(r['ht_f1'])} | {f2(r['wt_f1'])} "
-            f"| {r['epochs_trained']} | {r['total_params']:,} |"
+            f"| {r.get('label', '')} | {MODEL_DISPLAY.get(r['model'], r['model'])} | {r['split']} "
+            f"| {pct(r.get('test_balanced_accuracy'))} | {f3(r['test_auc'])} "
+            f"| {f3(r.get('test_average_precision'))} | {f2(r.get('test_mcc'))} "
+            f"| {pct(r['test_accuracy'])} | {pct(r['ht_recall'])} | {pct(r['ht_precision'])} "
+            f"| {f2(r['wt_f1'])} | {r['epochs_trained']} |"
         )
     with open(path, "w", encoding="utf-8") as fh:
         fh.write("\n".join(lines) + "\n")
@@ -260,9 +276,10 @@ def _results_table(runs: list[dict]) -> str:
             "      <tr>\n"
             f"        <td>{MODEL_DISPLAY.get(r['model'], r['model'])}</td>"
             f"<td>{r['split'].capitalize()}</td>\n"
-            f"        <td class=\"{cls(r['test_accuracy'], 0.70, 0.50)}\">{pct(r['test_accuracy'])}</td>"
-            f"<td class=\"{cls(r['test_auc'], 0.70, 0.55)}\">{f3(r['test_auc'])}</td>\n"
-            f"        <td>{f2(r['ht_f1'])}</td>"
+            f"        <td class=\"{cls(r.get('test_balanced_accuracy'), 0.65, 0.50)}\">{pct(r.get('test_balanced_accuracy'))}</td>"
+            f"<td class=\"{cls(r['test_auc'], 0.70, 0.55)}\">{f3(r['test_auc'])}</td>"
+            f"<td>{f3(r.get('test_average_precision'))}</td>\n"
+            f"        <td>{pct(r['test_accuracy'])}</td>"
             f"<td class=\"{cls(r['ht_recall'], 0.50, 0.10)}\">{pct(r['ht_recall'])}</td>"
             f"<td>{pct(r['ht_precision'])}</td>\n"
             f"        <td class=\"{cls(r['wt_f1'], 0.70, 0.40)}\">{f2(r['wt_f1'])}</td>"
@@ -271,8 +288,9 @@ def _results_table(runs: list[dict]) -> str:
         )
     return (
         '    <table>\n'
-        '      <tr><th>Model</th><th>Split</th><th>Test Acc</th><th>Test AUC</th>'
-        '<th>HT F1</th><th>HT Recall</th><th>HT Prec</th><th>WT F1</th><th>Epochs</th></tr>\n'
+        '      <tr><th>Model</th><th>Split</th><th>Bal Acc</th><th>Test AUC</th>'
+        '<th>PR-AUC</th><th>Test Acc</th><th>HT Recall</th><th>HT Prec</th>'
+        '<th>WT F1</th><th>Epochs</th></tr>\n'
         + "\n".join(rows) + "\n    </table>\n"
     )
 

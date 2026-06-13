@@ -1,0 +1,72 @@
+Active flags: ['--baseline', '--pos-weight-beta 0.0', '--loss focal --focal-gamma 2.0']
+Model: bilstm
+Results directory: results/neural_networks/experiments/E_focal__bilstm__dependent
+Loading from CSV cache: outputs/external/aggregated/sequence/all_data_external_baseline.seq_cache.csv
+Loaded 408 sessions from 106 mice
+Sequence lengths: min=1, median=236, max=1202, P95=704
+MAX_SEQ_LEN=256
+Labels: HT=97, WT=311
+
+=== Split Info ===
+Strategy: random (session-level)
+Train: 244 sessions | Val: 82 sessions | Test: 82 sessions
+  Train: 102 mice, HT=58 (24%), WT=186 (76%)
+  Val: 60 mice, HT=20 (24%), WT=62 (76%)
+  Test: 64 mice, HT=19 (23%), WT=63 (77%)
+  WARNING: mouse overlap -- train/val: 56, train/test: 61 shared mice
+==================
+
+Class balance in train: HT=58, WT=186, pos_weight=1.000 (beta=0.0, sampler=none, loss=focal)
+Epoch   1/100 | Train Loss: 0.1782 Acc: 0.475 | Val Loss: 0.1440 Acc: 0.756 AUC: 0.606 | LR: 0.001000
+Epoch   2/100 | Train Loss: 0.1420 Acc: 0.762 | Val Loss: 0.1408 Acc: 0.756 AUC: 0.622 | LR: 0.001000
+Epoch   3/100 | Train Loss: 0.1462 Acc: 0.762 | Val Loss: 0.1378 Acc: 0.756 AUC: 0.664 | LR: 0.001000
+Epoch   4/100 | Train Loss: 0.1403 Acc: 0.762 | Val Loss: 0.1364 Acc: 0.756 AUC: 0.701 | LR: 0.001000
+Epoch   5/100 | Train Loss: 0.1389 Acc: 0.762 | Val Loss: 0.1327 Acc: 0.768 AUC: 0.690 | LR: 0.001000
+Epoch   6/100 | Train Loss: 0.1348 Acc: 0.762 | Val Loss: 0.1312 Acc: 0.768 AUC: 0.682 | LR: 0.001000
+Epoch   7/100 | Train Loss: 0.1326 Acc: 0.770 | Val Loss: 0.1347 Acc: 0.768 AUC: 0.688 | LR: 0.001000
+Epoch   8/100 | Train Loss: 0.1276 Acc: 0.783 | Val Loss: 0.1349 Acc: 0.768 AUC: 0.684 | LR: 0.001000
+Epoch   9/100 | Train Loss: 0.1289 Acc: 0.779 | Val Loss: 0.1355 Acc: 0.780 AUC: 0.693 | LR: 0.001000
+Epoch  10/100 | Train Loss: 0.1253 Acc: 0.783 | Val Loss: 0.1345 Acc: 0.768 AUC: 0.693 | LR: 0.000500
+Epoch  11/100 | Train Loss: 0.1172 Acc: 0.775 | Val Loss: 0.1346 Acc: 0.780 AUC: 0.697 | LR: 0.000500
+Epoch  12/100 | Train Loss: 0.1178 Acc: 0.783 | Val Loss: 0.1358 Acc: 0.768 AUC: 0.697 | LR: 0.000500
+Epoch  13/100 | Train Loss: 0.1159 Acc: 0.791 | Val Loss: 0.1382 Acc: 0.768 AUC: 0.690 | LR: 0.000500
+Epoch  14/100 | Train Loss: 0.1161 Acc: 0.803 | Val Loss: 0.1389 Acc: 0.805 AUC: 0.702 | LR: 0.000500
+Epoch  15/100 | Train Loss: 0.1084 Acc: 0.803 | Val Loss: 0.1413 Acc: 0.793 AUC: 0.686 | LR: 0.000500
+Epoch  16/100 | Train Loss: 0.1080 Acc: 0.820 | Val Loss: 0.1444 Acc: 0.793 AUC: 0.684 | LR: 0.000500
+Epoch  17/100 | Train Loss: 0.1012 Acc: 0.816 | Val Loss: 0.1440 Acc: 0.805 AUC: 0.692 | LR: 0.000500
+Epoch  18/100 | Train Loss: 0.1044 Acc: 0.840 | Val Loss: 0.1508 Acc: 0.805 AUC: 0.692 | LR: 0.000500
+Epoch  19/100 | Train Loss: 0.0953 Acc: 0.824 | Val Loss: 0.1649 Acc: 0.805 AUC: 0.669 | LR: 0.000500
+Epoch  20/100 | Train Loss: 0.0937 Acc: 0.836 | Val Loss: 0.1590 Acc: 0.793 AUC: 0.694 | LR: 0.000250
+Epoch  21/100 | Train Loss: 0.0896 Acc: 0.848 | Val Loss: 0.1675 Acc: 0.805 AUC: 0.682 | LR: 0.000250
+Epoch  22/100 | Train Loss: 0.0869 Acc: 0.861 | Val Loss: 0.1740 Acc: 0.793 AUC: 0.681 | LR: 0.000250
+Epoch  23/100 | Train Loss: 0.0851 Acc: 0.844 | Val Loss: 0.1802 Acc: 0.780 AUC: 0.677 | LR: 0.000250
+Epoch  24/100 | Train Loss: 0.0840 Acc: 0.836 | Val Loss: 0.1933 Acc: 0.793 AUC: 0.668 | LR: 0.000250
+Epoch  25/100 | Train Loss: 0.0820 Acc: 0.840 | Val Loss: 0.1895 Acc: 0.793 AUC: 0.677 | LR: 0.000250
+Epoch  26/100 | Train Loss: 0.0795 Acc: 0.857 | Val Loss: 0.2111 Acc: 0.805 AUC: 0.670 | LR: 0.000125
+Epoch  27/100 | Train Loss: 0.0732 Acc: 0.889 | Val Loss: 0.2160 Acc: 0.805 AUC: 0.669 | LR: 0.000125
+Epoch  28/100 | Train Loss: 0.0720 Acc: 0.877 | Val Loss: 0.2180 Acc: 0.793 AUC: 0.665 | LR: 0.000125
+Epoch  29/100 | Train Loss: 0.0716 Acc: 0.881 | Val Loss: 0.2236 Acc: 0.756 AUC: 0.661 | LR: 0.000125
+Early stopping at epoch 29 (best AUC: 0.702)
+Best validation AUC: 0.702
+Model parameters: 148,953
+
+=== Test Results ===
+Test Accuracy:        0.7195
+Test Balanced Acc:    0.5234
+Test AUC-ROC:         0.6792
+Test PR-AUC:          0.4017
+Test MCC:             0.0603
+Train Accuracy:       0.8238
+
+Classification Report:
+              precision    recall  f1-score   support
+
+      WT (0)       0.78      0.89      0.83        63
+      HT (1)       0.30      0.16      0.21        19
+
+    accuracy                           0.72        82
+   macro avg       0.54      0.52      0.52        82
+weighted avg       0.67      0.72      0.69        82
+
+
+Done. Results saved to results/neural_networks/experiments/E_focal__bilstm__dependent/

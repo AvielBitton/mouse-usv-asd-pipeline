@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Neural Networks Executive Summary — Mouse USV ASD Classification</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', sans-serif; color: #1a1a2e; background: #f8f9fb; padding: 40px; line-height: 1.6; }
+  .container { max-width: 1100px; margin: 0 auto; background: #fff; border-radius: 12px; box-shadow: 0 2px 20px rgba(0,0,0,0.06); overflow: hidden; }
+  .header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: #fff; padding: 36px 44px; }
+  .header h1 { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+  .header p { font-size: 13px; color: #a8b2d1; }
+  .body { padding: 36px 44px; }
+  h2 { font-size: 15px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #16213e; margin: 32px 0 12px; border-bottom: 2px solid #e8ecf4; padding-bottom: 6px; }
+  h2:first-child { margin-top: 0; }
+  h3 { font-size: 14px; font-weight: 700; color: #16213e; margin: 20px 0 8px; }
+  p, li { font-size: 14px; color: #333; }
+  ul { padding-left: 20px; margin: 8px 0; }
+  li { margin-bottom: 6px; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 13px; }
+  th { background: #16213e; color: #fff; padding: 10px 14px; text-align: left; font-weight: 600; }
+  td { padding: 9px 14px; border-bottom: 1px solid #e8ecf4; }
+  tr:last-child td { border-bottom: none; }
+  .highlight { color: #e63946; font-weight: 600; }
+  .good { color: #2a9d8f; font-weight: 600; }
+  .neutral { color: #6c757d; font-weight: 600; }
+  .banner { border-radius: 8px; padding: 20px 24px; margin: 16px 0; }
+  .banner-warn { background: linear-gradient(135deg, #e63946 0%, #c1121f 100%); color: #fff; }
+  .banner-warn p { color: #fde8e8; }
+  .banner-warn h3 { color: #fff; margin-top: 0; }
+  .banner-info { background: linear-gradient(135deg, #457b9d 0%, #1d3557 100%); color: #fff; }
+  .banner-info p { color: #d4e4f0; }
+  .banner-info h3 { color: #fff; margin-top: 0; }
+  .banner-ok { background: linear-gradient(135deg, #2a9d8f 0%, #264653 100%); color: #fff; }
+  .banner-ok p { color: #d4f0e8; }
+  .banner-ok h3 { color: #fff; margin-top: 0; }
+  .config-table td:first-child { font-weight: 600; }
+  .config-table tr:nth-child(even) { background: #f8f9fb; }
+  .legend { background: #f4f6fb; border-radius: 8px; padding: 16px 20px; margin: 12px 0; font-size: 13px; }
+  .legend strong { color: #16213e; }
+  code { background: #eef2ff; padding: 2px 6px; border-radius: 4px; font-size: 12px; }
+  th code { background: rgba(255,255,255,0.15); color: #fff; }
+  pre { background: #1a1a2e; color: #a8b2d1; border-radius: 8px; padding: 16px 20px; margin: 12px 0; overflow-x: auto; font-size: 13px; line-height: 1.5; }
+  pre code { background: none; padding: 0; color: inherit; }
+  .footer { padding: 20px 44px; background: #f4f6fb; font-size: 11px; color: #888; text-align: center; }
+  @media print { body { padding: 0; background: #fff; } .container { box-shadow: none; } }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>Neural Networks Executive Summary &mdash; Sequence Models (Baseline)</h1>
+    <p>BiLSTM vs 1D-CNN vs Transformer &nbsp;|&nbsp; 6 Configurations &nbsp;|&nbsp; <code>--baseline</code> dataset &nbsp;|&nbsp; June 2026</p>
+  </div>
+  <div class="body">
+    <h2>Objective</h2>
+    <p>Evaluate whether <strong>sequence-based deep learning models</strong> (BiLSTM, 1D-CNN, Transformer) can classify mouse pups as <strong>Wild-Type (WT)</strong> or <strong>ASD-model (HT)</strong> from the temporal ordering of ultrasonic vocalizations (USVs), on the official <code>--baseline</code> dataset. This complements the tabular models (XGBoost, TabPFN) that use aggregated per-recording features and discard ordering. See <code>docs/NEURAL_NETWORK_BASELINE.md</code>.</p>
+    <h2>Approach</h2>
+    <h3>Data Representation</h3>
+    <p>Instead of aggregating syllables into one feature vector per recording, we preserve the <strong>ordered sequence of syllables</strong> within each mouse-day-session (<strong>408 sessions</strong> in the baseline split; median ~236 syllables/session). Each syllable is a 14-dimensional vector:</p>
+    <ul>
+      <li><strong>Continuous (4):</strong> Start Point (Hz), End Point (Hz), Duration, ISI time</li>
+      <li><strong>Syllable type (8):</strong> learned embedding (11 types &rarr; 8 dims)</li>
+      <li><strong>Binary flags (2):</strong> Noise indicator, Recording-boundary marker</li>
+    </ul>
+    <p>Static metadata (mother genotype, sex, day, session) is concatenated to the encoder output before classification.</p>
+    <h3>Models</h3>
+    <table class="config-table">
+      <tr><th>Model</th><th>Type</th><th>Parameters</th><th>How It Reads the Sequence</th></tr>
+      <tr><td>BiLSTM</td><td>Recurrent (LSTM)</td><td>148,953</td><td>Step-by-step with memory, reads forward and backward</td></tr>
+      <tr><td>1D-CNN</td><td>Convolutional</td><td>86,041</td><td>Sliding window (size 3) detecting local patterns</td></tr>
+      <tr><td>Transformer</td><td>Self-Attention</td><td>72,537</td><td>Every syllable attends to every other syllable simultaneously</td></tr>
+    </table>
+    <h3>Training Setup</h3>
+    <ul>
+      <li><strong>Framework:</strong> PyTorch, CPU training</li>
+      <li><strong>Max sequence length:</strong> 256 syllables</li>
+      <li><strong>Loss:</strong> BCEWithLogitsLoss with pos_weight for class balancing</li>
+      <li><strong>Optimizer:</strong> Adam (lr=0.001) with ReduceLROnPlateau</li>
+      <li><strong>Early stopping:</strong> patience 15 on validation AUC; seed 100</li>
+      <li><strong>Split:</strong> 60% train / 20% val / 20% test</li>
+    </ul>
+    <h2>Results &mdash; All 6 Configurations</h2>
+    <table>
+      <tr><th>Model</th><th>Split</th><th>Bal Acc</th><th>Test AUC</th><th>PR-AUC</th><th>Test Acc</th><th>HT Recall</th><th>HT Prec</th><th>WT F1</th><th>Epochs</th></tr>
+      <tr>
+        <td>BiLSTM</td><td>Dependent</td>
+        <td class="">50.0%</td><td class="good">0.790</td><td>0.492</td>
+        <td>23.2%</td><td class="good">100.0%</td><td>23.2%</td>
+        <td class="highlight">0.00</td><td>16</td>
+      </tr>
+      <tr>
+        <td>BiLSTM</td><td>Dependent</td>
+        <td class="">50.0%</td><td class="">0.665</td><td>0.501</td>
+        <td>76.8%</td><td class="highlight">0.0%</td><td>0.0%</td>
+        <td class="good">0.87</td><td>16</td>
+      </tr>
+      <tr>
+        <td>BiLSTM</td><td>Dependent</td>
+        <td class="">56.8%</td><td class="">0.662</td><td>0.391</td>
+        <td>73.2%</td><td class="">26.3%</td><td>38.5%</td>
+        <td class="good">0.83</td><td>34</td>
+      </tr>
+      <tr>
+        <td>BiLSTM</td><td>Dependent</td>
+        <td class="">62.8%</td><td class="good">0.776</td><td>0.526</td>
+        <td>68.3%</td><td class="good">52.6%</td><td>37.0%</td>
+        <td class="good">0.78</td><td>16</td>
+      </tr>
+      <tr>
+        <td>BiLSTM</td><td>Dependent</td>
+        <td class="">52.3%</td><td class="">0.679</td><td>0.402</td>
+        <td>72.0%</td><td class="">15.8%</td><td>30.0%</td>
+        <td class="good">0.83</td><td>29</td>
+      </tr>
+      <tr>
+        <td>BiLSTM</td><td>Dependent</td>
+        <td class="">52.6%</td><td class="">0.683</td><td>0.426</td>
+        <td>78.0%</td><td class="highlight">5.3%</td><td>100.0%</td>
+        <td class="good">0.88</td><td>24</td>
+      </tr>
+      <tr>
+        <td>BiLSTM</td><td>Dependent</td>
+        <td class="">57.1%</td><td class="">0.673</td><td>0.378</td>
+        <td>70.7%</td><td class="">31.6%</td><td>35.3%</td>
+        <td class="good">0.81</td><td>28</td>
+      </tr>
+      <tr>
+        <td>BiLSTM</td><td>Dependent</td>
+        <td class="">61.1%</td><td class="">0.632</td><td>0.327</td>
+        <td>59.1%</td><td class="good">64.9%</td><td>32.1%</td>
+        <td class="">0.68</td><td>17</td>
+      </tr>
+      <tr>
+        <td>BiLSTM</td><td>Independent</td>
+        <td class="good">65.5%</td><td class="good">0.749</td><td>0.347</td>
+        <td>45.6%</td><td class="good">100.0%</td><td>27.9%</td>
+        <td class="">0.47</td><td>16</td>
+      </tr>
+      <tr>
+        <td>BiLSTM</td><td>Independent</td>
+        <td class="">55.1%</td><td class="">0.623</td><td>0.305</td>
+        <td>77.8%</td><td class="">15.8%</td><td>42.9%</td>
+        <td class="good">0.87</td><td>24</td>
+      </tr>
+      <tr>
+        <td>BiLSTM</td><td>Independent</td>
+        <td class="">56.1%</td><td class="">0.643</td><td>0.291</td>
+        <td>73.3%</td><td class="">26.3%</td><td>33.3%</td>
+        <td class="good">0.84</td><td>32</td>
+      </tr>
+      <tr>
+        <td>BiLSTM</td><td>Independent</td>
+        <td class="good">70.4%</td><td class="good">0.767</td><td>0.354</td>
+        <td>53.3%</td><td class="good">100.0%</td><td>31.1%</td>
+        <td class="">0.58</td><td>17</td>
+      </tr>
+      <tr>
+        <td>BiLSTM</td><td>Independent</td>
+        <td class="highlight">49.1%</td><td class="">0.640</td><td>0.284</td>
+        <td>74.4%</td><td class="highlight">5.3%</td><td>16.7%</td>
+        <td class="good">0.85</td><td>27</td>
+      </tr>
+      <tr>
+        <td>BiLSTM</td><td>Independent</td>
+        <td class="">55.2%</td><td class="good">0.701</td><td>0.356</td>
+        <td>68.9%</td><td class="">31.6%</td><td>28.6%</td>
+        <td class="good">0.80</td><td>35</td>
+      </tr>
+      <tr>
+        <td>BiLSTM</td><td>Independent</td>
+        <td class="">58.2%</td><td class="">0.581</td><td>0.297</td>
+        <td>64.4%</td><td class="">47.4%</td><td>29.0%</td>
+        <td class="good">0.75</td><td>25</td>
+      </tr>
+      <tr>
+        <td>BiLSTM</td><td>Independent</td>
+        <td class="">55.9%</td><td class="">0.586</td><td>0.320</td>
+        <td>56.6%</td><td class="good">54.6%</td><td>28.5%</td>
+        <td class="">0.67</td><td>17</td>
+      </tr>
+      <tr>
+        <td>1D-CNN</td><td>Dependent</td>
+        <td class="">56.4%</td><td class="">0.604</td><td>0.328</td>
+        <td>50.0%</td><td class="good">68.4%</td><td>27.1%</td>
+        <td class="">0.58</td><td>22</td>
+      </tr>
+      <tr>
+        <td>1D-CNN</td><td>Dependent</td>
+        <td class="">51.3%</td><td class="">0.583</td><td>0.340</td>
+        <td>64.6%</td><td class="">26.3%</td><td>25.0%</td>
+        <td class="good">0.77</td><td>22</td>
+      </tr>
+      <tr>
+        <td>1D-CNN</td><td>Dependent</td>
+        <td class="highlight">49.2%</td><td class="">0.568</td><td>0.285</td>
+        <td>75.6%</td><td class="highlight">0.0%</td><td>0.0%</td>
+        <td class="good">0.86</td><td>21</td>
+      </tr>
+      <tr>
+        <td>1D-CNN</td><td>Dependent</td>
+        <td class="">59.4%</td><td class="">0.590</td><td>0.298</td>
+        <td>65.9%</td><td class="">47.4%</td><td>33.3%</td>
+        <td class="good">0.76</td><td>22</td>
+      </tr>
+      <tr>
+        <td>1D-CNN</td><td>Dependent</td>
+        <td class="">51.3%</td><td class="">0.588</td><td>0.339</td>
+        <td>64.6%</td><td class="">26.3%</td><td>25.0%</td>
+        <td class="good">0.77</td><td>22</td>
+      </tr>
+      <tr>
+        <td>1D-CNN</td><td>Dependent</td>
+        <td class="">52.1%</td><td class="">0.587</td><td>0.331</td>
+        <td>74.4%</td><td class="">10.5%</td><td>33.3%</td>
+        <td class="good">0.85</td><td>24</td>
+      </tr>
+      <tr>
+        <td>1D-CNN</td><td>Independent</td>
+        <td class="">51.7%</td><td class="">0.609</td><td>0.364</td>
+        <td>63.3%</td><td class="">31.6%</td><td>23.1%</td>
+        <td class="good">0.76</td><td>17</td>
+      </tr>
+      <tr>
+        <td>1D-CNN</td><td>Independent</td>
+        <td class="">52.4%</td><td class="highlight">0.532</td><td>0.366</td>
+        <td>64.4%</td><td class="">31.6%</td><td>24.0%</td>
+        <td class="good">0.76</td><td>22</td>
+      </tr>
+      <tr>
+        <td>1D-CNN</td><td>Independent</td>
+        <td class="">54.5%</td><td class="highlight">0.517</td><td>0.297</td>
+        <td>67.8%</td><td class="">31.6%</td><td>27.3%</td>
+        <td class="good">0.79</td><td>25</td>
+      </tr>
+      <tr>
+        <td>1D-CNN</td><td>Independent</td>
+        <td class="">52.8%</td><td class="">0.557</td><td>0.359</td>
+        <td>71.1%</td><td class="">21.1%</td><td>26.7%</td>
+        <td class="good">0.82</td><td>17</td>
+      </tr>
+      <tr>
+        <td>1D-CNN</td><td>Independent</td>
+        <td class="">60.7%</td><td class="highlight">0.539</td><td>0.335</td>
+        <td>74.4%</td><td class="">36.8%</td><td>38.9%</td>
+        <td class="good">0.84</td><td>22</td>
+      </tr>
+      <tr>
+        <td>1D-CNN</td><td>Independent</td>
+        <td class="highlight">47.5%</td><td class="highlight">0.449</td><td>0.210</td>
+        <td>56.7%</td><td class="">31.6%</td><td>18.8%</td>
+        <td class="">0.70</td><td>39</td>
+      </tr>
+      <tr>
+        <td>Transformer</td><td>Dependent</td>
+        <td class="good">66.8%</td><td class="">0.655</td><td>0.350</td>
+        <td>65.9%</td><td class="good">68.4%</td><td>37.1%</td>
+        <td class="good">0.75</td><td>31</td>
+      </tr>
+      <tr>
+        <td>Transformer</td><td>Dependent</td>
+        <td class="">50.0%</td><td class="">0.682</td><td>0.350</td>
+        <td>76.8%</td><td class="highlight">0.0%</td><td>0.0%</td>
+        <td class="good">0.87</td><td>30</td>
+      </tr>
+      <tr>
+        <td>Transformer</td><td>Dependent</td>
+        <td class="">53.1%</td><td class="good">0.702</td><td>0.385</td>
+        <td>73.2%</td><td class="">15.8%</td><td>33.3%</td>
+        <td class="good">0.84</td><td>48</td>
+      </tr>
+      <tr>
+        <td>Transformer</td><td>Dependent</td>
+        <td class="">58.6%</td><td class="">0.652</td><td>0.341</td>
+        <td>73.2%</td><td class="">31.6%</td><td>40.0%</td>
+        <td class="good">0.83</td><td>25</td>
+      </tr>
+      <tr>
+        <td>Transformer</td><td>Dependent</td>
+        <td class="">52.1%</td><td class="good">0.773</td><td>0.432</td>
+        <td>74.4%</td><td class="">10.5%</td><td>33.3%</td>
+        <td class="good">0.85</td><td>92</td>
+      </tr>
+      <tr>
+        <td>Transformer</td><td>Independent</td>
+        <td class="">63.4%</td><td class="">0.675</td><td>0.474</td>
+        <td>54.4%</td><td class="good">78.9%</td><td>28.8%</td>
+        <td class="">0.62</td><td>29</td>
+      </tr>
+      <tr>
+        <td>Transformer</td><td>Independent</td>
+        <td class="">63.1%</td><td class="good">0.725</td><td>0.531</td>
+        <td>72.2%</td><td class="">47.4%</td><td>37.5%</td>
+        <td class="good">0.82</td><td>33</td>
+      </tr>
+      <tr>
+        <td>Transformer</td><td>Independent</td>
+        <td class="">50.0%</td><td class="good">0.710</td><td>0.445</td>
+        <td>78.9%</td><td class="highlight">0.0%</td><td>0.0%</td>
+        <td class="good">0.88</td><td>22</td>
+      </tr>
+      <tr>
+        <td>Transformer</td><td>Independent</td>
+        <td class="">50.7%</td><td class="good">0.749</td><td>0.558</td>
+        <td>22.2%</td><td class="good">100.0%</td><td>21.3%</td>
+        <td class="highlight">0.03</td><td>19</td>
+      </tr>
+      <tr>
+        <td>Transformer</td><td>Independent</td>
+        <td class="">50.0%</td><td class="good">0.815</td><td>0.616</td>
+        <td>78.9%</td><td class="highlight">0.0%</td><td>0.0%</td>
+        <td class="good">0.88</td><td>23</td>
+      </tr>
+    </table>
+    <div class="legend"><strong>Reading the table:</strong> HT is the minority (disease) class — <strong>HT Recall</strong> is the clinically important metric (what fraction of ASD-model pups are caught). High accuracy with low HT recall means the model is just predicting the majority WT class.</div>
+    <h2>Comparison vs Tabular Baseline</h2>
+    <p>Same <code>--baseline</code> dataset; tabular XGBoost numbers parsed from its <code>comparison_vs_baseline.txt</code>. Tabular operates on aggregated recordings, sequence models on ordered per-session syllables.</p>
+    <table>
+      <tr><th>Model</th><th>Split</th><th>Test Acc</th><th>HT Recall</th><th>HT F1</th><th>WT F1</th><th>Data Level</th></tr>
+      <tr>
+        <td>XGBoost (tabular)</td><td>Dependent</td>
+        <td>73.3%</td><td class="good">94.0%</td><td>0.65</td><td>0.79</td>
+        <td>Recording (~12,323)</td>
+      </tr>
+      <tr>
+        <td>BiLSTM (seq)</td><td>Dependent</td>
+        <td>23.2%</td><td class="good">100.0%</td><td>0.38</td><td>0.00</td>
+        <td>Session (~408)</td>
+      </tr>
+      <tr>
+        <td>BiLSTM (seq)</td><td>Dependent</td>
+        <td>76.8%</td><td class="highlight">0.0%</td><td>0.00</td><td>0.87</td>
+        <td>Session (~408)</td>
+      </tr>
+      <tr>
+        <td>BiLSTM (seq)</td><td>Dependent</td>
+        <td>73.2%</td><td class="">26.3%</td><td>0.31</td><td>0.83</td>
+        <td>Session (~408)</td>
+      </tr>
+      <tr>
+        <td>BiLSTM (seq)</td><td>Dependent</td>
+        <td>68.3%</td><td class="good">52.6%</td><td>0.43</td><td>0.78</td>
+        <td>Session (~408)</td>
+      </tr>
+      <tr>
+        <td>BiLSTM (seq)</td><td>Dependent</td>
+        <td>72.0%</td><td class="">15.8%</td><td>0.21</td><td>0.83</td>
+        <td>Session (~408)</td>
+      </tr>
+      <tr>
+        <td>BiLSTM (seq)</td><td>Dependent</td>
+        <td>78.0%</td><td class="highlight">5.3%</td><td>0.10</td><td>0.88</td>
+        <td>Session (~408)</td>
+      </tr>
+      <tr>
+        <td>BiLSTM (seq)</td><td>Dependent</td>
+        <td>70.7%</td><td class="">31.6%</td><td>0.33</td><td>0.81</td>
+        <td>Session (~408)</td>
+      </tr>
+      <tr>
+        <td>BiLSTM (seq)</td><td>Dependent</td>
+        <td>59.1%</td><td class="good">64.9%</td><td>0.43</td><td>0.68</td>
+        <td>Session (~408)</td>
+      </tr>
+      <tr>
+        <td>1D-CNN (seq)</td><td>Dependent</td>
+        <td>50.0%</td><td class="good">68.4%</td><td>0.39</td><td>0.58</td>
+        <td>Session (~408)</td>
+      </tr>
+      <tr>
+        <td>1D-CNN (seq)</td><td>Dependent</td>
+        <td>64.6%</td><td class="">26.3%</td><td>0.26</td><td>0.77</td>
+        <td>Session (~408)</td>
+      </tr>
+      <tr>
+        <td>1D-CNN (seq)</td><td>Dependent</td>
+        <td>75.6%</td><td class="highlight">0.0%</td><td>0.00</td><td>0.86</td>
+        <td>Session (~408)</td>
+      </tr>
+      <tr>
+        <td>1D-CNN (seq)</td><td>Dependent</td>
+        <td>65.9%</td><td class="">47.4%</td><td>0.39</td><td>0.76</td>
+        <td>Session (~408)</td>
+      </tr>
+      <tr>
+        <td>1D-CNN (seq)</td><td>Dependent</td>
+        <td>64.6%</td><td class="">26.3%</td><td>0.26</td><td>0.77</td>
+        <td>Session (~408)</td>
+      </tr>
+      <tr>
+        <td>1D-CNN (seq)</td><td>Dependent</td>
+        <td>74.4%</td><td class="">10.5%</td><td>0.16</td><td>0.85</td>
+        <td>Session (~408)</td>
+      </tr>
+      <tr>
+        <td>Transformer (seq)</td><td>Dependent</td>
+        <td>65.9%</td><td class="good">68.4%</td><td>0.48</td><td>0.75</td>
+        <td>Session (~408)</td>
+      </tr>
+      <tr>
+        <td>Transformer (seq)</td><td>Dependent</td>
+        <td>76.8%</td><td class="highlight">0.0%</td><td>0.00</td><td>0.87</td>
+        <td>Session (~408)</td>
+      </tr>
+      <tr>
+        <td>Transformer (seq)</td><td>Dependent</td>
+        <td>73.2%</td><td class="">15.8%</td><td>0.21</td><td>0.84</td>
+        <td>Session (~408)</td>
+      </tr>
+      <tr>
+        <td>Transformer (seq)</td><td>Dependent</td>
+        <td>73.2%</td><td class="">31.6%</td><td>0.35</td><td>0.83</td>
+        <td>Session (~408)</td>
+      </tr>
+      <tr>
+        <td>Transformer (seq)</td><td>Dependent</td>
+        <td>74.4%</td><td class="">10.5%</td><td>0.16</td><td>0.85</td>
+        <td>Session (~408)</td>
+      </tr>
+      <tr>
+        <td>XGBoost (tabular)</td><td>Independent</td>
+        <td>69.3%</td><td class="good">63.7%</td><td>0.53</td><td>0.77</td>
+        <td>Recording (~12,323)</td>
+      </tr>
+      <tr>
+        <td>BiLSTM (seq)</td><td>Independent</td>
+        <td>45.6%</td><td class="good">100.0%</td><td>0.44</td><td>0.47</td>
+        <td>Session (~408)</td>
+      </tr>
+      <tr>
+        <td>BiLSTM (seq)</td><td>Independent</td>
+        <td>77.8%</td><td class="">15.8%</td><td>0.23</td><td>0.87</td>
+        <td>Session (~408)</td>
+      </tr>
+      <tr>
+        <td>BiLSTM (seq)</td><td>Independent</td>
+        <td>73.3%</td><td class="">26.3%</td><td>0.29</td><td>0.84</td>
+        <td>Session (~408)</td>
+      </tr>
+      <tr>
+        <td>BiLSTM (seq)</td><td>Independent</td>
+        <td>53.3%</td><td class="good">100.0%</td><td>0.47</td><td>0.58</td>
+        <td>Session (~408)</td>
+      </tr>
+      <tr>
+        <td>BiLSTM (seq)</td><td>Independent</td>
+        <td>74.4%</td><td class="highlight">5.3%</td><td>0.08</td><td>0.85</td>
+        <td>Session (~408)</td>
+      </tr>
+      <tr>
+        <td>BiLSTM (seq)</td><td>Independent</td>
+        <td>68.9%</td><td class="">31.6%</td><td>0.30</td><td>0.80</td>
+        <td>Session (~408)</td>
+      </tr>
+      <tr>
+        <td>BiLSTM (seq)</td><td>Independent</td>
+        <td>64.4%</td><td class="">47.4%</td><td>0.36</td><td>0.75</td>
+        <td>Session (~408)</td>
+      </tr>
+      <tr>
+        <td>BiLSTM (seq)</td><td>Independent</td>
+        <td>56.6%</td><td class="good">54.6%</td><td>0.37</td><td>0.67</td>
+        <td>Session (~408)</td>
+      </tr>
+      <tr>
+        <td>1D-CNN (seq)</td><td>Independent</td>
+        <td>63.3%</td><td class="">31.6%</td><td>0.27</td><td>0.76</td>
+        <td>Session (~408)</td>
+      </tr>
+      <tr>
+        <td>1D-CNN (seq)</td><td>Independent</td>
+        <td>64.4%</td><td class="">31.6%</td><td>0.27</td><td>0.76</td>
+        <td>Session (~408)</td>
+      </tr>
+      <tr>
+        <td>1D-CNN (seq)</td><td>Independent</td>
+        <td>67.8%</td><td class="">31.6%</td><td>0.29</td><td>0.79</td>
+        <td>Session (~408)</td>
+      </tr>
+      <tr>
+        <td>1D-CNN (seq)</td><td>Independent</td>
+        <td>71.1%</td><td class="">21.1%</td><td>0.24</td><td>0.82</td>
+        <td>Session (~408)</td>
+      </tr>
+      <tr>
+        <td>1D-CNN (seq)</td><td>Independent</td>
+        <td>74.4%</td><td class="">36.8%</td><td>0.38</td><td>0.84</td>
+        <td>Session (~408)</td>
+      </tr>
+      <tr>
+        <td>1D-CNN (seq)</td><td>Independent</td>
+        <td>56.7%</td><td class="">31.6%</td><td>0.24</td><td>0.70</td>
+        <td>Session (~408)</td>
+      </tr>
+      <tr>
+        <td>Transformer (seq)</td><td>Independent</td>
+        <td>54.4%</td><td class="good">78.9%</td><td>0.42</td><td>0.62</td>
+        <td>Session (~408)</td>
+      </tr>
+      <tr>
+        <td>Transformer (seq)</td><td>Independent</td>
+        <td>72.2%</td><td class="">47.4%</td><td>0.42</td><td>0.82</td>
+        <td>Session (~408)</td>
+      </tr>
+      <tr>
+        <td>Transformer (seq)</td><td>Independent</td>
+        <td>78.9%</td><td class="highlight">0.0%</td><td>0.00</td><td>0.88</td>
+        <td>Session (~408)</td>
+      </tr>
+      <tr>
+        <td>Transformer (seq)</td><td>Independent</td>
+        <td>22.2%</td><td class="good">100.0%</td><td>0.35</td><td>0.03</td>
+        <td>Session (~408)</td>
+      </tr>
+      <tr>
+        <td>Transformer (seq)</td><td>Independent</td>
+        <td>78.9%</td><td class="highlight">0.0%</td><td>0.00</td><td>0.88</td>
+        <td>Session (~408)</td>
+      </tr>
+    </table>
+    <h2>Analysis</h2>
+    <p>Across the six configurations, the highest HT (disease) recall is <strong>BiLSTM (dependent)</strong> at <strong>100.0%</strong> (test accuracy 23.2%, AUC 0.790).</p>
+    <p>HT recall <strong>collapses below 10%</strong> for: BiLSTM (dependent), BiLSTM (dependent), BiLSTM (independent), 1D-CNN (dependent), Transformer (dependent), Transformer (independent), Transformer (independent). These models default to the majority (WT) class — high headline accuracy masks a failure to detect the disease class. Compare HT recall, not accuracy.</p>
+    <p><strong>Dependent → Independent (subject-level) split:</strong> BiLSTM: 59.1% → 56.6% test accuracy; 1D-CNN: 74.4% → 56.7% test accuracy; Transformer: 74.4% → 78.9% test accuracy. The independent split removes subject leakage and is the honest generalization estimate.</p>
+    <h2>Results Directory Guide</h2>
+    <table>
+      <tr><th>Directory</th><th>Description</th></tr>
+      <tr><td><code>results/neural_networks/experiments/A_control__bilstm__dependent/</code></td><td>BiLSTM, dependent split</td></tr>
+      <tr><td><code>results/neural_networks/experiments/B_beta0.5__bilstm__dependent/</code></td><td>BiLSTM, dependent split</td></tr>
+      <tr><td><code>results/neural_networks/experiments/C_beta0__bilstm__dependent/</code></td><td>BiLSTM, dependent split</td></tr>
+      <tr><td><code>results/neural_networks/experiments/D_sampler__bilstm__dependent/</code></td><td>BiLSTM, dependent split</td></tr>
+      <tr><td><code>results/neural_networks/experiments/E_focal__bilstm__dependent/</code></td><td>BiLSTM, dependent split</td></tr>
+      <tr><td><code>results/neural_networks/experiments/F_regsmall__bilstm__dependent/</code></td><td>BiLSTM, dependent split</td></tr>
+      <tr><td><code>results/neural_networks/experiments/G_augment__bilstm__dependent/</code></td><td>BiLSTM, dependent split</td></tr>
+      <tr><td><code>results/neural_networks/experiments/H_cv_Dsampler__bilstm__dependent/</code></td><td>BiLSTM, dependent split</td></tr>
+      <tr><td><code>results/neural_networks/experiments/A_control__bilstm__independent/</code></td><td>BiLSTM, independent split</td></tr>
+      <tr><td><code>results/neural_networks/experiments/B_beta0.5__bilstm__independent/</code></td><td>BiLSTM, independent split</td></tr>
+      <tr><td><code>results/neural_networks/experiments/C_beta0__bilstm__independent/</code></td><td>BiLSTM, independent split</td></tr>
+      <tr><td><code>results/neural_networks/experiments/D_sampler__bilstm__independent/</code></td><td>BiLSTM, independent split</td></tr>
+      <tr><td><code>results/neural_networks/experiments/E_focal__bilstm__independent/</code></td><td>BiLSTM, independent split</td></tr>
+      <tr><td><code>results/neural_networks/experiments/F_regsmall__bilstm__independent/</code></td><td>BiLSTM, independent split</td></tr>
+      <tr><td><code>results/neural_networks/experiments/G_augment__bilstm__independent/</code></td><td>BiLSTM, independent split</td></tr>
+      <tr><td><code>results/neural_networks/experiments/H_cv_Dsampler__bilstm__independent/</code></td><td>BiLSTM, independent split</td></tr>
+      <tr><td><code>results/neural_networks/experiments/A_control__cnn1d__dependent/</code></td><td>1D-CNN, dependent split</td></tr>
+      <tr><td><code>results/neural_networks/experiments/B_beta0.5__cnn1d__dependent/</code></td><td>1D-CNN, dependent split</td></tr>
+      <tr><td><code>results/neural_networks/experiments/C_beta0__cnn1d__dependent/</code></td><td>1D-CNN, dependent split</td></tr>
+      <tr><td><code>results/neural_networks/experiments/D_sampler__cnn1d__dependent/</code></td><td>1D-CNN, dependent split</td></tr>
+      <tr><td><code>results/neural_networks/experiments/F_regsmall__cnn1d__dependent/</code></td><td>1D-CNN, dependent split</td></tr>
+      <tr><td><code>results/neural_networks/experiments/G_augment__cnn1d__dependent/</code></td><td>1D-CNN, dependent split</td></tr>
+      <tr><td><code>results/neural_networks/experiments/A_control__cnn1d__independent/</code></td><td>1D-CNN, independent split</td></tr>
+      <tr><td><code>results/neural_networks/experiments/B_beta0.5__cnn1d__independent/</code></td><td>1D-CNN, independent split</td></tr>
+      <tr><td><code>results/neural_networks/experiments/C_beta0__cnn1d__independent/</code></td><td>1D-CNN, independent split</td></tr>
+      <tr><td><code>results/neural_networks/experiments/D_sampler__cnn1d__independent/</code></td><td>1D-CNN, independent split</td></tr>
+      <tr><td><code>results/neural_networks/experiments/F_regsmall__cnn1d__independent/</code></td><td>1D-CNN, independent split</td></tr>
+      <tr><td><code>results/neural_networks/experiments/G_augment__cnn1d__independent/</code></td><td>1D-CNN, independent split</td></tr>
+      <tr><td><code>results/neural_networks/experiments/A_control__transformer__dependent/</code></td><td>Transformer, dependent split</td></tr>
+      <tr><td><code>results/neural_networks/experiments/B_beta0.5__transformer__dependent/</code></td><td>Transformer, dependent split</td></tr>
+      <tr><td><code>results/neural_networks/experiments/C_beta0__transformer__dependent/</code></td><td>Transformer, dependent split</td></tr>
+      <tr><td><code>results/neural_networks/experiments/D_sampler__transformer__dependent/</code></td><td>Transformer, dependent split</td></tr>
+      <tr><td><code>results/neural_networks/experiments/F_regsmall__transformer__dependent/</code></td><td>Transformer, dependent split</td></tr>
+      <tr><td><code>results/neural_networks/experiments/A_control__transformer__independent/</code></td><td>Transformer, independent split</td></tr>
+      <tr><td><code>results/neural_networks/experiments/B_beta0.5__transformer__independent/</code></td><td>Transformer, independent split</td></tr>
+      <tr><td><code>results/neural_networks/experiments/C_beta0__transformer__independent/</code></td><td>Transformer, independent split</td></tr>
+      <tr><td><code>results/neural_networks/experiments/D_sampler__transformer__independent/</code></td><td>Transformer, independent split</td></tr>
+      <tr><td><code>results/neural_networks/experiments/F_regsmall__transformer__independent/</code></td><td>Transformer, independent split</td></tr>
+    </table>
+    <h2>Appendix &mdash; Reproduce &amp; Read</h2>
+    <h3>Commands (CPU)</h3>
+    <pre><code>for m in bilstm cnn1d transformer; do
+  .venv/bin/python src/classification/neural_networks/sequence_pipeline.py --model $m --baseline
+  .venv/bin/python src/classification/neural_networks/sequence_pipeline.py --model $m --baseline --independent
+done
+.venv/bin/python scripts/generate_nn_executive_summary.py --strict</code></pre>
+    <h3>Per-run output files</h3>
+    <ul>
+      <li><code>results.json</code> — metrics (accuracy, AUC, per-class precision/recall/F1)</li>
+      <li><code>plots/</code> — training_curves, confusion_matrix(+counts), roc_curve</li>
+      <li><code>model/&lt;model&gt;_best.pt</code> + <code>scaler.pkl</code></li>
+      <li><code>logs/out.txt</code> — full training log</li>
+    </ul>
+    <h3>Target variable</h3>
+    <p>Binary genotype, encoded <strong>0 = WT, 1 = HT</strong> (current pipeline). HT metrics therefore live under <code>classification_report["1.0"]</code> and are the minority class. (Legacy pre-baseline runs used the inverted encoding; this report detects HT by minority support and cross-checks the printed <code>HT (N)</code> index, so it is correct regardless.)</p>
+  </div>
+  <div class="footer">Generated by scripts/generate_nn_executive_summary.py from results/neural_networks/*_baseline/results.json &nbsp;|&nbsp; June 2026</div>
+</div>
+</body>
+</html>

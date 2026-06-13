@@ -148,6 +148,96 @@ model predicts the majority WT class.
 
 ---
 
+## 9. Improving the results — imbalance, data & model settings
+
+The initial baseline runs (§1) are poor: BiLSTM collapses to predicting **all-HT**
+(acc 23%, WT recall 0%) and accuracy sits at/below the 76% majority baseline. A
+data-engineer investigation found the cause is **not** a bug but the data + the
+imbalance handling:
+
+- **Weak intrinsic signal.** A tuned, class-balanced logistic regression on
+  session-aggregated features ceilings at **ROC-AUC ≈ 0.63** (random split) and
+  **≈ 0.50–0.57 by-mouse**. Genotype is barely separable across *unseen* mice with
+  these acoustic features.
+- **Operating-point collapse, not ranking.** The NN AUCs (0.60–0.79) sit *at or above*
+  that simple-model ceiling — the catastrophic *accuracy* comes from
+  `pos_weight = n_wt/n_ht ≈ 3.2` plus the fixed 0.5 threshold, which pushes the logit
+  bias to all-HT.
+- **Data scarcity.** 408 sessions, 97 HT, only **24 HT mice** (~14 in an
+  independent-train); the test fold has only ~19 HT → single-split metrics are noisy.
+
+**Levers (threshold tuning is a separate concern — Issue #29 — and excluded here):**
+
+| Lever | Flags | What it targets |
+|-------|-------|-----------------|
+| Tunable class weighting | `--pos-weight-beta {1,0.5,0}` | the all-HT collapse (realigns the 0.5 operating point) |
+| Class-balanced sampler | `--sampler balanced` (with `--pos-weight-beta 0`) | balanced minibatches → balanced base rate |
+| Focal loss | `--loss focal` | confidence-based, gentler rebalancing |
+| Regularization / smaller nets | `--weight-decay`, `--dropout`, `--hidden-size`, `--num-layers` | overfitting on the tiny independent-split data |
+| Augmentation | `--augment-windows`, `--window-stride` | more (esp. HT) training examples from long sessions |
+| Robust evaluation | `--cv-folds 5` | stable estimates given only ~19 test HT |
+| Balanced metrics | (always reported) | `balanced_accuracy`, PR-AUC, MCC, macro-F1 — accuracy is misleading under imbalance |
+
+**Experiment matrix** (run with `--baseline`, both splits, distinct `--results-dir`
+under `results/neural_networks/experiments/`): `A` control · `B` β=0.5 · `C` β=0
+· `D` balanced sampler · `E` focal · `F` regularized-small · `G` augmented · `H`
+CV-verify the winner. Compare with:
+
+```bash
+.venv/bin/python scripts/generate_nn_executive_summary.py \
+  --results-root results/neural_networks/experiments \
+  --out-dir results/neural_networks/experiments/_summary
+```
+
+Rank `master_metrics.csv` by **`test_balanced_accuracy` / `test_mcc` / `test_average_precision`**,
+not accuracy. **Honest expectation:** these levers fix the collapse and give honest
+balanced numbers (large, certain win) plus modest AUC gains; subject-**independent**
+generalization stays limited — a data ceiling, not a config bug.
+
+### Findings (matrix run — best config per model × split, by balanced accuracy)
+
+Full table: [`results/neural_networks/experiments/_summary/master_metrics.md`](../results/neural_networks/experiments/_summary/master_metrics.md).
+
+| Model | Split | Best config | Bal Acc | vs control | HT rec / WT rec |
+|-------|-------|-------------|--------:|-----------:|-----------------|
+| BiLSTM | dependent | `--sampler balanced` (D) | 0.628 | **0.500 → 0.628** (collapse fixed) | 0.53 / 0.73 |
+| BiLSTM | independent | `--sampler balanced` (D) | **0.704** | 0.655 → 0.704 | 1.00 / 0.41 |
+| 1D-CNN | dependent | `--sampler balanced` (D) | 0.594 | 0.564 → 0.594 | 0.47 / 0.71 |
+| 1D-CNN | independent | regularized-small (F) | 0.607 | 0.517 → 0.607 | 0.37 / 0.85 |
+| Transformer | dependent | control (A) | 0.668 | (already best) | 0.68 / 0.65 |
+| Transformer | independent | control (A) | 0.634 | (already best) | 0.79 / 0.48 |
+
+**Takeaways:**
+- The **balanced sampler** (`--sampler balanced --pos-weight-beta 0`) is the most reliable
+  fix: it rescues the BiLSTM's all-HT collapse (dependent balAcc 0.500 → 0.628; WT recall
+  0% → 73%) and gives the best overall result (BiLSTM independent, balAcc **0.704**).
+- The **Transformer never collapses** — control is already its best; the rebalancing levers
+  don't help it and can push it into the *opposite* (all-WT) collapse at the 0.5 threshold.
+- A telling case for the (separate) threshold issue: `F_regsmall/transformer/independent`
+  has the matrix's **highest AUC (0.815) and PR-AUC (0.62)** but balAcc 0.500 — strong
+  ranking, wrong operating point. This motivates Issue #29 (out of scope here).
+- Gains are real but bounded, consistent with the weak-signal ceiling; **independent**
+  generalization remains modest.
+
+### CV verification
+
+The winning recipe (`--sampler balanced` BiLSTM) re-evaluated with 5-fold CV (grouped by
+mouse for the independent split), under `results/neural_networks/experiments/H_cv_Dsampler__bilstm__*`:
+
+| Split | Balanced accuracy (5-fold mean ± std) | AUC | Single-split was |
+|-------|---------------------------------------|-----|------------------|
+| dependent | **0.609 ± 0.055** | 0.673 ± 0.067 | 0.628 — **confirmed** (vs 0.500 collapse) |
+| independent | **0.563 ± 0.063** | 0.689 ± 0.089 | 0.704 — **optimistic fold** |
+
+**This is why CV matters.** The dependent fix is robust (0.61 ± 0.06, well above the 0.500
+all-HT collapse). But the headline independent single-split **0.704 does not hold up** — with
+only ~19 test HT it was a lucky fold; the honest 5-fold estimate is **0.563 ± 0.063**. Still
+above chance and above the collapse, but it confirms that subject-**independent** generalization
+is genuinely limited by the data, not recoverable by tuning. Report the CV numbers, not the
+single best fold.
+
+---
+
 ## 8. Related docs
 
 - [`SEQUENCE_TRAINING.md`](../src/classification/neural_networks/SEQUENCE_TRAINING.md) — sequence pipeline mechanics (architectures, data flow, design decisions)

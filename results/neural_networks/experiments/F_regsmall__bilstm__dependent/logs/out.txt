@@ -1,0 +1,67 @@
+Active flags: ['--baseline', '--pos-weight-beta 0.5', '--weight-decay 0.001', '--dropout 0.5', '--hidden-size 32', '--num-layers 1']
+Model: bilstm
+Results directory: results/neural_networks/experiments/F_regsmall__bilstm__dependent
+Loading from CSV cache: outputs/external/aggregated/sequence/all_data_external_baseline.seq_cache.csv
+Loaded 408 sessions from 106 mice
+Sequence lengths: min=1, median=236, max=1202, P95=704
+MAX_SEQ_LEN=256
+Labels: HT=97, WT=311
+
+=== Split Info ===
+Strategy: random (session-level)
+Train: 244 sessions | Val: 82 sessions | Test: 82 sessions
+  Train: 102 mice, HT=58 (24%), WT=186 (76%)
+  Val: 60 mice, HT=20 (24%), WT=62 (76%)
+  Test: 64 mice, HT=19 (23%), WT=63 (77%)
+  WARNING: mouse overlap -- train/val: 56, train/test: 61 shared mice
+==================
+
+Class balance in train: HT=58, WT=186, pos_weight=1.791 (beta=0.5, sampler=none, loss=bce)
+Epoch   1/100 | Train Loss: 0.8642 Acc: 0.357 | Val Loss: 0.8260 Acc: 0.463 AUC: 0.532 | LR: 0.001000
+Epoch   2/100 | Train Loss: 0.8244 Acc: 0.602 | Val Loss: 0.7925 Acc: 0.756 AUC: 0.580 | LR: 0.001000
+Epoch   3/100 | Train Loss: 0.7849 Acc: 0.721 | Val Loss: 0.7779 Acc: 0.756 AUC: 0.607 | LR: 0.001000
+Epoch   4/100 | Train Loss: 0.7740 Acc: 0.750 | Val Loss: 0.7692 Acc: 0.756 AUC: 0.620 | LR: 0.001000
+Epoch   5/100 | Train Loss: 0.7696 Acc: 0.758 | Val Loss: 0.7638 Acc: 0.756 AUC: 0.643 | LR: 0.001000
+Epoch   6/100 | Train Loss: 0.7560 Acc: 0.762 | Val Loss: 0.7581 Acc: 0.756 AUC: 0.669 | LR: 0.001000
+Epoch   7/100 | Train Loss: 0.7656 Acc: 0.783 | Val Loss: 0.7526 Acc: 0.756 AUC: 0.692 | LR: 0.001000
+Epoch   8/100 | Train Loss: 0.7741 Acc: 0.725 | Val Loss: 0.7490 Acc: 0.768 AUC: 0.713 | LR: 0.001000
+Epoch   9/100 | Train Loss: 0.7608 Acc: 0.725 | Val Loss: 0.7424 Acc: 0.780 AUC: 0.720 | LR: 0.001000
+Epoch  10/100 | Train Loss: 0.7204 Acc: 0.775 | Val Loss: 0.7327 Acc: 0.768 AUC: 0.706 | LR: 0.001000
+Epoch  11/100 | Train Loss: 0.7238 Acc: 0.762 | Val Loss: 0.7269 Acc: 0.780 AUC: 0.704 | LR: 0.001000
+Epoch  12/100 | Train Loss: 0.7182 Acc: 0.770 | Val Loss: 0.7211 Acc: 0.780 AUC: 0.691 | LR: 0.001000
+Epoch  13/100 | Train Loss: 0.7130 Acc: 0.746 | Val Loss: 0.7176 Acc: 0.780 AUC: 0.692 | LR: 0.001000
+Epoch  14/100 | Train Loss: 0.6840 Acc: 0.758 | Val Loss: 0.7175 Acc: 0.768 AUC: 0.689 | LR: 0.001000
+Epoch  15/100 | Train Loss: 0.6652 Acc: 0.779 | Val Loss: 0.7216 Acc: 0.780 AUC: 0.704 | LR: 0.000500
+Epoch  16/100 | Train Loss: 0.6744 Acc: 0.746 | Val Loss: 0.7207 Acc: 0.780 AUC: 0.703 | LR: 0.000500
+Epoch  17/100 | Train Loss: 0.6495 Acc: 0.795 | Val Loss: 0.7283 Acc: 0.768 AUC: 0.683 | LR: 0.000500
+Epoch  18/100 | Train Loss: 0.6484 Acc: 0.783 | Val Loss: 0.7286 Acc: 0.756 AUC: 0.683 | LR: 0.000500
+Epoch  19/100 | Train Loss: 0.6385 Acc: 0.787 | Val Loss: 0.7231 Acc: 0.720 AUC: 0.706 | LR: 0.000500
+Epoch  20/100 | Train Loss: 0.6440 Acc: 0.750 | Val Loss: 0.7209 Acc: 0.720 AUC: 0.704 | LR: 0.000500
+Epoch  21/100 | Train Loss: 0.6521 Acc: 0.762 | Val Loss: 0.7209 Acc: 0.744 AUC: 0.699 | LR: 0.000250
+Epoch  22/100 | Train Loss: 0.6005 Acc: 0.803 | Val Loss: 0.7179 Acc: 0.720 AUC: 0.702 | LR: 0.000250
+Epoch  23/100 | Train Loss: 0.6218 Acc: 0.762 | Val Loss: 0.7189 Acc: 0.732 AUC: 0.700 | LR: 0.000250
+Epoch  24/100 | Train Loss: 0.6257 Acc: 0.766 | Val Loss: 0.7177 Acc: 0.732 AUC: 0.702 | LR: 0.000250
+Early stopping at epoch 24 (best AUC: 0.720)
+Best validation AUC: 0.720
+Model parameters: 16,857
+
+=== Test Results ===
+Test Accuracy:        0.7805
+Test Balanced Acc:    0.5263
+Test AUC-ROC:         0.6834
+Test PR-AUC:          0.4259
+Test MCC:             0.2023
+Train Accuracy:       0.7623
+
+Classification Report:
+              precision    recall  f1-score   support
+
+      WT (0)       0.78      1.00      0.88        63
+      HT (1)       1.00      0.05      0.10        19
+
+    accuracy                           0.78        82
+   macro avg       0.89      0.53      0.49        82
+weighted avg       0.83      0.78      0.70        82
+
+
+Done. Results saved to results/neural_networks/experiments/F_regsmall__bilstm__dependent/

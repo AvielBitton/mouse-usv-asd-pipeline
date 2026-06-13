@@ -1,0 +1,65 @@
+Active flags: ['--model transformer', '--independent', '--baseline', '--pos-weight-beta 0.5', '--weight-decay 0.001', '--dropout 0.5', '--hidden-size 32', '--num-layers 1']
+Model: transformer
+Results directory: results/neural_networks/experiments/F_regsmall__transformer__independent
+Loading from CSV cache: outputs/external/aggregated/sequence/all_data_external_baseline.seq_cache.csv
+Loaded 408 sessions from 106 mice
+Sequence lengths: min=1, median=236, max=1202, P95=704
+MAX_SEQ_LEN=256
+Labels: HT=97, WT=311
+
+=== Split Info ===
+Strategy: group-aware (by mouse)
+Train: 238 sessions | Val: 80 sessions | Test: 90 sessions
+  Train: 63 mice, HT=56 (24%), WT=182 (76%)
+  Val: 21 mice, HT=22 (28%), WT=58 (72%)
+  Test: 22 mice, HT=19 (21%), WT=71 (79%)
+==================
+
+Class balance in train: HT=56, WT=182, pos_weight=1.803 (beta=0.5, sampler=none, loss=bce)
+Epoch   1/100 | Train Loss: 0.8002 Acc: 0.689 | Val Loss: 0.8812 Acc: 0.725 AUC: 0.358 | LR: 0.001000
+Epoch   2/100 | Train Loss: 0.7830 Acc: 0.752 | Val Loss: 0.8583 Acc: 0.725 AUC: 0.623 | LR: 0.001000
+Epoch   3/100 | Train Loss: 0.7707 Acc: 0.744 | Val Loss: 0.8307 Acc: 0.725 AUC: 0.748 | LR: 0.001000
+Epoch   4/100 | Train Loss: 0.7840 Acc: 0.756 | Val Loss: 0.8338 Acc: 0.725 AUC: 0.816 | LR: 0.001000
+Epoch   5/100 | Train Loss: 0.8082 Acc: 0.739 | Val Loss: 0.8333 Acc: 0.725 AUC: 0.827 | LR: 0.001000
+Epoch   6/100 | Train Loss: 0.8051 Acc: 0.723 | Val Loss: 0.8251 Acc: 0.725 AUC: 0.840 | LR: 0.001000
+Epoch   7/100 | Train Loss: 0.7539 Acc: 0.752 | Val Loss: 0.8290 Acc: 0.725 AUC: 0.862 | LR: 0.001000
+Epoch   8/100 | Train Loss: 0.7525 Acc: 0.752 | Val Loss: 0.8232 Acc: 0.725 AUC: 0.868 | LR: 0.001000
+Epoch   9/100 | Train Loss: 0.7561 Acc: 0.748 | Val Loss: 0.8045 Acc: 0.725 AUC: 0.864 | LR: 0.001000
+Epoch  10/100 | Train Loss: 0.7668 Acc: 0.744 | Val Loss: 0.8067 Acc: 0.725 AUC: 0.864 | LR: 0.001000
+Epoch  11/100 | Train Loss: 0.7440 Acc: 0.748 | Val Loss: 0.8470 Acc: 0.725 AUC: 0.860 | LR: 0.001000
+Epoch  12/100 | Train Loss: 0.7334 Acc: 0.761 | Val Loss: 0.8537 Acc: 0.725 AUC: 0.861 | LR: 0.001000
+Epoch  13/100 | Train Loss: 0.7653 Acc: 0.731 | Val Loss: 0.7866 Acc: 0.725 AUC: 0.861 | LR: 0.001000
+Epoch  14/100 | Train Loss: 0.7332 Acc: 0.765 | Val Loss: 0.7521 Acc: 0.738 AUC: 0.856 | LR: 0.000500
+Epoch  15/100 | Train Loss: 0.7252 Acc: 0.765 | Val Loss: 0.7541 Acc: 0.725 AUC: 0.861 | LR: 0.000500
+Epoch  16/100 | Train Loss: 0.7412 Acc: 0.765 | Val Loss: 0.7713 Acc: 0.725 AUC: 0.858 | LR: 0.000500
+Epoch  17/100 | Train Loss: 0.7631 Acc: 0.752 | Val Loss: 0.7807 Acc: 0.725 AUC: 0.861 | LR: 0.000500
+Epoch  18/100 | Train Loss: 0.7230 Acc: 0.773 | Val Loss: 0.7854 Acc: 0.725 AUC: 0.861 | LR: 0.000500
+Epoch  19/100 | Train Loss: 0.7461 Acc: 0.761 | Val Loss: 0.7712 Acc: 0.725 AUC: 0.861 | LR: 0.000500
+Epoch  20/100 | Train Loss: 0.7293 Acc: 0.752 | Val Loss: 0.7519 Acc: 0.725 AUC: 0.859 | LR: 0.000250
+Epoch  21/100 | Train Loss: 0.7261 Acc: 0.739 | Val Loss: 0.7488 Acc: 0.725 AUC: 0.856 | LR: 0.000250
+Epoch  22/100 | Train Loss: 0.7193 Acc: 0.752 | Val Loss: 0.7465 Acc: 0.738 AUC: 0.853 | LR: 0.000250
+Epoch  23/100 | Train Loss: 0.7264 Acc: 0.748 | Val Loss: 0.7483 Acc: 0.738 AUC: 0.854 | LR: 0.000250
+Early stopping at epoch 23 (best AUC: 0.868)
+Best validation AUC: 0.868
+Model parameters: 39,065
+
+=== Test Results ===
+Test Accuracy:        0.7889
+Test Balanced Acc:    0.5000
+Test AUC-ROC:         0.8147
+Test PR-AUC:          0.6164
+Test MCC:             0.0000
+Train Accuracy:       0.7647
+
+Classification Report:
+              precision    recall  f1-score   support
+
+      WT (0)       0.79      1.00      0.88        71
+      HT (1)       0.00      0.00      0.00        19
+
+    accuracy                           0.79        90
+   macro avg       0.39      0.50      0.44        90
+weighted avg       0.62      0.79      0.70        90
+
+
+Done. Results saved to results/neural_networks/experiments/F_regsmall__transformer__independent/

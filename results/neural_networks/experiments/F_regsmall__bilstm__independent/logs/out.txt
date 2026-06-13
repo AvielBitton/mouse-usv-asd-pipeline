@@ -1,0 +1,77 @@
+Active flags: ['--independent', '--baseline', '--pos-weight-beta 0.5', '--weight-decay 0.001', '--dropout 0.5', '--hidden-size 32', '--num-layers 1']
+Model: bilstm
+Results directory: results/neural_networks/experiments/F_regsmall__bilstm__independent
+Loading from CSV cache: outputs/external/aggregated/sequence/all_data_external_baseline.seq_cache.csv
+Loaded 408 sessions from 106 mice
+Sequence lengths: min=1, median=236, max=1202, P95=704
+MAX_SEQ_LEN=256
+Labels: HT=97, WT=311
+
+=== Split Info ===
+Strategy: group-aware (by mouse)
+Train: 238 sessions | Val: 80 sessions | Test: 90 sessions
+  Train: 63 mice, HT=56 (24%), WT=182 (76%)
+  Val: 21 mice, HT=22 (28%), WT=58 (72%)
+  Test: 22 mice, HT=19 (21%), WT=71 (79%)
+==================
+
+Class balance in train: HT=56, WT=182, pos_weight=1.803 (beta=0.5, sampler=none, loss=bce)
+Epoch   1/100 | Train Loss: 0.8560 Acc: 0.382 | Val Loss: 0.8414 Acc: 0.675 AUC: 0.458 | LR: 0.001000
+Epoch   2/100 | Train Loss: 0.8123 Acc: 0.618 | Val Loss: 0.8293 Acc: 0.725 AUC: 0.466 | LR: 0.001000
+Epoch   3/100 | Train Loss: 0.7906 Acc: 0.739 | Val Loss: 0.8332 Acc: 0.725 AUC: 0.480 | LR: 0.001000
+Epoch   4/100 | Train Loss: 0.7580 Acc: 0.761 | Val Loss: 0.8336 Acc: 0.725 AUC: 0.504 | LR: 0.001000
+Epoch   5/100 | Train Loss: 0.7586 Acc: 0.765 | Val Loss: 0.8345 Acc: 0.725 AUC: 0.531 | LR: 0.001000
+Epoch   6/100 | Train Loss: 0.7470 Acc: 0.773 | Val Loss: 0.8282 Acc: 0.725 AUC: 0.559 | LR: 0.001000
+Epoch   7/100 | Train Loss: 0.7798 Acc: 0.769 | Val Loss: 0.8116 Acc: 0.725 AUC: 0.604 | LR: 0.001000
+Epoch   8/100 | Train Loss: 0.7427 Acc: 0.756 | Val Loss: 0.8035 Acc: 0.725 AUC: 0.635 | LR: 0.001000
+Epoch   9/100 | Train Loss: 0.7640 Acc: 0.731 | Val Loss: 0.8017 Acc: 0.725 AUC: 0.646 | LR: 0.001000
+Epoch  10/100 | Train Loss: 0.7445 Acc: 0.786 | Val Loss: 0.7975 Acc: 0.738 AUC: 0.661 | LR: 0.001000
+Epoch  11/100 | Train Loss: 0.7172 Acc: 0.765 | Val Loss: 0.7942 Acc: 0.738 AUC: 0.680 | LR: 0.001000
+Epoch  12/100 | Train Loss: 0.7207 Acc: 0.756 | Val Loss: 0.7812 Acc: 0.738 AUC: 0.705 | LR: 0.001000
+Epoch  13/100 | Train Loss: 0.7063 Acc: 0.765 | Val Loss: 0.7696 Acc: 0.750 AUC: 0.726 | LR: 0.001000
+Epoch  14/100 | Train Loss: 0.7054 Acc: 0.773 | Val Loss: 0.7582 Acc: 0.750 AUC: 0.748 | LR: 0.001000
+Epoch  15/100 | Train Loss: 0.6741 Acc: 0.815 | Val Loss: 0.7474 Acc: 0.762 AUC: 0.770 | LR: 0.001000
+Epoch  16/100 | Train Loss: 0.6833 Acc: 0.794 | Val Loss: 0.7291 Acc: 0.750 AUC: 0.793 | LR: 0.001000
+Epoch  17/100 | Train Loss: 0.6574 Acc: 0.815 | Val Loss: 0.7187 Acc: 0.775 AUC: 0.794 | LR: 0.001000
+Epoch  18/100 | Train Loss: 0.6386 Acc: 0.824 | Val Loss: 0.7361 Acc: 0.762 AUC: 0.788 | LR: 0.001000
+Epoch  19/100 | Train Loss: 0.6469 Acc: 0.798 | Val Loss: 0.7182 Acc: 0.775 AUC: 0.800 | LR: 0.001000
+Epoch  20/100 | Train Loss: 0.6200 Acc: 0.819 | Val Loss: 0.6957 Acc: 0.775 AUC: 0.811 | LR: 0.001000
+Epoch  21/100 | Train Loss: 0.6191 Acc: 0.798 | Val Loss: 0.7210 Acc: 0.787 AUC: 0.792 | LR: 0.001000
+Epoch  22/100 | Train Loss: 0.5991 Acc: 0.824 | Val Loss: 0.7176 Acc: 0.787 AUC: 0.792 | LR: 0.001000
+Epoch  23/100 | Train Loss: 0.5726 Acc: 0.840 | Val Loss: 0.6907 Acc: 0.775 AUC: 0.792 | LR: 0.001000
+Epoch  24/100 | Train Loss: 0.5763 Acc: 0.832 | Val Loss: 0.7133 Acc: 0.787 AUC: 0.780 | LR: 0.001000
+Epoch  25/100 | Train Loss: 0.5872 Acc: 0.849 | Val Loss: 0.6943 Acc: 0.787 AUC: 0.793 | LR: 0.001000
+Epoch  26/100 | Train Loss: 0.5564 Acc: 0.845 | Val Loss: 0.7150 Acc: 0.800 AUC: 0.788 | LR: 0.000500
+Epoch  27/100 | Train Loss: 0.5481 Acc: 0.849 | Val Loss: 0.6947 Acc: 0.775 AUC: 0.785 | LR: 0.000500
+Epoch  28/100 | Train Loss: 0.5276 Acc: 0.836 | Val Loss: 0.7422 Acc: 0.775 AUC: 0.779 | LR: 0.000500
+Epoch  29/100 | Train Loss: 0.5713 Acc: 0.836 | Val Loss: 0.7137 Acc: 0.762 AUC: 0.781 | LR: 0.000500
+Epoch  30/100 | Train Loss: 0.5287 Acc: 0.832 | Val Loss: 0.6953 Acc: 0.762 AUC: 0.781 | LR: 0.000500
+Epoch  31/100 | Train Loss: 0.5101 Acc: 0.857 | Val Loss: 0.7266 Acc: 0.762 AUC: 0.771 | LR: 0.000500
+Epoch  32/100 | Train Loss: 0.5103 Acc: 0.853 | Val Loss: 0.7346 Acc: 0.762 AUC: 0.772 | LR: 0.000250
+Epoch  33/100 | Train Loss: 0.5069 Acc: 0.861 | Val Loss: 0.7462 Acc: 0.762 AUC: 0.773 | LR: 0.000250
+Epoch  34/100 | Train Loss: 0.5062 Acc: 0.853 | Val Loss: 0.7159 Acc: 0.762 AUC: 0.777 | LR: 0.000250
+Epoch  35/100 | Train Loss: 0.5127 Acc: 0.836 | Val Loss: 0.7044 Acc: 0.775 AUC: 0.781 | LR: 0.000250
+Early stopping at epoch 35 (best AUC: 0.811)
+Best validation AUC: 0.811
+Model parameters: 16,857
+
+=== Test Results ===
+Test Accuracy:        0.6889
+Test Balanced Acc:    0.5523
+Test AUC-ROC:         0.7005
+Test PR-AUC:          0.3563
+Test MCC:             0.1009
+Train Accuracy:       0.8403
+
+Classification Report:
+              precision    recall  f1-score   support
+
+      WT (0)       0.81      0.79      0.80        71
+      HT (1)       0.29      0.32      0.30        19
+
+    accuracy                           0.69        90
+   macro avg       0.55      0.55      0.55        90
+weighted avg       0.70      0.69      0.69        90
+
+
+Done. Results saved to results/neural_networks/experiments/F_regsmall__bilstm__independent/
