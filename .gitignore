@@ -30,6 +30,10 @@ outputs/external/aggregated/all_data_external_filter_invalid_genotype.csv
 outputs/external/aggregated/all_data_external_filter_invalid_genotype.xlsx
 # Sequence pipeline CSV cache (derived from the syllable-level xlsx; regenerable)
 outputs/external/aggregated/sequence/*.seq_cache.csv
+# Experiment-matrix model weights & plots are exploratory and re-derivable
+# (seed=100, config recorded in each results.json). Keep results.json + logs + _summary.
+results/neural_networks/experiments/*/model/
+results/neural_networks/experiments/*/plots/
 outputs_temp_backup/
 # Temporary files (Excel lock files, etc.)
 ~$*

@@ -1,0 +1,151 @@
+Active flags: ['--independent', '--baseline', '--pos-weight-beta 0.0', '--sampler balanced', '--cv-folds 5']
+Model: bilstm
+Results directory: results/neural_networks/experiments/H_cv_Dsampler__bilstm__independent
+Loading from CSV cache: outputs/external/aggregated/sequence/all_data_external_baseline.seq_cache.csv
+Loaded 408 sessions from 106 mice
+Sequence lengths: min=1, median=236, max=1202, P95=704
+MAX_SEQ_LEN=256
+Labels: HT=97, WT=311
+
+===== Fold 1/5 (train=260 val=66 test=82) =====
+Class balance in train: HT=61, WT=199, pos_weight=1.000 (beta=0.0, sampler=balanced, loss=bce)
+Epoch   1/100 | Train Loss: 0.6913 Acc: 0.515 | Val Loss: 0.6786 Acc: 0.652 AUC: 0.708 | LR: 0.001000
+Epoch   2/100 | Train Loss: 0.6794 Acc: 0.619 | Val Loss: 0.6889 Acc: 0.576 AUC: 0.767 | LR: 0.001000
+Epoch   3/100 | Train Loss: 0.6772 Acc: 0.612 | Val Loss: 0.6860 Acc: 0.515 AUC: 0.742 | LR: 0.001000
+Epoch   4/100 | Train Loss: 0.6409 Acc: 0.696 | Val Loss: 0.6284 Acc: 0.606 AUC: 0.679 | LR: 0.001000
+Epoch   5/100 | Train Loss: 0.6676 Acc: 0.558 | Val Loss: 0.7144 Acc: 0.455 AUC: 0.693 | LR: 0.001000
+Epoch   6/100 | Train Loss: 0.6334 Acc: 0.658 | Val Loss: 0.7116 Acc: 0.515 AUC: 0.689 | LR: 0.001000
+Epoch   7/100 | Train Loss: 0.6302 Acc: 0.681 | Val Loss: 0.6572 Acc: 0.667 AUC: 0.649 | LR: 0.001000
+Epoch   8/100 | Train Loss: 0.6205 Acc: 0.646 | Val Loss: 0.7427 Acc: 0.515 AUC: 0.613 | LR: 0.000500
+Epoch   9/100 | Train Loss: 0.6270 Acc: 0.635 | Val Loss: 0.6986 Acc: 0.576 AUC: 0.585 | LR: 0.000500
+Epoch  10/100 | Train Loss: 0.5821 Acc: 0.723 | Val Loss: 0.6171 Acc: 0.682 AUC: 0.618 | LR: 0.000500
+Epoch  11/100 | Train Loss: 0.5853 Acc: 0.677 | Val Loss: 0.6298 Acc: 0.636 AUC: 0.624 | LR: 0.000500
+Epoch  12/100 | Train Loss: 0.5456 Acc: 0.758 | Val Loss: 0.6720 Acc: 0.606 AUC: 0.609 | LR: 0.000500
+Epoch  13/100 | Train Loss: 0.5461 Acc: 0.765 | Val Loss: 0.6140 Acc: 0.697 AUC: 0.645 | LR: 0.000500
+Epoch  14/100 | Train Loss: 0.5330 Acc: 0.762 | Val Loss: 0.5973 Acc: 0.652 AUC: 0.690 | LR: 0.000250
+Epoch  15/100 | Train Loss: 0.5186 Acc: 0.758 | Val Loss: 0.5839 Acc: 0.697 AUC: 0.670 | LR: 0.000250
+Epoch  16/100 | Train Loss: 0.5307 Acc: 0.738 | Val Loss: 0.6279 Acc: 0.621 AUC: 0.646 | LR: 0.000250
+Epoch  17/100 | Train Loss: 0.4785 Acc: 0.781 | Val Loss: 0.6198 Acc: 0.652 AUC: 0.628 | LR: 0.000250
+Early stopping at epoch 17 (best AUC: 0.767)
+Best validation AUC: 0.767
+Fold 1: balAcc=0.644 AUC=0.728 PR-AUC=0.430 MCC=0.265
+
+===== Fold 2/5 (train=261 val=64 test=83) =====
+Class balance in train: HT=62, WT=199, pos_weight=1.000 (beta=0.0, sampler=balanced, loss=bce)
+Epoch   1/100 | Train Loss: 0.6926 Acc: 0.548 | Val Loss: 0.6802 Acc: 0.625 AUC: 0.667 | LR: 0.001000
+Epoch   2/100 | Train Loss: 0.6781 Acc: 0.625 | Val Loss: 0.6571 Acc: 0.734 AUC: 0.642 | LR: 0.001000
+Epoch   3/100 | Train Loss: 0.6675 Acc: 0.621 | Val Loss: 0.6428 Acc: 0.688 AUC: 0.641 | LR: 0.001000
+Epoch   4/100 | Train Loss: 0.6548 Acc: 0.636 | Val Loss: 0.6589 Acc: 0.625 AUC: 0.618 | LR: 0.001000
+Epoch   5/100 | Train Loss: 0.6340 Acc: 0.625 | Val Loss: 0.6741 Acc: 0.625 AUC: 0.604 | LR: 0.001000
+Epoch   6/100 | Train Loss: 0.5883 Acc: 0.667 | Val Loss: 0.7150 Acc: 0.594 AUC: 0.626 | LR: 0.001000
+Epoch   7/100 | Train Loss: 0.6258 Acc: 0.670 | Val Loss: 0.6807 Acc: 0.625 AUC: 0.659 | LR: 0.000500
+Epoch   8/100 | Train Loss: 0.5625 Acc: 0.705 | Val Loss: 0.6171 Acc: 0.656 AUC: 0.631 | LR: 0.000500
+Epoch   9/100 | Train Loss: 0.5707 Acc: 0.697 | Val Loss: 0.6209 Acc: 0.688 AUC: 0.649 | LR: 0.000500
+Epoch  10/100 | Train Loss: 0.5433 Acc: 0.751 | Val Loss: 0.6693 Acc: 0.656 AUC: 0.679 | LR: 0.000500
+Epoch  11/100 | Train Loss: 0.5110 Acc: 0.770 | Val Loss: 0.6543 Acc: 0.609 AUC: 0.660 | LR: 0.000500
+Epoch  12/100 | Train Loss: 0.5096 Acc: 0.739 | Val Loss: 0.6218 Acc: 0.625 AUC: 0.657 | LR: 0.000500
+Epoch  13/100 | Train Loss: 0.5032 Acc: 0.747 | Val Loss: 0.6233 Acc: 0.688 AUC: 0.687 | LR: 0.000500
+Epoch  14/100 | Train Loss: 0.4698 Acc: 0.793 | Val Loss: 0.6258 Acc: 0.656 AUC: 0.668 | LR: 0.000500
+Epoch  15/100 | Train Loss: 0.4635 Acc: 0.778 | Val Loss: 0.6253 Acc: 0.656 AUC: 0.675 | LR: 0.000500
+Epoch  16/100 | Train Loss: 0.4271 Acc: 0.816 | Val Loss: 0.6585 Acc: 0.625 AUC: 0.676 | LR: 0.000500
+Epoch  17/100 | Train Loss: 0.4462 Acc: 0.778 | Val Loss: 0.6298 Acc: 0.703 AUC: 0.657 | LR: 0.000500
+Epoch  18/100 | Train Loss: 0.4209 Acc: 0.789 | Val Loss: 0.6883 Acc: 0.594 AUC: 0.702 | LR: 0.000500
+Epoch  19/100 | Train Loss: 0.3897 Acc: 0.854 | Val Loss: 0.7041 Acc: 0.641 AUC: 0.656 | LR: 0.000500
+Epoch  20/100 | Train Loss: 0.3910 Acc: 0.854 | Val Loss: 0.6438 Acc: 0.656 AUC: 0.712 | LR: 0.000500
+Epoch  21/100 | Train Loss: 0.3656 Acc: 0.843 | Val Loss: 0.7151 Acc: 0.625 AUC: 0.683 | LR: 0.000500
+Epoch  22/100 | Train Loss: 0.3570 Acc: 0.843 | Val Loss: 0.6613 Acc: 0.719 AUC: 0.669 | LR: 0.000500
+Epoch  23/100 | Train Loss: 0.3564 Acc: 0.824 | Val Loss: 0.7798 Acc: 0.641 AUC: 0.649 | LR: 0.000500
+Epoch  24/100 | Train Loss: 0.3227 Acc: 0.858 | Val Loss: 0.7079 Acc: 0.719 AUC: 0.665 | LR: 0.000500
+Epoch  25/100 | Train Loss: 0.2984 Acc: 0.885 | Val Loss: 0.7368 Acc: 0.703 AUC: 0.669 | LR: 0.000500
+Epoch  26/100 | Train Loss: 0.2666 Acc: 0.889 | Val Loss: 0.7839 Acc: 0.703 AUC: 0.664 | LR: 0.000250
+Epoch  27/100 | Train Loss: 0.2590 Acc: 0.908 | Val Loss: 0.6430 Acc: 0.719 AUC: 0.702 | LR: 0.000250
+Epoch  28/100 | Train Loss: 0.2787 Acc: 0.862 | Val Loss: 0.7691 Acc: 0.703 AUC: 0.688 | LR: 0.000250
+Epoch  29/100 | Train Loss: 0.2385 Acc: 0.904 | Val Loss: 0.6719 Acc: 0.719 AUC: 0.686 | LR: 0.000250
+Epoch  30/100 | Train Loss: 0.2450 Acc: 0.881 | Val Loss: 0.7326 Acc: 0.703 AUC: 0.663 | LR: 0.000250
+Epoch  31/100 | Train Loss: 0.2243 Acc: 0.920 | Val Loss: 0.7824 Acc: 0.656 AUC: 0.683 | LR: 0.000250
+Epoch  32/100 | Train Loss: 0.1798 Acc: 0.950 | Val Loss: 0.7902 Acc: 0.656 AUC: 0.667 | LR: 0.000125
+Epoch  33/100 | Train Loss: 0.2042 Acc: 0.912 | Val Loss: 0.8066 Acc: 0.719 AUC: 0.646 | LR: 0.000125
+Epoch  34/100 | Train Loss: 0.2145 Acc: 0.920 | Val Loss: 0.7644 Acc: 0.703 AUC: 0.661 | LR: 0.000125
+Epoch  35/100 | Train Loss: 0.1528 Acc: 0.966 | Val Loss: 0.7860 Acc: 0.719 AUC: 0.664 | LR: 0.000125
+Early stopping at epoch 35 (best AUC: 0.712)
+Best validation AUC: 0.712
+Fold 2: balAcc=0.475 AUC=0.556 PR-AUC=0.321 MCC=-0.045
+
+===== Fold 3/5 (train=261 val=66 test=81) =====
+Class balance in train: HT=63, WT=198, pos_weight=1.000 (beta=0.0, sampler=balanced, loss=bce)
+Epoch   1/100 | Train Loss: 0.6951 Acc: 0.513 | Val Loss: 0.6962 Acc: 0.303 AUC: 0.912 | LR: 0.001000
+Epoch   2/100 | Train Loss: 0.6769 Acc: 0.625 | Val Loss: 0.6902 Acc: 0.515 AUC: 0.846 | LR: 0.001000
+Epoch   3/100 | Train Loss: 0.6769 Acc: 0.617 | Val Loss: 0.6642 Acc: 0.742 AUC: 0.730 | LR: 0.001000
+Epoch   4/100 | Train Loss: 0.6639 Acc: 0.621 | Val Loss: 0.6694 Acc: 0.515 AUC: 0.640 | LR: 0.001000
+Epoch   5/100 | Train Loss: 0.6365 Acc: 0.651 | Val Loss: 0.8215 Acc: 0.394 AUC: 0.670 | LR: 0.001000
+Epoch   6/100 | Train Loss: 0.6578 Acc: 0.586 | Val Loss: 0.7301 Acc: 0.485 AUC: 0.617 | LR: 0.001000
+Epoch   7/100 | Train Loss: 0.6229 Acc: 0.659 | Val Loss: 0.6861 Acc: 0.500 AUC: 0.634 | LR: 0.000500
+Epoch   8/100 | Train Loss: 0.6086 Acc: 0.659 | Val Loss: 0.6917 Acc: 0.485 AUC: 0.676 | LR: 0.000500
+Epoch   9/100 | Train Loss: 0.6177 Acc: 0.655 | Val Loss: 0.6881 Acc: 0.500 AUC: 0.718 | LR: 0.000500
+Epoch  10/100 | Train Loss: 0.6112 Acc: 0.674 | Val Loss: 0.6318 Acc: 0.530 AUC: 0.700 | LR: 0.000500
+Epoch  11/100 | Train Loss: 0.6070 Acc: 0.674 | Val Loss: 0.6351 Acc: 0.561 AUC: 0.736 | LR: 0.000500
+Epoch  12/100 | Train Loss: 0.5825 Acc: 0.728 | Val Loss: 0.6466 Acc: 0.530 AUC: 0.748 | LR: 0.000500
+Epoch  13/100 | Train Loss: 0.5638 Acc: 0.705 | Val Loss: 0.6375 Acc: 0.545 AUC: 0.725 | LR: 0.000250
+Epoch  14/100 | Train Loss: 0.5920 Acc: 0.651 | Val Loss: 0.6018 Acc: 0.591 AUC: 0.684 | LR: 0.000250
+Epoch  15/100 | Train Loss: 0.6168 Acc: 0.701 | Val Loss: 0.6231 Acc: 0.561 AUC: 0.755 | LR: 0.000250
+Epoch  16/100 | Train Loss: 0.5624 Acc: 0.724 | Val Loss: 0.6125 Acc: 0.530 AUC: 0.766 | LR: 0.000250
+Early stopping at epoch 16 (best AUC: 0.912)
+Best validation AUC: 0.912
+Fold 3: balAcc=0.540 AUC=0.825 PR-AUC=0.487 MCC=0.137
+
+===== Fold 4/5 (train=261 val=66 test=81) =====
+Class balance in train: HT=61, WT=200, pos_weight=1.000 (beta=0.0, sampler=balanced, loss=bce)
+Epoch   1/100 | Train Loss: 0.6960 Acc: 0.525 | Val Loss: 0.6931 Acc: 0.485 AUC: 0.713 | LR: 0.001000
+Epoch   2/100 | Train Loss: 0.6912 Acc: 0.575 | Val Loss: 0.6640 Acc: 0.788 AUC: 0.728 | LR: 0.001000
+Epoch   3/100 | Train Loss: 0.6884 Acc: 0.582 | Val Loss: 0.6732 Acc: 0.758 AUC: 0.779 | LR: 0.001000
+Epoch   4/100 | Train Loss: 0.6701 Acc: 0.667 | Val Loss: 0.6725 Acc: 0.712 AUC: 0.758 | LR: 0.001000
+Epoch   5/100 | Train Loss: 0.6649 Acc: 0.655 | Val Loss: 0.6639 Acc: 0.682 AUC: 0.681 | LR: 0.001000
+Epoch   6/100 | Train Loss: 0.6347 Acc: 0.682 | Val Loss: 0.6413 Acc: 0.636 AUC: 0.609 | LR: 0.001000
+Epoch   7/100 | Train Loss: 0.6465 Acc: 0.625 | Val Loss: 0.6896 Acc: 0.530 AUC: 0.662 | LR: 0.001000
+Epoch   8/100 | Train Loss: 0.6065 Acc: 0.686 | Val Loss: 0.5994 Acc: 0.727 AUC: 0.650 | LR: 0.001000
+Epoch   9/100 | Train Loss: 0.6034 Acc: 0.705 | Val Loss: 0.6036 Acc: 0.712 AUC: 0.682 | LR: 0.000500
+Epoch  10/100 | Train Loss: 0.5404 Acc: 0.789 | Val Loss: 0.6032 Acc: 0.652 AUC: 0.677 | LR: 0.000500
+Epoch  11/100 | Train Loss: 0.5435 Acc: 0.739 | Val Loss: 0.5864 Acc: 0.697 AUC: 0.657 | LR: 0.000500
+Epoch  12/100 | Train Loss: 0.5393 Acc: 0.713 | Val Loss: 0.6379 Acc: 0.621 AUC: 0.732 | LR: 0.000500
+Epoch  13/100 | Train Loss: 0.5353 Acc: 0.732 | Val Loss: 0.5626 Acc: 0.742 AUC: 0.741 | LR: 0.000500
+Epoch  14/100 | Train Loss: 0.5048 Acc: 0.755 | Val Loss: 0.6684 Acc: 0.621 AUC: 0.744 | LR: 0.000500
+Epoch  15/100 | Train Loss: 0.5004 Acc: 0.762 | Val Loss: 0.5737 Acc: 0.712 AUC: 0.685 | LR: 0.000250
+Epoch  16/100 | Train Loss: 0.5035 Acc: 0.751 | Val Loss: 0.5752 Acc: 0.727 AUC: 0.713 | LR: 0.000250
+Epoch  17/100 | Train Loss: 0.4419 Acc: 0.805 | Val Loss: 0.6031 Acc: 0.682 AUC: 0.743 | LR: 0.000250
+Epoch  18/100 | Train Loss: 0.5293 Acc: 0.732 | Val Loss: 0.5574 Acc: 0.758 AUC: 0.738 | LR: 0.000250
+Early stopping at epoch 18 (best AUC: 0.779)
+Best validation AUC: 0.779
+Fold 4: balAcc=0.627 AUC=0.689 PR-AUC=0.546 MCC=0.249
+
+===== Fold 5/5 (train=262 val=65 test=81) =====
+Class balance in train: HT=64, WT=198, pos_weight=1.000 (beta=0.0, sampler=balanced, loss=bce)
+Epoch   1/100 | Train Loss: 0.6931 Acc: 0.492 | Val Loss: 0.6538 Acc: 0.769 AUC: 0.527 | LR: 0.001000
+Epoch   2/100 | Train Loss: 0.6829 Acc: 0.550 | Val Loss: 0.6276 Acc: 0.769 AUC: 0.671 | LR: 0.001000
+Epoch   3/100 | Train Loss: 0.6529 Acc: 0.653 | Val Loss: 0.6172 Acc: 0.677 AUC: 0.620 | LR: 0.001000
+Epoch   4/100 | Train Loss: 0.6498 Acc: 0.622 | Val Loss: 0.6365 Acc: 0.662 AUC: 0.615 | LR: 0.001000
+Epoch   5/100 | Train Loss: 0.6142 Acc: 0.679 | Val Loss: 0.6753 Acc: 0.662 AUC: 0.620 | LR: 0.001000
+Epoch   6/100 | Train Loss: 0.6092 Acc: 0.653 | Val Loss: 0.6079 Acc: 0.677 AUC: 0.612 | LR: 0.001000
+Epoch   7/100 | Train Loss: 0.6037 Acc: 0.660 | Val Loss: 0.7371 Acc: 0.538 AUC: 0.644 | LR: 0.001000
+Epoch   8/100 | Train Loss: 0.5738 Acc: 0.706 | Val Loss: 0.6457 Acc: 0.631 AUC: 0.594 | LR: 0.000500
+Epoch   9/100 | Train Loss: 0.5288 Acc: 0.702 | Val Loss: 0.6459 Acc: 0.662 AUC: 0.594 | LR: 0.000500
+Epoch  10/100 | Train Loss: 0.5185 Acc: 0.748 | Val Loss: 0.6591 Acc: 0.615 AUC: 0.587 | LR: 0.000500
+Epoch  11/100 | Train Loss: 0.5199 Acc: 0.729 | Val Loss: 0.6702 Acc: 0.615 AUC: 0.612 | LR: 0.000500
+Epoch  12/100 | Train Loss: 0.5067 Acc: 0.748 | Val Loss: 0.6632 Acc: 0.585 AUC: 0.574 | LR: 0.000500
+Epoch  13/100 | Train Loss: 0.4700 Acc: 0.775 | Val Loss: 0.7493 Acc: 0.554 AUC: 0.590 | LR: 0.000500
+Epoch  14/100 | Train Loss: 0.4544 Acc: 0.794 | Val Loss: 0.7345 Acc: 0.615 AUC: 0.595 | LR: 0.000250
+Epoch  15/100 | Train Loss: 0.5533 Acc: 0.748 | Val Loss: 0.7508 Acc: 0.523 AUC: 0.574 | LR: 0.000250
+Epoch  16/100 | Train Loss: 0.4223 Acc: 0.805 | Val Loss: 0.7403 Acc: 0.585 AUC: 0.587 | LR: 0.000250
+Epoch  17/100 | Train Loss: 0.4157 Acc: 0.832 | Val Loss: 0.7153 Acc: 0.585 AUC: 0.587 | LR: 0.000250
+Early stopping at epoch 17 (best AUC: 0.671)
+Best validation AUC: 0.671
+Fold 5: balAcc=0.528 AUC=0.646 PR-AUC=0.358 MCC=0.100
+
+=== Cross-validation (out-of-fold over all data) ===
+  accuracy             oof=0.566  fold mean=0.566 +/- 0.167
+  balanced_accuracy    oof=0.559  fold mean=0.563 +/- 0.063
+  auc                  oof=0.586  fold mean=0.689 +/- 0.089
+  average_precision    oof=0.320  fold mean=0.429 +/- 0.082
+  mcc                  oof=0.101  fold mean=0.141 +/- 0.112
+  macro_f1             oof=0.521  fold mean=0.476 +/- 0.117
+
+Done (CV). Results saved to results/neural_networks/experiments/H_cv_Dsampler__bilstm__independent/

@@ -1,0 +1,59 @@
+Active flags: ['--baseline']
+Model: bilstm
+Results directory: results/neural_networks/experiments/A_control__bilstm__dependent
+Loading from CSV cache: outputs/external/aggregated/sequence/all_data_external_baseline.seq_cache.csv
+Loaded 408 sessions from 106 mice
+Sequence lengths: min=1, median=236, max=1202, P95=704
+MAX_SEQ_LEN=256
+Labels: HT=97, WT=311
+
+=== Split Info ===
+Strategy: random (session-level)
+Train: 244 sessions | Val: 82 sessions | Test: 82 sessions
+  Train: 102 mice, HT=58 (24%), WT=186 (76%)
+  Val: 60 mice, HT=20 (24%), WT=62 (76%)
+  Test: 64 mice, HT=19 (23%), WT=63 (77%)
+  WARNING: mouse overlap -- train/val: 56, train/test: 61 shared mice
+==================
+
+Class balance in train: HT=58, WT=186, pos_weight=3.207 (beta=1.0, sampler=none, loss=bce)
+Epoch   1/100 | Train Loss: 1.0594 Acc: 0.262 | Val Loss: 1.0537 Acc: 0.244 AUC: 0.778 | LR: 0.001000
+Epoch   2/100 | Train Loss: 1.0372 Acc: 0.414 | Val Loss: 1.0417 Acc: 0.549 AUC: 0.760 | LR: 0.001000
+Epoch   3/100 | Train Loss: 1.0274 Acc: 0.611 | Val Loss: 1.0292 Acc: 0.646 AUC: 0.717 | LR: 0.001000
+Epoch   4/100 | Train Loss: 1.0091 Acc: 0.676 | Val Loss: 1.0119 Acc: 0.683 AUC: 0.679 | LR: 0.001000
+Epoch   5/100 | Train Loss: 0.9937 Acc: 0.631 | Val Loss: 1.0057 Acc: 0.707 AUC: 0.681 | LR: 0.001000
+Epoch   6/100 | Train Loss: 0.9633 Acc: 0.664 | Val Loss: 1.0170 Acc: 0.476 AUC: 0.696 | LR: 0.001000
+Epoch   7/100 | Train Loss: 0.9521 Acc: 0.578 | Val Loss: 1.0239 Acc: 0.549 AUC: 0.694 | LR: 0.000500
+Epoch   8/100 | Train Loss: 0.9233 Acc: 0.643 | Val Loss: 1.0214 Acc: 0.561 AUC: 0.692 | LR: 0.000500
+Epoch   9/100 | Train Loss: 0.9070 Acc: 0.635 | Val Loss: 1.0233 Acc: 0.524 AUC: 0.693 | LR: 0.000500
+Epoch  10/100 | Train Loss: 0.9007 Acc: 0.664 | Val Loss: 1.0271 Acc: 0.561 AUC: 0.686 | LR: 0.000500
+Epoch  11/100 | Train Loss: 0.8656 Acc: 0.689 | Val Loss: 1.0271 Acc: 0.549 AUC: 0.687 | LR: 0.000500
+Epoch  12/100 | Train Loss: 0.8691 Acc: 0.656 | Val Loss: 1.0382 Acc: 0.537 AUC: 0.690 | LR: 0.000500
+Epoch  13/100 | Train Loss: 0.8522 Acc: 0.668 | Val Loss: 1.0674 Acc: 0.573 AUC: 0.684 | LR: 0.000250
+Epoch  14/100 | Train Loss: 0.8318 Acc: 0.684 | Val Loss: 1.0627 Acc: 0.500 AUC: 0.691 | LR: 0.000250
+Epoch  15/100 | Train Loss: 0.7971 Acc: 0.701 | Val Loss: 1.0804 Acc: 0.524 AUC: 0.686 | LR: 0.000250
+Epoch  16/100 | Train Loss: 0.8176 Acc: 0.709 | Val Loss: 1.0982 Acc: 0.610 AUC: 0.679 | LR: 0.000250
+Early stopping at epoch 16 (best AUC: 0.778)
+Best validation AUC: 0.778
+Model parameters: 148,953
+
+=== Test Results ===
+Test Accuracy:        0.2317
+Test Balanced Acc:    0.5000
+Test AUC-ROC:         0.7903
+Test PR-AUC:          0.4917
+Test MCC:             0.0000
+Train Accuracy:       0.2418
+
+Classification Report:
+              precision    recall  f1-score   support
+
+      WT (0)       0.00      0.00      0.00        63
+      HT (1)       0.23      1.00      0.38        19
+
+    accuracy                           0.23        82
+   macro avg       0.12      0.50      0.19        82
+weighted avg       0.05      0.23      0.09        82
+
+
+Done. Results saved to results/neural_networks/experiments/A_control__bilstm__dependent/

@@ -67,6 +67,28 @@ sex, day, session) is concatenated to the sequence encoder output before classif
 | `--lr` | `0.001` | Learning rate |
 | `--results-dir` | auto | Override results directory |
 
+### Imbalance handling (defaults reproduce prior behavior)
+
+| Flag | Default | Description |
+|---|---|---|
+| `--pos-weight-beta` | `1.0` | `pos_weight = (n_wt/n_ht)**beta`. `1.0`=full rebalance, `0.5`=milder, `0.0`=none. Tame the all-HT collapse without touching the threshold. |
+| `--sampler` | `none` | `balanced` = `WeightedRandomSampler` for ~50/50 minibatches (pair with `--pos-weight-beta 0`). |
+| `--loss` | `bce` | `focal` down-weights easy examples by confidence (`--focal-gamma`, default 2.0). |
+
+### Regularization / capacity & evaluation
+
+| Flag | Default | Description |
+|---|---|---|
+| `--weight-decay` | `0.0` | Adam L2 weight decay. |
+| `--dropout` | `0.3` | Dropout for all models. |
+| `--hidden-size` / `--num-layers` | `64` / `2` | BiLSTM capacity (num-layers also Transformer). |
+| `--d-model` | `64` | Transformer model dim (divisible by 4). |
+| `--label-smoothing` | `0.0` | Target softening for the loss. |
+| `--augment-windows` / `--window-stride` | `0` / `128` | Sliding-window sub-sequence augmentation of long **train** sessions (more examples). |
+| `--cv-folds` | `0` | If >0, stratified k-fold CV (grouped by mouse when `--independent`), reporting out-of-fold mean ± std. |
+
+See [`docs/NEURAL_NETWORK_BASELINE.md`](../../../docs/NEURAL_NETWORK_BASELINE.md) for the imbalance investigation and the experiment matrix.
+
 ## Split Modes
 
 ### Subject-dependent split (default)
@@ -105,8 +127,12 @@ of one recording and the first of the next doesn't exist. We fill ISI with 0 and
 mark the boundary with a binary feature so the model knows the ISI is synthetic.
 
 **Class imbalance handling:**
-`BCEWithLogitsLoss` with `pos_weight = n_ht / n_wt` down-weights the majority
-class (WT) to balance the effective contribution of both classes.
+`BCEWithLogitsLoss` with `pos_weight = (n_wt / n_ht) ** beta` up-weights the
+minority/positive class (HT). At `beta=1` (default) this is full rebalancing,
+which on this tiny dataset (~408 sessions, ~97 HT) can push the model to predict
+all-HT at the fixed 0.5 threshold; `--pos-weight-beta 0.5` (milder),
+`--sampler balanced`, or `--loss focal` give a less degenerate operating point.
+See [`docs/NEURAL_NETWORK_BASELINE.md`](../../../docs/NEURAL_NETWORK_BASELINE.md).
 
 ## Dependencies
 

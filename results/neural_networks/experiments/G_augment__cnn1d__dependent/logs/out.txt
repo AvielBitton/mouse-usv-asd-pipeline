@@ -1,0 +1,68 @@
+Active flags: ['--model cnn1d', '--baseline', '--pos-weight-beta 0.5', '--augment-windows 4 --window-stride 128']
+Model: cnn1d
+Results directory: results/neural_networks/experiments/G_augment__cnn1d__dependent
+Loading from CSV cache: outputs/external/aggregated/sequence/all_data_external_baseline.seq_cache.csv
+Loaded 408 sessions from 106 mice
+Sequence lengths: min=1, median=236, max=1202, P95=704
+MAX_SEQ_LEN=256
+Labels: HT=97, WT=311
+
+=== Split Info ===
+Strategy: random (session-level)
+Train: 244 sessions | Val: 82 sessions | Test: 82 sessions
+  Train: 102 mice, HT=58 (24%), WT=186 (76%)
+  Val: 60 mice, HT=20 (24%), WT=62 (76%)
+  Test: 64 mice, HT=19 (23%), WT=63 (77%)
+  WARNING: mouse overlap -- train/val: 56, train/test: 61 shared mice
+==================
+
+Class balance in train: HT=58, WT=186, pos_weight=1.791 (beta=0.5, sampler=none, loss=bce)
+Augmentation: 369 train windows from 244 sessions
+Epoch   1/100 | Train Loss: 0.7830 Acc: 0.748 | Val Loss: 0.7810 Acc: 0.756 AUC: 0.651 | LR: 0.001000
+Epoch   2/100 | Train Loss: 0.7467 Acc: 0.751 | Val Loss: 0.7391 Acc: 0.780 AUC: 0.675 | LR: 0.001000
+Epoch   3/100 | Train Loss: 0.7072 Acc: 0.770 | Val Loss: 0.7229 Acc: 0.768 AUC: 0.695 | LR: 0.001000
+Epoch   4/100 | Train Loss: 0.6886 Acc: 0.759 | Val Loss: 0.7244 Acc: 0.720 AUC: 0.688 | LR: 0.001000
+Epoch   5/100 | Train Loss: 0.6585 Acc: 0.751 | Val Loss: 0.7353 Acc: 0.646 AUC: 0.657 | LR: 0.001000
+Epoch   6/100 | Train Loss: 0.6392 Acc: 0.783 | Val Loss: 0.7596 Acc: 0.573 AUC: 0.698 | LR: 0.001000
+Epoch   7/100 | Train Loss: 0.5953 Acc: 0.799 | Val Loss: 0.7303 Acc: 0.683 AUC: 0.685 | LR: 0.001000
+Epoch   8/100 | Train Loss: 0.6040 Acc: 0.813 | Val Loss: 0.7872 Acc: 0.610 AUC: 0.667 | LR: 0.001000
+Epoch   9/100 | Train Loss: 0.5482 Acc: 0.789 | Val Loss: 0.7313 Acc: 0.720 AUC: 0.702 | LR: 0.001000
+Epoch  10/100 | Train Loss: 0.5393 Acc: 0.805 | Val Loss: 0.8671 Acc: 0.720 AUC: 0.651 | LR: 0.001000
+Epoch  11/100 | Train Loss: 0.5462 Acc: 0.818 | Val Loss: 0.7973 Acc: 0.659 AUC: 0.656 | LR: 0.001000
+Epoch  12/100 | Train Loss: 0.4846 Acc: 0.846 | Val Loss: 0.9247 Acc: 0.659 AUC: 0.597 | LR: 0.001000
+Epoch  13/100 | Train Loss: 0.4515 Acc: 0.862 | Val Loss: 0.7955 Acc: 0.659 AUC: 0.697 | LR: 0.001000
+Epoch  14/100 | Train Loss: 0.4454 Acc: 0.870 | Val Loss: 0.9115 Acc: 0.622 AUC: 0.680 | LR: 0.001000
+Epoch  15/100 | Train Loss: 0.4367 Acc: 0.859 | Val Loss: 0.9268 Acc: 0.671 AUC: 0.611 | LR: 0.000500
+Epoch  16/100 | Train Loss: 0.4331 Acc: 0.867 | Val Loss: 0.9199 Acc: 0.671 AUC: 0.665 | LR: 0.000500
+Epoch  17/100 | Train Loss: 0.3597 Acc: 0.905 | Val Loss: 0.9196 Acc: 0.695 AUC: 0.661 | LR: 0.000500
+Epoch  18/100 | Train Loss: 0.3399 Acc: 0.892 | Val Loss: 0.8421 Acc: 0.695 AUC: 0.683 | LR: 0.000500
+Epoch  19/100 | Train Loss: 0.3304 Acc: 0.900 | Val Loss: 0.9352 Acc: 0.646 AUC: 0.639 | LR: 0.000500
+Epoch  20/100 | Train Loss: 0.3352 Acc: 0.894 | Val Loss: 1.0992 Acc: 0.732 AUC: 0.656 | LR: 0.000500
+Epoch  21/100 | Train Loss: 0.3120 Acc: 0.921 | Val Loss: 1.0176 Acc: 0.622 AUC: 0.640 | LR: 0.000250
+Epoch  22/100 | Train Loss: 0.2728 Acc: 0.924 | Val Loss: 0.9653 Acc: 0.732 AUC: 0.692 | LR: 0.000250
+Epoch  23/100 | Train Loss: 0.2696 Acc: 0.935 | Val Loss: 0.9730 Acc: 0.646 AUC: 0.671 | LR: 0.000250
+Epoch  24/100 | Train Loss: 0.2416 Acc: 0.927 | Val Loss: 0.9225 Acc: 0.695 AUC: 0.689 | LR: 0.000250
+Early stopping at epoch 24 (best AUC: 0.702)
+Best validation AUC: 0.702
+Model parameters: 86,041
+
+=== Test Results ===
+Test Accuracy:        0.7439
+Test Balanced Acc:    0.5209
+Test AUC-ROC:         0.5873
+Test PR-AUC:          0.3312
+Test MCC:             0.0677
+Train Accuracy:       0.8320
+
+Classification Report:
+              precision    recall  f1-score   support
+
+      WT (0)       0.78      0.94      0.85        63
+      HT (1)       0.33      0.11      0.16        19
+
+    accuracy                           0.74        82
+   macro avg       0.55      0.52      0.50        82
+weighted avg       0.67      0.74      0.69        82
+
+
+Done. Results saved to results/neural_networks/experiments/G_augment__cnn1d__dependent/

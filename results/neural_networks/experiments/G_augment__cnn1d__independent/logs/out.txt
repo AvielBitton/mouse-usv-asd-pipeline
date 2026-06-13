@@ -1,0 +1,82 @@
+Active flags: ['--model cnn1d', '--independent', '--baseline', '--pos-weight-beta 0.5', '--augment-windows 4 --window-stride 128']
+Model: cnn1d
+Results directory: results/neural_networks/experiments/G_augment__cnn1d__independent
+Loading from CSV cache: outputs/external/aggregated/sequence/all_data_external_baseline.seq_cache.csv
+Loaded 408 sessions from 106 mice
+Sequence lengths: min=1, median=236, max=1202, P95=704
+MAX_SEQ_LEN=256
+Labels: HT=97, WT=311
+
+=== Split Info ===
+Strategy: group-aware (by mouse)
+Train: 238 sessions | Val: 80 sessions | Test: 90 sessions
+  Train: 63 mice, HT=56 (24%), WT=182 (76%)
+  Val: 21 mice, HT=22 (28%), WT=58 (72%)
+  Test: 22 mice, HT=19 (21%), WT=71 (79%)
+==================
+
+Class balance in train: HT=56, WT=182, pos_weight=1.803 (beta=0.5, sampler=none, loss=bce)
+Augmentation: 367 train windows from 238 sessions
+Epoch   1/100 | Train Loss: 0.8072 Acc: 0.747 | Val Loss: 0.8047 Acc: 0.725 AUC: 0.737 | LR: 0.001000
+Epoch   2/100 | Train Loss: 0.7718 Acc: 0.749 | Val Loss: 0.7661 Acc: 0.725 AUC: 0.711 | LR: 0.001000
+Epoch   3/100 | Train Loss: 0.7488 Acc: 0.752 | Val Loss: 0.7522 Acc: 0.725 AUC: 0.694 | LR: 0.001000
+Epoch   4/100 | Train Loss: 0.7388 Acc: 0.689 | Val Loss: 0.7486 Acc: 0.762 AUC: 0.723 | LR: 0.001000
+Epoch   5/100 | Train Loss: 0.6931 Acc: 0.766 | Val Loss: 0.7552 Acc: 0.762 AUC: 0.692 | LR: 0.001000
+Epoch   6/100 | Train Loss: 0.6744 Acc: 0.752 | Val Loss: 0.7431 Acc: 0.675 AUC: 0.704 | LR: 0.001000
+Epoch   7/100 | Train Loss: 0.6345 Acc: 0.760 | Val Loss: 0.7152 Acc: 0.650 AUC: 0.707 | LR: 0.000500
+Epoch   8/100 | Train Loss: 0.6021 Acc: 0.798 | Val Loss: 0.7210 Acc: 0.713 AUC: 0.735 | LR: 0.000500
+Epoch   9/100 | Train Loss: 0.5596 Acc: 0.801 | Val Loss: 0.7065 Acc: 0.725 AUC: 0.740 | LR: 0.000500
+Epoch  10/100 | Train Loss: 0.5554 Acc: 0.817 | Val Loss: 0.7206 Acc: 0.675 AUC: 0.725 | LR: 0.000500
+Epoch  11/100 | Train Loss: 0.5371 Acc: 0.828 | Val Loss: 0.7328 Acc: 0.588 AUC: 0.759 | LR: 0.000500
+Epoch  12/100 | Train Loss: 0.5019 Acc: 0.823 | Val Loss: 0.7057 Acc: 0.675 AUC: 0.750 | LR: 0.000500
+Epoch  13/100 | Train Loss: 0.4941 Acc: 0.856 | Val Loss: 0.7931 Acc: 0.713 AUC: 0.705 | LR: 0.000500
+Epoch  14/100 | Train Loss: 0.5193 Acc: 0.837 | Val Loss: 0.7051 Acc: 0.650 AUC: 0.737 | LR: 0.000500
+Epoch  15/100 | Train Loss: 0.4232 Acc: 0.875 | Val Loss: 0.7291 Acc: 0.713 AUC: 0.748 | LR: 0.000500
+Epoch  16/100 | Train Loss: 0.4083 Acc: 0.888 | Val Loss: 0.7587 Acc: 0.662 AUC: 0.722 | LR: 0.000500
+Epoch  17/100 | Train Loss: 0.4250 Acc: 0.886 | Val Loss: 0.8018 Acc: 0.750 AUC: 0.751 | LR: 0.000250
+Epoch  18/100 | Train Loss: 0.3871 Acc: 0.877 | Val Loss: 0.7256 Acc: 0.700 AUC: 0.735 | LR: 0.000250
+Epoch  19/100 | Train Loss: 0.3606 Acc: 0.910 | Val Loss: 0.7826 Acc: 0.725 AUC: 0.741 | LR: 0.000250
+Epoch  20/100 | Train Loss: 0.3519 Acc: 0.891 | Val Loss: 0.7377 Acc: 0.700 AUC: 0.759 | LR: 0.000250
+Epoch  21/100 | Train Loss: 0.3257 Acc: 0.918 | Val Loss: 0.7374 Acc: 0.700 AUC: 0.752 | LR: 0.000250
+Epoch  22/100 | Train Loss: 0.3326 Acc: 0.902 | Val Loss: 0.7446 Acc: 0.725 AUC: 0.761 | LR: 0.000250
+Epoch  23/100 | Train Loss: 0.3298 Acc: 0.918 | Val Loss: 0.8413 Acc: 0.700 AUC: 0.763 | LR: 0.000250
+Epoch  24/100 | Train Loss: 0.3158 Acc: 0.916 | Val Loss: 0.7533 Acc: 0.738 AUC: 0.783 | LR: 0.000250
+Epoch  25/100 | Train Loss: 0.3306 Acc: 0.905 | Val Loss: 1.0389 Acc: 0.738 AUC: 0.774 | LR: 0.000250
+Epoch  26/100 | Train Loss: 0.2823 Acc: 0.929 | Val Loss: 0.7539 Acc: 0.700 AUC: 0.770 | LR: 0.000250
+Epoch  27/100 | Train Loss: 0.2669 Acc: 0.937 | Val Loss: 0.7521 Acc: 0.700 AUC: 0.772 | LR: 0.000250
+Epoch  28/100 | Train Loss: 0.2806 Acc: 0.910 | Val Loss: 0.7896 Acc: 0.713 AUC: 0.762 | LR: 0.000250
+Epoch  29/100 | Train Loss: 0.2637 Acc: 0.924 | Val Loss: 0.8345 Acc: 0.713 AUC: 0.769 | LR: 0.000250
+Epoch  30/100 | Train Loss: 0.2437 Acc: 0.954 | Val Loss: 0.8323 Acc: 0.725 AUC: 0.771 | LR: 0.000125
+Epoch  31/100 | Train Loss: 0.2419 Acc: 0.946 | Val Loss: 0.8313 Acc: 0.738 AUC: 0.766 | LR: 0.000125
+Epoch  32/100 | Train Loss: 0.2571 Acc: 0.929 | Val Loss: 0.8674 Acc: 0.713 AUC: 0.773 | LR: 0.000125
+Epoch  33/100 | Train Loss: 0.2497 Acc: 0.935 | Val Loss: 0.7818 Acc: 0.725 AUC: 0.771 | LR: 0.000125
+Epoch  34/100 | Train Loss: 0.2400 Acc: 0.940 | Val Loss: 0.8209 Acc: 0.738 AUC: 0.769 | LR: 0.000125
+Epoch  35/100 | Train Loss: 0.2289 Acc: 0.954 | Val Loss: 0.9093 Acc: 0.738 AUC: 0.781 | LR: 0.000125
+Epoch  36/100 | Train Loss: 0.2055 Acc: 0.962 | Val Loss: 0.9472 Acc: 0.725 AUC: 0.775 | LR: 0.000063
+Epoch  37/100 | Train Loss: 0.2037 Acc: 0.954 | Val Loss: 0.8373 Acc: 0.725 AUC: 0.771 | LR: 0.000063
+Epoch  38/100 | Train Loss: 0.2142 Acc: 0.940 | Val Loss: 0.8026 Acc: 0.700 AUC: 0.781 | LR: 0.000063
+Epoch  39/100 | Train Loss: 0.1858 Acc: 0.967 | Val Loss: 0.8413 Acc: 0.725 AUC: 0.782 | LR: 0.000063
+Early stopping at epoch 39 (best AUC: 0.783)
+Best validation AUC: 0.783
+Model parameters: 86,041
+
+=== Test Results ===
+Test Accuracy:        0.5667
+Test Balanced Acc:    0.4748
+Test AUC-ROC:         0.4492
+Test PR-AUC:          0.2097
+Test MCC:             -0.0430
+Train Accuracy:       0.9244
+
+Classification Report:
+              precision    recall  f1-score   support
+
+      WT (0)       0.78      0.63      0.70        71
+      HT (1)       0.19      0.32      0.24        19
+
+    accuracy                           0.57        90
+   macro avg       0.48      0.47      0.47        90
+weighted avg       0.65      0.57      0.60        90
+
+
+Done. Results saved to results/neural_networks/experiments/G_augment__cnn1d__independent/

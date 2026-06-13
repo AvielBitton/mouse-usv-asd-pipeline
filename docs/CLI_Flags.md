@@ -109,4 +109,15 @@ python src/classification/neural_networks/sequence_pipeline.py
 | `--batch-size N` | Available | Training batch size. Default is `32`. |
 | `--lr FLOAT` | Available | Learning rate. Default is `1e-3`. |
 | `--results-dir DIR` | Available | Write results to an explicit output directory. |
+| `--pos-weight-beta FLOAT` | Available | Exponent on the class ratio: `pos_weight=(n_wt/n_ht)**beta`. `1.0`=full rebalance (default), `0.5`=milder, `0.0`=none. |
+| `--sampler {none,balanced}` | Available | `balanced` uses a `WeightedRandomSampler` for ~50/50 minibatches (pair with `--pos-weight-beta 0`). Default `none`. |
+| `--loss {bce,focal}` | Available | Training loss; `focal` down-weights easy examples. `--focal-gamma` (default 2.0). |
+| `--weight-decay FLOAT` | Available | Adam L2 weight decay. Default `0.0`. |
+| `--dropout FLOAT` | Available | Dropout for all models. Default `0.3`. |
+| `--hidden-size N` / `--num-layers N` / `--d-model N` | Available | Model capacity (BiLSTM hidden / shared layers / Transformer dim). Defaults `64`/`2`/`64`. |
+| `--label-smoothing FLOAT` | Available | Loss target softening. Default `0.0`. |
+| `--augment-windows N` / `--window-stride N` | Available | Sliding-window augmentation of long **train** sessions. Default off (`0`). |
+| `--cv-folds N` | Available | If >0, stratified k-fold CV (grouped by mouse when `--independent`); reports out-of-fold mean ± std. Default `0`. |
+
+Defaults reproduce the prior single-split behavior exactly. See [`NEURAL_NETWORK_BASELINE.md`](NEURAL_NETWORK_BASELINE.md) for the imbalance investigation and the experiment matrix.
 

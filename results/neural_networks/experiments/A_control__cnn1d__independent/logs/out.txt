@@ -1,0 +1,59 @@
+Active flags: ['--model cnn1d', '--independent', '--baseline']
+Model: cnn1d
+Results directory: results/neural_networks/experiments/A_control__cnn1d__independent
+Loading from CSV cache: outputs/external/aggregated/sequence/all_data_external_baseline.seq_cache.csv
+Loaded 408 sessions from 106 mice
+Sequence lengths: min=1, median=236, max=1202, P95=704
+MAX_SEQ_LEN=256
+Labels: HT=97, WT=311
+
+=== Split Info ===
+Strategy: group-aware (by mouse)
+Train: 238 sessions | Val: 80 sessions | Test: 90 sessions
+  Train: 63 mice, HT=56 (24%), WT=182 (76%)
+  Val: 21 mice, HT=22 (28%), WT=58 (72%)
+  Test: 22 mice, HT=19 (21%), WT=71 (79%)
+==================
+
+Class balance in train: HT=56, WT=182, pos_weight=3.250 (beta=1.0, sampler=none, loss=bce)
+Epoch   1/100 | Train Loss: 1.0876 Acc: 0.576 | Val Loss: 1.1150 Acc: 0.750 AUC: 0.689 | LR: 0.001000
+Epoch   2/100 | Train Loss: 1.0311 Acc: 0.693 | Val Loss: 1.0817 Acc: 0.725 AUC: 0.753 | LR: 0.001000
+Epoch   3/100 | Train Loss: 0.9936 Acc: 0.660 | Val Loss: 1.0474 Acc: 0.725 AUC: 0.726 | LR: 0.001000
+Epoch   4/100 | Train Loss: 0.9695 Acc: 0.672 | Val Loss: 1.0389 Acc: 0.700 AUC: 0.732 | LR: 0.001000
+Epoch   5/100 | Train Loss: 0.9386 Acc: 0.668 | Val Loss: 1.0215 Acc: 0.762 AUC: 0.749 | LR: 0.001000
+Epoch   6/100 | Train Loss: 0.9131 Acc: 0.702 | Val Loss: 0.9799 Acc: 0.650 AUC: 0.748 | LR: 0.001000
+Epoch   7/100 | Train Loss: 0.9084 Acc: 0.723 | Val Loss: 0.9573 Acc: 0.637 AUC: 0.745 | LR: 0.001000
+Epoch   8/100 | Train Loss: 0.8589 Acc: 0.718 | Val Loss: 0.9825 Acc: 0.512 AUC: 0.732 | LR: 0.000500
+Epoch   9/100 | Train Loss: 0.8279 Acc: 0.748 | Val Loss: 0.9969 Acc: 0.625 AUC: 0.723 | LR: 0.000500
+Epoch  10/100 | Train Loss: 0.7716 Acc: 0.773 | Val Loss: 0.9790 Acc: 0.600 AUC: 0.722 | LR: 0.000500
+Epoch  11/100 | Train Loss: 0.7907 Acc: 0.756 | Val Loss: 0.9729 Acc: 0.600 AUC: 0.730 | LR: 0.000500
+Epoch  12/100 | Train Loss: 0.7259 Acc: 0.761 | Val Loss: 0.9657 Acc: 0.588 AUC: 0.731 | LR: 0.000500
+Epoch  13/100 | Train Loss: 0.7284 Acc: 0.794 | Val Loss: 0.9862 Acc: 0.613 AUC: 0.721 | LR: 0.000500
+Epoch  14/100 | Train Loss: 0.6562 Acc: 0.811 | Val Loss: 0.9940 Acc: 0.637 AUC: 0.719 | LR: 0.000250
+Epoch  15/100 | Train Loss: 0.6501 Acc: 0.845 | Val Loss: 0.9717 Acc: 0.600 AUC: 0.729 | LR: 0.000250
+Epoch  16/100 | Train Loss: 0.6392 Acc: 0.849 | Val Loss: 1.0053 Acc: 0.662 AUC: 0.719 | LR: 0.000250
+Epoch  17/100 | Train Loss: 0.6558 Acc: 0.807 | Val Loss: 1.0585 Acc: 0.738 AUC: 0.730 | LR: 0.000250
+Early stopping at epoch 17 (best AUC: 0.753)
+Best validation AUC: 0.753
+Model parameters: 86,041
+
+=== Test Results ===
+Test Accuracy:        0.6333
+Test Balanced Acc:    0.5170
+Test AUC-ROC:         0.6093
+Test PR-AUC:          0.3639
+Test MCC:             0.0307
+Train Accuracy:       0.7311
+
+Classification Report:
+              precision    recall  f1-score   support
+
+      WT (0)       0.80      0.72      0.76        71
+      HT (1)       0.23      0.32      0.27        19
+
+    accuracy                           0.63        90
+   macro avg       0.51      0.52      0.51        90
+weighted avg       0.68      0.63      0.65        90
+
+
+Done. Results saved to results/neural_networks/experiments/A_control__cnn1d__independent/
