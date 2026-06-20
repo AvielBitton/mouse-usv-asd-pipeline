@@ -1,0 +1,43 @@
+================================================================
+DECISION-THRESHOLD TUNING
+================================================================
+Model: xgboost_tuned_dependent
+Objective (headline): youden
+Active flags: --model xgboost_tuned_dependent, --baseline, --threshold auto (youden)
+
+Validation AUC: 0.8955
+Test AUC:       0.8849   (threshold-independent)
+Val label counts: WT=1865, HT=600
+
+Candidate thresholds (derived from the VALIDATION set):
+  youden        : 0.3655   <-- HEADLINE
+  f1            : 0.5681
+  target_recall : 0.5472  (target HT recall >= 0.80)
+  balanced      : 0.3650
+
+----------------------------------------------------------------
+TEST METRICS:  @0.5 (default)   vs   @tuned (youden = 0.3655)
+----------------------------------------------------------------
+                            @0.5    @tuned     delta
+Accuracy                   0.771     0.731    -0.040
+Balanced accuracy          0.798     0.800    +0.002
+HT recall                  0.856     0.947    +0.091
+HT precision               0.540     0.493    -0.047
+HT F1                      0.662     0.649    -0.014
+WT recall                  0.740     0.653    -0.087
+WT precision               0.935     0.972    +0.037
+WT F1                      0.827     0.782    -0.045
+
+Confusion matrix @0.5:
+             pred WT   pred HT
+  true WT      1346       472
+  true HT        93       554
+
+Confusion matrix @tuned (0.3655):
+             pred WT   pred HT
+  true WT      1188       630
+  true HT        34       613
+
+Note: comparison_vs_baseline.txt in this directory reflects the TUNED
+operating point. The @0.5 column above is the default-threshold reference.
+================================================================

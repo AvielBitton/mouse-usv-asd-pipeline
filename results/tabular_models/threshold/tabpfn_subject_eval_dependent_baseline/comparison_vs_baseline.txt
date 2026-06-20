@@ -1,0 +1,20 @@
+============================================================
+COMPARISON VS BASELINE
+============================================================
+Active flags: --model tabpfn, --baseline, --threshold auto (youden)
+
+Test Accuracy:   0.766  (baseline: 0.829, delta: -0.063)
+Train Accuracy:  0.866  (baseline: 0.880, delta: -0.014)
+Weighted F1:     0.780  (baseline: 0.830, delta: -0.050)
+
+--- WT ---
+  Precision: 0.970  (baseline: 0.920, delta: +0.050)
+  Recall:    0.705  (baseline: 0.780, delta: -0.075)
+  F1:        0.817  (baseline: 0.840, delta: -0.023)
+
+--- HT ---
+  Precision: 0.531  (baseline: 0.730, delta: -0.199)
+  Recall:    0.938  (baseline: 0.900, delta: +0.038)
+  F1:        0.678  (baseline: 0.810, delta: -0.132)
+
+============================================================
