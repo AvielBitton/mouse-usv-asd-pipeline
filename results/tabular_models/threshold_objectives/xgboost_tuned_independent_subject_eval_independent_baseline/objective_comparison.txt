@@ -1,0 +1,25 @@
+================================================================================
+THRESHOLD OBJECTIVE COMPARISON
+xgboost_tuned_independent / independent
+================================================================================
+Source: results/tabular_models/threshold/xgboost_tuned_independent_subject_eval_independent_baseline/probabilities_*.csv
+Val AUC: 0.6409   Test AUC: 0.7530   Val labels: WT=1788 HT=530
+Youden self-check vs stored run: OK (matches stored, delta=0.00e+00)
+
+Objective         thr     acc  balacc   HTrec  HTprec    HTf1   WTrec  WTprec
+--------------------------------------------------------------------------------
+@0.5            0.500   0.695   0.725   0.791   0.463   0.584   0.660   0.895
+youden          0.288   0.704   0.797   1.000   0.477   0.646   0.594   1.000
+f1              0.288   0.704   0.797   1.000   0.477   0.646   0.594   1.000
+target_recall   0.523   0.694   0.706   0.731   0.459   0.564   0.681   0.872
+balanced        0.223   0.704   0.797   1.000   0.477   0.646   0.594   1.000
+
+(target_recall objective uses HT recall floor 0.80)
+
+Confusion matrices (test)  [[WT->WT, WT->HT], [HT->WT, HT->HT]]:
+  @0.5          [[1029, 531], [121, 458]]
+  youden        [[926, 634], [0, 579]]
+  f1            [[926, 634], [0, 579]]
+  target_recall [[1062, 498], [156, 423]]
+  balanced      [[926, 634], [0, 579]]
+================================================================================

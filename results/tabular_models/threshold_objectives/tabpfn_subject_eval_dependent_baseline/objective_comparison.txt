@@ -1,0 +1,25 @@
+================================================================================
+THRESHOLD OBJECTIVE COMPARISON
+tabpfn / dependent
+================================================================================
+Source: results/tabular_models/threshold/tabpfn_subject_eval_dependent_baseline/probabilities_*.csv
+Val AUC: 0.9123   Test AUC: 0.9081   Val labels: WT=1865 HT=600
+Youden self-check vs stored run: OK (matches stored, delta=0.00e+00)
+
+Objective         thr     acc  balacc   HTrec  HTprec    HTf1   WTrec  WTprec
+--------------------------------------------------------------------------------
+@0.5            0.500   0.783   0.828   0.921   0.552   0.691   0.734   0.963
+youden          0.454   0.766   0.822   0.938   0.531   0.678   0.705   0.970
+f1              0.617   0.819   0.817   0.811   0.619   0.702   0.822   0.925
+target_recall   0.617   0.819   0.817   0.811   0.619   0.702   0.822   0.925
+balanced        0.453   0.766   0.821   0.938   0.531   0.678   0.705   0.970
+
+(target_recall objective uses HT recall floor 0.80)
+
+Confusion matrices (test)  [[WT->WT, WT->HT], [HT->WT, HT->HT]]:
+  @0.5          [[1335, 483], [51, 596]]
+  youden        [[1282, 536], [40, 607]]
+  f1            [[1495, 323], [122, 525]]
+  target_recall [[1495, 323], [122, 525]]
+  balanced      [[1281, 537], [40, 607]]
+================================================================================
