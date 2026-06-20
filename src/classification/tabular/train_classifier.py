@@ -35,6 +35,17 @@ from models import (
     supports_sample_weight,
 )
 from report import generate_comparison
+import threshold_report
+from threshold import (
+    DEFAULT_OBJECTIVE,
+    DEFAULT_TARGET_RECALL,
+    OBJECTIVES,
+    derive_thresholds,
+    evaluate,
+    positive_proba,
+    predict_at_threshold,
+    select_threshold,
+)
 
 ALL_DATA_CSV = os.path.join("outputs", "legacy", "aggregated", "all_data.csv")
 ALL_DATA_EXTERNAL_CSV = os.path.join(
@@ -177,6 +188,39 @@ def parse_args():
              '_subject_eval_dependent or _subject_eval_independent (+ _external). '
              'Example: results/tabular_models/tabpfn_subject_eval_independent_external.',
     )
+    parser.add_argument(
+        '--threshold',
+        type=str,
+        default=None,
+        metavar='auto|FLOAT',
+        help='Decision-threshold tuning (issue #29). "auto" derives the threshold '
+             'from the validation set (objective via --threshold-objective); a float '
+             'in [0,1] applies that fixed threshold. When set, the run reports test '
+             'metrics at both 0.5 and the tuned threshold and writes everything under '
+             'results/tabular_models/threshold/. Omit for the default 0.5 behaviour.',
+    )
+    parser.add_argument(
+        '--tune-threshold',
+        action='store_true',
+        help='Alias for --threshold auto.',
+    )
+    parser.add_argument(
+        '--threshold-objective',
+        type=str,
+        default=DEFAULT_OBJECTIVE,
+        choices=sorted(OBJECTIVES),
+        help=f'Objective for auto threshold selection (default: {DEFAULT_OBJECTIVE}). '
+             'youden = max TPR-FPR on the val ROC; f1 = max HT F1; target_recall = '
+             'highest-precision point with HT recall >= --target-recall; balanced = '
+             'max balanced accuracy. All candidates are reported regardless.',
+    )
+    parser.add_argument(
+        '--target-recall',
+        type=float,
+        default=DEFAULT_TARGET_RECALL,
+        help=f'HT recall floor for --threshold-objective target_recall '
+             f'(default: {DEFAULT_TARGET_RECALL}).',
+    )
     return parser.parse_args()
 
 
@@ -317,6 +361,31 @@ def main():
 
     model_name = args.model
 
+    # --- threshold mode ------------------------------------------------------
+    # off    : default 0.5 behaviour -- current pipeline, byte-identical outputs.
+    # auto   : derive the threshold from the validation set (--threshold-objective).
+    # manual : apply a fixed float threshold supplied via --threshold.
+    threshold_mode = 'off'
+    manual_thr = None
+    thr_arg = args.threshold
+    if args.tune_threshold and thr_arg is None:
+        thr_arg = 'auto'
+    if thr_arg is not None:
+        if str(thr_arg).lower() == 'auto':
+            threshold_mode = 'auto'
+        else:
+            try:
+                manual_thr = float(thr_arg)
+            except ValueError:
+                print(f"Error: --threshold must be 'auto' or a float in [0,1], "
+                      f"got {thr_arg!r}", file=sys.stderr)
+                sys.exit(1)
+            if not 0.0 <= manual_thr <= 1.0:
+                print(f"Error: --threshold float must be in [0,1], got {manual_thr}",
+                      file=sys.stderr)
+                sys.exit(1)
+            threshold_mode = 'manual'
+
     # --- results directory ---------------------------------------------------
     data_csv = resolve_training_csv_path(args)
     if not os.path.isfile(data_csv):
@@ -328,7 +397,10 @@ def main():
     else:
         subdir = default_results_subdir(model_name, args.group_split, data_csv,
                                         strain=args.strain, legacy=args.legacy)
-        results_dir = os.path.join('results', 'tabular_models', subdir)
+        base = ['results', 'tabular_models']
+        if threshold_mode != 'off':
+            base.append('threshold')
+        results_dir = os.path.join(*base, subdir)
 
     plots_dir = os.path.join(results_dir, 'plots')
     model_dir = os.path.join(results_dir, 'model')
@@ -356,6 +428,10 @@ def main():
         active_flags.append(f'--strain {args.strain}')
     if args.legacy:
         active_flags.append('--legacy')
+    if threshold_mode == 'auto':
+        active_flags.append(f'--threshold auto ({args.threshold_objective})')
+    elif threshold_mode == 'manual':
+        active_flags.append(f'--threshold {manual_thr:g}')
     print(f'Active flags: {active_flags if active_flags else "none (baseline)"}')
     print(f'Model: {model_name}')
     print(f'Results directory: {results_dir}')
@@ -401,11 +477,19 @@ def main():
     # into train gives TabPFN 80% of the data instead of 60%, matching the
     # effective training budget that XGBoost gets when val is used only for
     # training-curve monitoring (not for any model selection decision).
-    if merges_val_into_train(model_name):
+    # In threshold mode the val set must stay held out so its probabilities are
+    # leak-free for threshold derivation, so we skip the merge for TabPFN (it then
+    # trains on ~60% instead of 80% -- disclosed in the threshold report).
+    tabpfn_no_merge = merges_val_into_train(model_name) and threshold_mode != 'off'
+    if merges_val_into_train(model_name) and threshold_mode == 'off':
         X_train = pd.concat([X_train, X_val])
         y_train = pd.concat([y_train, y_val])
         print(f'[tabpfn] val merged into train: {len(X_train)} train rows, '
               f'{len(X_test)} test rows')
+    elif tabpfn_no_merge:
+        print(f'[tabpfn] threshold mode: val held OUT (not merged) for leak-free '
+              f'threshold derivation -- {len(X_train)} train rows (~60%), '
+              f'{len(X_val)} val rows, {len(X_test)} test rows')
 
     # --- train ---------------------------------------------------------------
     # Class balance: scale_pos_weight=n_WT/n_HT (HT=positive).
@@ -446,11 +530,37 @@ def main():
     model.fit(X_train, y_train, **fit_kwargs)
 
     # --- evaluate ------------------------------------------------------------
-    pred_train = model.predict(X_train)
+    # OFF: keep model.predict() so default-threshold outputs are byte-identical.
+    # ON : threshold derived from the held-out val split, applied to train/test.
+    if threshold_mode == 'off':
+        tuned_thr = 0.5
+        thresholds = None
+        p_test = p_val = None
+        pred_train = model.predict(X_train)
+        pred_test = model.predict(X_test)
+    else:
+        p_train = positive_proba(model, X_train)
+        p_test = positive_proba(model, X_test)
+        p_val = positive_proba(model, X_val)
+        thresholds = derive_thresholds(y_val, p_val, target_recall=args.target_recall)
+        tuned_thr = (manual_thr if threshold_mode == 'manual'
+                     else select_threshold(thresholds, args.threshold_objective))
+        print(f'\n=== Threshold tuning ({threshold_mode}) ===')
+        if thresholds.get('val_auc') is not None:
+            print(f'Validation AUC: {thresholds["val_auc"]:.4f}')
+        if thresholds.get('diagnostics', {}).get('degenerate_val'):
+            print('WARNING: single-class validation set -- threshold fell back to 0.5.')
+        print('Candidate thresholds (val-derived): ' + ', '.join(
+            f'{k}={thresholds[k]:.4f}'
+            for k in ('youden', 'f1', 'target_recall', 'balanced')))
+        objective_desc = args.threshold_objective if threshold_mode == 'auto' else 'manual'
+        print(f'Applied threshold: {tuned_thr:.4f} (objective={objective_desc})')
+        print('=================================\n')
+        pred_train = predict_at_threshold(p_train, tuned_thr)
+        pred_test = predict_at_threshold(p_test, tuned_thr)
+
     train_acc = accuracy_score(y_train, pred_train)
     print('Train Accuracy: ', train_acc)
-
-    pred_test = model.predict(X_test)
     test_acc = accuracy_score(y_test, pred_test)
     print('Test Accuracy: ', test_acc)
 
@@ -590,6 +700,57 @@ def main():
         plt.tight_layout()
         plt.savefig(os.path.join(plots_dir, 'feature_importance_1.png'), dpi=300)
         plt.show()
+
+    # --- threshold artifacts -------------------------------------------------
+    # Probabilities, ROC + operating-point plot, confusion matrices @0.5/@tuned,
+    # the 0.5-vs-tuned report, and the machine-readable metrics JSON (#29/#51).
+    if threshold_mode != 'off':
+        eval_05 = evaluate(y_test, p_test, 0.5)
+        eval_tuned = evaluate(y_test, p_test, tuned_thr)
+        eval_val = evaluate(y_val, p_val, tuned_thr)
+        objective = args.threshold_objective if threshold_mode == 'auto' else 'manual'
+
+        threshold_report.save_probabilities(
+            results_dir, split_name='val', index=X_val.index,
+            y_true=y_val, proba=p_val, thr_tuned=tuned_thr)
+        threshold_report.save_probabilities(
+            results_dir, split_name='test', index=X_test.index,
+            y_true=y_test, proba=p_test, thr_tuned=tuned_thr)
+        threshold_report.plot_roc_with_operating_points(
+            results_dir, y_val, p_val, thresholds)
+        threshold_report.plot_confusion_at(
+            results_dir, y_test, p_test, 0.5,
+            'conf_matrix_thr0.5.png', 'Test confusion @0.5')
+        threshold_report.plot_confusion_at(
+            results_dir, y_test, p_test, tuned_thr,
+            'conf_matrix_thr_tuned.png', f'Test confusion @tuned ({tuned_thr:.3f})')
+        threshold_report.write_threshold_report(
+            results_dir, model_name=model_name, objective=objective,
+            thresholds=thresholds, eval_05=eval_05, eval_tuned=eval_tuned,
+            eval_val=eval_val, tabpfn_no_merge=tabpfn_no_merge,
+            active_flags=active_flags)
+
+        def _slim(ev):
+            return {k: v for k, v in ev.items() if k != 'report_dict'}
+
+        payload = {
+            'model': model_name,
+            'results_dir': results_dir,
+            'split': 'independent' if args.group_split else 'dependent',
+            'mode': threshold_mode,
+            'objective': objective,
+            'tuned_threshold': tuned_thr,
+            'thresholds': thresholds,
+            'tabpfn_no_merge': tabpfn_no_merge,
+            'active_flags': active_flags,
+            'test_auc': eval_tuned['auc'],
+            'metrics': {
+                'test_at_0.5': _slim(eval_05),
+                'test_at_tuned': _slim(eval_tuned),
+                'val_at_tuned': _slim(eval_val),
+            },
+        }
+        threshold_report.write_metrics_json(results_dir, payload)
 
     # --- comparison vs baseline ----------------------------------------------
     generate_comparison(results_dir, test_acc, train_acc, report_dict, active_flags)

@@ -1,0 +1,53 @@
+Active flags: ['--baseline', '--threshold auto (youden)']
+Model: xgboost
+Results directory: results/tabular_models/threshold/xgboost_subject_eval_dependent_baseline
+Data source: /home/aviel/dev/hit/mouse-usv-asd-pipeline/outputs/external/aggregated/tabular/all_data_external_baseline.csv
+
+=== Split Info ===
+Strategy: random (row-level)
+Train: 7393 rows | Val: 2465 rows | Test: 2465 rows
+WARNING: mouse overlap -- train/val: 106, train/test: 105, val/test: 105 shared mice
+  Train labels: WT=5600 (75.7%), HT=1793 (24.3%)
+  Val labels: WT=1865 (75.7%), HT=600 (24.3%)
+  Test labels: WT=1818 (73.8%), HT=647 (26.2%)
+==================
+
+Class balance: scale_pos_weight=3.1233 (n_WT/n_HT, HT=positive; corrected single-weighting)
+
+=== Threshold tuning (auto) ===
+Validation AUC: 0.8908
+Candidate thresholds (val-derived): youden=0.5281, f1=0.6174, target_recall=0.6297, balanced=0.5280
+Applied threshold: 0.5281 (objective=youden)
+=================================
+
+Train Accuracy:  0.7823616934938455
+Test Accuracy:  0.7367139959432049
+Classification Report:
+              precision    recall  f1-score   support
+
+          WT       0.96      0.67      0.79      1818
+          HT       0.50      0.91      0.65       647
+
+    accuracy                           0.74      2465
+   macro avg       0.73      0.79      0.72      2465
+weighted avg       0.84      0.74      0.75      2465
+
+
+ Confusion Matrix:
+Confusion matrix, without normalization
+
+ Confusion Matrix - New pup:
+Confusion matrix, without normalization
+
+ Confusion Matrix - Old pup:
+Confusion matrix, without normalization
+[[1224  594]
+ [  55  592]]
+[0.00764236 0.00761488 0.0071612  0.00342555 0.01387093 0.01663578
+ 0.00797427 0.00661284 0.00849118 0.0052391  0.01062227 0.00768628
+ 0.0125897  0.00803584 0.01462182 0.00924168 0.00513967 0.00676421
+ 0.00715211 0.00536483 0.01567354 0.01352175 0.00936848 0.00686082
+ 0.00836451 0.0196203  0.00973194 0.00532569 0.00581296 0.00700493
+ 0.00783553 0.01336428 0.00724137 0.0044164  0.00388777 0.01038072
+ 0.00541843 0.00637065 0.0038445  0.00547122 0.57465243 0.0129129
+ 0.00981226 0.0188908  0.00847876 0.03385052]

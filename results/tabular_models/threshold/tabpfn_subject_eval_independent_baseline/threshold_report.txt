@@ -1,0 +1,48 @@
+================================================================
+DECISION-THRESHOLD TUNING
+================================================================
+Model: tabpfn
+Objective (headline): youden
+Active flags: --model tabpfn, --independent, --baseline, --threshold auto (youden)
+
+Validation AUC: 0.6787
+Test AUC:       0.7830   (threshold-independent)
+Val label counts: WT=1788, HT=530
+
+Candidate thresholds (derived from the VALIDATION set):
+  youden        : 0.0055   <-- HEADLINE
+  f1            : 0.0055
+  target_recall : 0.0948  (target HT recall >= 0.80)
+  balanced      : 0.0050
+
+NOTE: TabPFN val held OUT (not merged into train) so its probabilities are
+      leak-free for threshold derivation -- this model trains on ~60% of the
+      data instead of the 80% used by the non-threshold TabPFN run, so the
+      @0.5 numbers here differ slightly from that run (not a regression).
+
+----------------------------------------------------------------
+TEST METRICS:  @0.5 (default)   vs   @tuned (youden = 0.0055)
+----------------------------------------------------------------
+                            @0.5    @tuned     delta
+Accuracy                   0.713     0.703    -0.010
+Balanced accuracy          0.662     0.796    +0.134
+HT recall                  0.551     0.998    +0.447
+HT precision               0.474     0.477    +0.003
+HT F1                      0.510     0.645    +0.136
+WT recall                  0.773     0.594    -0.179
+WT precision               0.823     0.999    +0.176
+WT F1                      0.797     0.745    -0.052
+
+Confusion matrix @0.5:
+             pred WT   pred HT
+  true WT      1206       354
+  true HT       260       319
+
+Confusion matrix @tuned (0.0055):
+             pred WT   pred HT
+  true WT       926       634
+  true HT         1       578
+
+Note: comparison_vs_baseline.txt in this directory reflects the TUNED
+operating point. The @0.5 column above is the default-threshold reference.
+================================================================

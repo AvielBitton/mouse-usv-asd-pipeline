@@ -1,0 +1,20 @@
+============================================================
+COMPARISON VS BASELINE
+============================================================
+Active flags: --model xgboost_tuned_independent, --independent, --baseline, --threshold auto (youden)
+
+Test Accuracy:   0.704  (baseline: 0.829, delta: -0.125)
+Train Accuracy:  0.678  (baseline: 0.880, delta: -0.202)
+Weighted F1:     0.718  (baseline: 0.830, delta: -0.112)
+
+--- WT ---
+  Precision: 1.000  (baseline: 0.920, delta: +0.080)
+  Recall:    0.594  (baseline: 0.780, delta: -0.186)
+  F1:        0.745  (baseline: 0.840, delta: -0.095)
+
+--- HT ---
+  Precision: 0.477  (baseline: 0.730, delta: -0.253)
+  Recall:    1.000  (baseline: 0.900, delta: +0.100)
+  F1:        0.646  (baseline: 0.810, delta: -0.164)
+
+============================================================
