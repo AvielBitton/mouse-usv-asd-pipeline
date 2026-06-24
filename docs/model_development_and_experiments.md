@@ -134,7 +134,7 @@ and summarized here because every model choice below is a response to one of the
 
 | Data property | Value | Modeling consequence |
 |---|---|---|
-| **Small cohort** | **126 pups** from **35 dams** (`research_data_and_recording.md` §6) | After subject-grouped splitting the *independent* test fold holds only **22 mice / ~19 HT mice** (`docs/NEURAL_NETWORK_BASELINE.md` §9). Deep nets trained from scratch are easy to overfit; favour low-capacity / strong-prior models. |
+| **Small cohort** | **126 pups** from **35 dams** (`research_data_and_recording.md` §6) | After subject-grouped splitting the *independent* test fold holds only **22 mice / ~19 HT sessions** (`docs/NEURAL_NETWORK_BASELINE.md` §9). Deep nets trained from scratch are easy to overfit; favour low-capacity / strong-prior models. |
 | **Class imbalance** | Offspring **WT 91 / HT 29 / UNK 6** pups → positive minority **~24 %** (`research_data_and_recording.md` §7.3); ~3:1 WT:HET at fit time | Accuracy is misleading; HT (the ASD model) is the minority *and* the clinically important class. Every model must handle imbalance (XGBoost `scale_pos_weight≈3.1`, TabPFN natively, NNs via `pos_weight`/sampler — `preprocessing_pipeline.md` §2.9, §3.8). |
 | **Longitudinal / repeated-measures** | one pup ≈ **131 recordings / ~997 syllables**, spanning 2–3 ages, both sessions (`research_data_and_recording.md` §8) | Rows from the same pup/dam are highly correlated → naïve row shuffles leak identity and inflate metrics. Mandates **subject-grouped** evaluation; the *independent* split is the publishable number. |
 
@@ -627,7 +627,7 @@ Reading the table:
   sequence view does not beat 48 aggregated features here.
 
 The shared cause is **data scarcity at the subject level**: the independent splits
-leave only ~238 train / ~80 val / ~90 test sessions across ~63 train mice (HT 56), and
+leave only ~238 train / ~80 val / ~90 test sessions across ~63 train mice (56 HT train sessions), and
 the test fold carries only ~19 HT sessions — far too few to calibrate a decision head.
 Train accuracies (0.24–0.73) are themselves low, so these are **under-fit / mis-calibrated**
 models, not over-fit ones.
@@ -741,7 +741,7 @@ operating point, not a tuned one. On this task it is also a *poor* one, for two
 reasons that compound:
 
 1. **Class imbalance.** HET/HT is a ~24% minority (see
-   [`preprocessing_pipeline.md`](../docs/preprocessing_pipeline.md) §0). A 0.5
+   [`preprocessing_pipeline.md`](preprocessing_pipeline.md) §0). A 0.5
    cut on a model trained with imbalance-aware weighting leaves the decision
    boundary in the wrong place for the prior — typically pulling far too many WT
    recordings across into HT (low HT precision, low WT recall on dependent
@@ -806,7 +806,7 @@ Curated outputs and the regeneration recipe live in
 Six runs cover the cross-product of {XGBoost (default), XGBoost (tuned), TabPFN}
 × {subject-dependent, subject-independent}. The dependent/independent split
 distinction is defined in
-[`preprocessing_pipeline.md`](../docs/preprocessing_pipeline.md) — dependent lets
+[`preprocessing_pipeline.md`](preprocessing_pipeline.md) — dependent lets
 the same mouse appear across train/test (optimistic), independent groups by
 mouse identity (honest new-mouse estimate). Source:
 [`threshold/summary_matrix.txt`](../results/tabular_models/threshold/summary_matrix.txt).
@@ -852,7 +852,7 @@ Two regimes fall out cleanly:
 > **For the paper.** Best single tabular operating point is **TabPFN /
 > dependent**: at its default 0.5 cut it already beats the XGBoost base on every
 > headline metric — Test Acc **0.783** vs 0.733, balanced accuracy **0.828**,
-> weighted F1 **0.780** — at AUC **0.908**, while *matching* HT recall (0.938 vs
+> weighted F1 **0.794** — at AUC **0.908**, while *matching* HT recall (0.938 vs
 > the base's 0.940) with better HT precision (0.531 vs 0.496) and far fewer WT
 > false positives. The limiting factor is HT precision (~0.53 — about half of HT
 > calls are false positives), which no threshold move can fix; that is a feature
@@ -978,7 +978,7 @@ that argues against blind pooling.
 
 ### 6.1 What the two cohorts are
 
-The official cohort definitions live in [`COHORT_DEFINITIONS.md`](../docs/COHORT_DEFINITIONS.md)
+The official cohort definitions live in [`COHORT_DEFINITIONS.md`](COHORT_DEFINITIONS.md)
 (Issue #47 / #42), and the year→strain rule is `STRAIN_1_YEARS = {2022, 2023, 2024}` in
 `src/preprocessing/utils/io_utils.py` (`strain_from_year()`), with the text→numeric mapping
 applied in `extract_features.py`. The `Strain` column itself is described in
@@ -995,7 +995,7 @@ Both subsets are drawn from the *same* official baseline (Issue #46 filters + th
 HET→WT genotype correction — [`segmentation_process.md`](segmentation_process.md) §9.7); the
 only change is the `--strain` row filter applied at train time. There is no separate
 per-cohort CSV — filtering happens at `extract_features.py`. Class balance is similar in both
-(HT ≈ 22 % in strain1, ≈ 27 % in strain2), so the imbalance levers differ only slightly
+(HT ≈ 22 % in strain1, ≈ 28 % in strain2), so the imbalance levers differ only slightly
 (`scale_pos_weight` ≈ 3.51–3.53 for strain1, ≈ 2.45–2.47 for strain2).
 
 The two cohorts therefore confound **three** things at once — year, genetic background, and
@@ -1035,7 +1035,7 @@ Weighted F1 **0.749**, HT F1 **0.649**).
 | tabpfn | 1 | dependent | 0.785 | 0.847 | 0.801 | 0.838 | 0.523 | 0.969 | 0.680 |
 | tabpfn | 1 | **independent** | 0.897 | 0.859 | 0.905 | 0.935 | 0.629 | 0.925 | **0.749** |
 | tabpfn | 2 | dependent | 0.801 | 0.926 | 0.809 | 0.851 | 0.604 | 0.842 | 0.703 |
-| tabpfn | 2 | **independent** | 0.654 | 0.941 | 0.659 | 0.775 | 0.369 | 0.410 | **0.388** |
+| tabpfn | 2 | **independent** | 0.654 | 0.941 | 0.659 | 0.759 | 0.369 | 0.410 | **0.388** |
 
 > ⚠️ **Read the train/test gaps.** On strain2-independent the train accuracies are
 > *high* (0.916 / 0.950 / 0.941) while test sits at ~0.65 — a 0.26–0.30 generalization gap.
@@ -1061,14 +1061,14 @@ three models the leak-free strain1 split lands at **~0.90 accuracy and 0.73–0.
 drop. Against the base model the untuned run is **+0.170 accuracy / +0.160 weighted F1**, and
 the minority class improves on *both* sides of the trade-off — **HT precision +0.152 (to 0.648)**
 with HT recall holding at 0.900 (−0.040). Confusion matrix `[[1276, 137], [28, 252]]`: only 28
-of 280 true HT mice missed. Two levers move together here — cohort narrows to strain1 *and*
+of 280 true HT recordings missed. Two levers move together here — cohort narrows to strain1 *and*
 the split goes independent — so the gain is "cleaner cohort beats harder split," not a
 free generalization win.
 
 **(c) strain2 independent collapses, concentrated in the minority class.** Same recipes, same
 split logic, opposite outcome: acc drops to ~0.65 and **HT F1 falls to 0.08–0.39**. The untuned
 XGBoost is the worst, HT recall 0.089 / precision 0.194 / F1 0.122 — confusion matrix
-`[[745, 116], [287, 28]]`: of 315 true HT mice, **287 are called WT and only 28 caught**. The
+`[[745, 116], [287, 28]]`: of 315 true HT recordings, **287 are called WT and only 28 caught**. The
 tuned XGBoost is no better (HT F1 0.081, recall 0.057). The classifier simply defaults to the
 WT majority on the held-out mice. The 0.65 headline accuracy is an artifact of the ~73 % WT
 base rate plus WT recall ~0.87; weighted F1 (0.597–0.659) exposes the real failure.
@@ -1288,7 +1288,7 @@ right tools, and they are at or near the practical state of the art for this pro
   subject-dependent baseline it beats the XGBoost base on every aggregate — test accuracy **0.781**
   (Δ +0.048), weighted F1 **0.794** (+0.045), HT precision **0.550** (+0.054) at HT recall **0.918**
   (`results/tabular_models/tabpfn_subject_eval_dependent_baseline/README.md`). With threshold tuning
-  it reaches its best operating point of **acc 0.819 / balacc 0.817 / HT F1 0.811 / WT recall 0.822**
+  it reaches its best operating point of **acc 0.819 / balacc 0.817 / HT recall 0.811 / WT recall 0.822** (HT F1 0.702)
   (f1 / target_recall objective; `results/tabular_models/threshold_objectives/summary_objectives.txt`).
 
 > **For the paper.** Position XGBoost as the *interpretable classical baseline* and TabPFN as a
@@ -1353,8 +1353,8 @@ validation split only** (`train_classifier.py → derive_thresholds`, then appli
 objectives (youden / f1 / target_recall / balanced). For TabPFN in threshold mode the val set is
 held **out** (not merged into train) "for leak-free threshold derivation" — the correct,
 disclosed protocol. This is a defensible, standard way to pick an operating point on an imbalanced
-problem and materially improves the tabular results (TabPFN dependent: balacc 0.828 @0.5 → HT F1
-**0.811** at the f1/target_recall cut). It is *not* a SOTA modeling advance in itself; it is good
+problem and materially improves the tabular results (TabPFN dependent: acc 0.781 @0.5 → acc
+**0.819** at the f1/target_recall cut). It is *not* a SOTA modeling advance in itself; it is good
 hygiene applied to an already-trained model.
 
 ### 8.5 What a more SOTA approach would add
@@ -1579,8 +1579,6 @@ A single tabular run can also be threshold-tuned directly:
 > `README.md` under `results/**/` is the human-readable summary, and `results.json` /
 > `threshold_metrics.json` / `comparison_vs_baseline.txt` are the machine-readable sources behind
 > the master tables in §10.5.
-
----
 
 ---
 
