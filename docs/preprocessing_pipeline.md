@@ -11,6 +11,8 @@
 >    row* (segmentation + CNN typing).
 > 3. **this document** — *how syllable rows become a training matrix* (aggregation,
 >    encoding, filtering, splitting), for **both** the tabular and the sequence models.
+> 4. [`model_development_and_experiments.md`](model_development_and_experiments.md) — *how the
+>    training matrix becomes trained, evaluated, and compared models* (modeling & experiments).
 >
 > Audience: the authors of the project's research paper (and Claude, when drafting the
 > *Feature extraction / Preprocessing* and *Experimental setup* subsections of a Methods
