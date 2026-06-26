@@ -1,0 +1,251 @@
+{
+  "F1": {
+    "number": "F1",
+    "title": "End-to-end USV-to-decision pipeline",
+    "caption": "Signature figure: the full pipeline from the recording rig through segmentation and CNN syllable typing to the two preprocessing representations (tabular and sequence), the model families, the evaluation protocol, and interpretation.",
+    "sources": [
+      "docs/segmentation_process.md",
+      "docs/preprocessing_pipeline.md",
+      "docs/model_development_and_experiments.md",
+      "thesis/data_composition.json"
+    ],
+    "png": "thesis/figures/fig_f1.png",
+    "pdf": "thesis/figures/fig_f1.pdf"
+  },
+  "F2": {
+    "number": "F2",
+    "title": "Data provenance & single source of truth",
+    "caption": "From scattered, undocumented inputs to a curated canonical dataset (single source of truth) with a versioned manifest and a reproducible pipeline; the genotype data-integrity correction is applied at the canonical-file stage.",
+    "sources": [
+      "README.md",
+      "docs/BASELINE_DATA_MANIFEST.md",
+      "docs/segmentation_process.md",
+      "outputs/external/input/README.md"
+    ],
+    "png": "thesis/figures/fig_f2.png",
+    "pdf": "thesis/figures/fig_f2.pdf"
+  },
+  "F3": {
+    "number": "F3",
+    "title": "Experimental-design matrix",
+    "caption": "Which model/representation was evaluated under which split and cohort scope; cells show test accuracy (\u2014 = not run). Tabular models are evaluated at recording level, sequence models at session level.",
+    "sources": [
+      "thesis/master_results.json"
+    ],
+    "png": "thesis/figures/fig_f3.png",
+    "pdf": "thesis/figures/fig_f3.pdf"
+  },
+  "F4": {
+    "number": "F4",
+    "title": "Model taxonomy \u2014 inherited vs new",
+    "caption": "Model families tried, by representation. Only the single subject-dependent XGBoost existed at handoff; the tuned XGBoost, TabPFN, and all three sequence models were added by this project.",
+    "sources": [
+      "thesis/master_results.json",
+      "docs/model_development_and_experiments.md"
+    ],
+    "png": "thesis/figures/fig_f4.png",
+    "pdf": "thesis/figures/fig_f4.pdf"
+  },
+  "F4b": {
+    "number": "F4b",
+    "title": "Reported-vs-corrected baseline",
+    "caption": "The previously reported subject-dependent accuracy (0.829) is not reproduced by the corrected, leak-free pipeline. Two separable effects: (i) data-integrity correction within the subject-dependent regime (0.829\u21920.733), and (ii) honest generalization under the subject-independent split (0.733\u21920.693 for XGBoost; the best honest model, TabPFN, reaches 0.729).",
+    "sources": [
+      "results/tabular_models/xgboost_subject_eval_dependent_baseline/comparison_vs_baseline.txt",
+      "results/tabular_models/xgboost_subject_eval_independent_baseline/comparison_vs_baseline.txt",
+      "results/tabular_models/tabpfn_subject_eval_independent_baseline/README.md"
+    ],
+    "png": "thesis/figures/fig_f4b.png",
+    "pdf": "thesis/figures/fig_f4b.pdf"
+  },
+  "F5": {
+    "number": "F5",
+    "title": "Dataset composition (small multiples)",
+    "caption": "Counts of mice and syllables across genotype, year, strain, sex, and postnatal day for the raw corpus. The cohort is WT-skewed (~3:1) and longitudinal (P4/P6 dominate).",
+    "sources": [
+      "thesis/data_composition.json",
+      "outputs/external/input/segmentation_classification_all_data.csv"
+    ],
+    "png": "thesis/figures/fig_f5.png",
+    "pdf": "thesis/figures/fig_f5.pdf"
+  },
+  "F6": {
+    "number": "F6",
+    "title": "Class balance and syllables-per-subject",
+    "caption": "Left: recording-level class balance (9,283 WT / 3,040 HT, ~3:1). Right: per-mouse syllable counts (median 828), showing the strongly longitudinal structure that motivates subject-grouped evaluation.",
+    "sources": [
+      "thesis/data_composition.json",
+      "outputs/external/input/segmentation_classification_all_data.csv"
+    ],
+    "png": "thesis/figures/fig_f6.png",
+    "pdf": "thesis/figures/fig_f6.pdf"
+  },
+  "F7": {
+    "number": "F7",
+    "title": "Syllable-type distribution",
+    "caption": "Distribution of the 10 confidently-typed classes plus the post-hoc low-confidence 'Undefined' class, coloured by complexity group. 'Frequency steps' dominates; 'Undefined' (~10%) is dropped in the tabular track but retained in the sequence track.",
+    "sources": [
+      "thesis/data_composition.json",
+      "docs/segmentation_process.md"
+    ],
+    "png": "thesis/figures/fig_f7.png",
+    "pdf": "thesis/figures/fig_f7.pdf"
+  },
+  "F8": {
+    "number": "F8",
+    "title": "Acoustic-feature distributions by genotype",
+    "caption": "Per-syllable start/end frequency, duration and inter-syllable interval for WT vs HT (outliers hidden, display-clipped). These are the spectral/temporal features Shekel et al. (2021) reported as most ASD-sensitive.",
+    "sources": [
+      "outputs/external/input/segmentation_classification_all_data.csv",
+      "hit/research/Shekel et al_2021 (3).pdf"
+    ],
+    "png": "thesis/figures/fig_f8.png",
+    "pdf": "thesis/figures/fig_f8.pdf"
+  },
+  "F9": {
+    "number": "F9",
+    "title": "Master performance \u2014 dependent vs independent",
+    "caption": "Headline comparison of the three tabular models on the pooled baseline. Each dumbbell links the optimistic subject-dependent score (light) to the honest subject-independent score (dark). TabPFN is best on both; the dependent\u2192independent drop is the cost of generalizing to unseen mice.",
+    "sources": [
+      "thesis/master_results.json"
+    ],
+    "png": "thesis/figures/fig_f9.png",
+    "pdf": "thesis/figures/fig_f9.pdf"
+  },
+  "F10": {
+    "number": "F10",
+    "title": "Generalization gap (HT recall & precision)",
+    "caption": "Slope chart of HT recall and HT precision as evaluation moves from subject-dependent to subject-independent. HT precision stays pinned near 0.50 for every model \u2014 a property of the features, not the estimator.",
+    "sources": [
+      "thesis/master_results.json"
+    ],
+    "png": "thesis/figures/fig_f10.png",
+    "pdf": "thesis/figures/fig_f10.pdf"
+  },
+  "F11": {
+    "number": "F11",
+    "title": "ROC curves (headline tabular models)",
+    "caption": "ROC for XGBoost, XGBoost-tuned and TabPFN, recomputed from held-out test probabilities. AUC drops markedly from the dependent to the independent split, quantifying the leakage in the optimistic regime.",
+    "sources": [
+      "results/tabular_models/threshold/tabpfn_subject_eval_dependent_baseline/probabilities_test.csv",
+      "results/tabular_models/threshold/tabpfn_subject_eval_independent_baseline/probabilities_test.csv",
+      "results/tabular_models/threshold/xgboost_subject_eval_dependent_baseline/probabilities_test.csv",
+      "results/tabular_models/threshold/xgboost_subject_eval_independent_baseline/probabilities_test.csv",
+      "results/tabular_models/threshold/xgboost_tuned_dependent_subject_eval_dependent_baseline/probabilities_test.csv",
+      "results/tabular_models/threshold/xgboost_tuned_independent_subject_eval_independent_baseline/probabilities_test.csv"
+    ],
+    "png": "thesis/figures/fig_f11.png",
+    "pdf": "thesis/figures/fig_f11.pdf"
+  },
+  "F12": {
+    "number": "F12",
+    "title": "Precision\u2013Recall curves (HT class)",
+    "caption": "Precision\u2013recall for the HT (ASD-model) minority class. The dashed line is HT prevalence (no-skill). Precision degrades sharply at high recall on the independent split.",
+    "sources": [
+      "results/tabular_models/threshold/tabpfn_subject_eval_dependent_baseline/probabilities_test.csv",
+      "results/tabular_models/threshold/tabpfn_subject_eval_independent_baseline/probabilities_test.csv",
+      "results/tabular_models/threshold/xgboost_subject_eval_dependent_baseline/probabilities_test.csv",
+      "results/tabular_models/threshold/xgboost_subject_eval_independent_baseline/probabilities_test.csv",
+      "results/tabular_models/threshold/xgboost_tuned_dependent_subject_eval_dependent_baseline/probabilities_test.csv",
+      "results/tabular_models/threshold/xgboost_tuned_independent_subject_eval_independent_baseline/probabilities_test.csv"
+    ],
+    "png": "thesis/figures/fig_f12.png",
+    "pdf": "thesis/figures/fig_f12.pdf"
+  },
+  "F13": {
+    "number": "F13",
+    "title": "Confusion matrices (headline models)",
+    "caption": "Test-set confusion matrices at threshold 0.5. The dominant error in every panel is WT recordings predicted HT (false positives), consistent with the ~0.50 HT-precision ceiling.",
+    "sources": [
+      "results/tabular_models/threshold/tabpfn_subject_eval_dependent_baseline/probabilities_test.csv",
+      "results/tabular_models/threshold/tabpfn_subject_eval_independent_baseline/probabilities_test.csv",
+      "results/tabular_models/threshold/xgboost_subject_eval_dependent_baseline/probabilities_test.csv"
+    ],
+    "png": "thesis/figures/fig_f13.png",
+    "pdf": "thesis/figures/fig_f13.pdf"
+  },
+  "F14": {
+    "number": "F14",
+    "title": "Feature importance (XGBoost)",
+    "caption": "Top-15 features by XGBoost gain importance, averaged across the dependent and independent models. Per-syllable-type start/end frequencies and durations dominate \u2014 consistent with Shekel et al. (2021); note the syllN columns map type N\u2192slot via a documented off-by-one.",
+    "sources": [
+      "results/tabular_models/xgboost_subject_eval_dependent_baseline/model/xgboost_model.pkl",
+      "results/tabular_models/xgboost_subject_eval_independent_baseline/model/xgboost_model.pkl"
+    ],
+    "png": "thesis/figures/fig_f14.png",
+    "pdf": "thesis/figures/fig_f14.pdf"
+  },
+  "F15": {
+    "number": "F15",
+    "title": "Per-strain comparison",
+    "caption": "XGBoost per-strain results. strain1 (recent mixed-background cohort) is highly separable even leak-free (acc 0.90), whereas strain2 (small pure-BALB/c cohort) collapses on the minority class under the independent split \u2014 evidence that strain/cohort confounds genotype.",
+    "sources": [
+      "thesis/master_results.json"
+    ],
+    "png": "thesis/figures/fig_f15.png",
+    "pdf": "thesis/figures/fig_f15.pdf"
+  },
+  "F16": {
+    "number": "F16",
+    "title": "HT-precision wall",
+    "caption": "HT precision at the default threshold across every tabular configuration clusters near 0.50 (only the easier strain1 cohort escapes). About half of all positive calls are false alarms \u2014 a ceiling set by the features.",
+    "sources": [
+      "thesis/master_results.json"
+    ],
+    "png": "thesis/figures/fig_f16.png",
+    "pdf": "thesis/figures/fig_f16.pdf"
+  },
+  "F17": {
+    "number": "F17",
+    "title": "Threshold-objective operating points",
+    "caption": "Effect of the threshold objective on TabPFN. On the dependent split, f1/target_recall lift HT precision to ~0.62 while holding recall ~0.81; on the independent split, Youden/balanced degenerate (recall\u21921, precision pinned ~0.48), so target_recall is the only sensible objective.",
+    "sources": [
+      "results/tabular_models/threshold_objectives/summary_objectives.csv"
+    ],
+    "png": "thesis/figures/fig_f17.png",
+    "pdf": "thesis/figures/fig_f17.pdf"
+  },
+  "F18": {
+    "number": "F18",
+    "title": "Sequence-model lever sweep and CV deflation",
+    "caption": "Left: balanced accuracy across the A\u2013H imbalance-handling levers (E run only for BiLSTM). Right: the lucky single-split BiLSTM independent score (0.704) deflates to 0.563 \u00b1 0.063 under 5-fold grouped CV \u2014 the honest sequence-model signal is weak and data-limited.",
+    "sources": [
+      "results/neural_networks/experiments/_summary/master_metrics.csv",
+      "results/neural_networks/experiments/H_cv_Dsampler__bilstm__independent/results.json",
+      "results/neural_networks/experiments/H_cv_Dsampler__bilstm__dependent/results.json"
+    ],
+    "png": "thesis/figures/fig_f18.png",
+    "pdf": "thesis/figures/fig_f18.pdf"
+  },
+  "F19": {
+    "number": "F19",
+    "title": "Annotated segmentation example",
+    "caption": "Spectrogram of a representative pup recording with the 35 automatically detected syllables overlaid (blue boxes span each call's time extent and start/end-frequency band). Source: USV_Recordings/2015/08009N_HT/08139-2L_HT/day_6/session2/T0000019.WAV.",
+    "sources": [
+      "outputs/external/input/segmentation_classification_all_data.csv",
+      "docs/segmentation_process.md"
+    ],
+    "png": "thesis/figures/fig_f19.png",
+    "pdf": "thesis/figures/fig_f19.pdf"
+  },
+  "F20": {
+    "number": "F20",
+    "title": "Project timeline / Gantt (interim plan)",
+    "caption": "Planned project schedule redrawn from the interim report's work plan; the dashed line marks the interim-report milestone.",
+    "sources": [
+      "hit/project/Project+Midterm+-+Chen+Aharon+%26+Aviel+Bitton.pdf"
+    ],
+    "png": "thesis/figures/fig_f20.png",
+    "pdf": "thesis/figures/fig_f20.pdf"
+  },
+  "F21": {
+    "number": "F21",
+    "title": "Commit-derived work timeline",
+    "caption": "Milestones reconstructed from the local git history (chronology only \u2014 no metrics). From the inherited single-model prototype to the final multi-model, leak-free pipeline.",
+    "sources": [
+      "local git log (chronology only)"
+    ],
+    "png": "thesis/figures/fig_f21.png",
+    "pdf": "thesis/figures/fig_f21.pdf"
+  }
+}
