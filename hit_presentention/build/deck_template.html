@@ -1,0 +1,1172 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>USV → Autism Detection · M.Sc. Defense</title>
+<style>
+/* ============ FONTS (base64-embedded, offline) ============ */
+@font-face{font-family:'Inter';font-weight:400;font-style:normal;font-display:swap;src:url({{FONT:Regular}}) format('woff2')}
+@font-face{font-family:'Inter';font-weight:500;font-style:normal;font-display:swap;src:url({{FONT:Medium}}) format('woff2')}
+@font-face{font-family:'Inter';font-weight:600;font-style:normal;font-display:swap;src:url({{FONT:SemiBold}}) format('woff2')}
+@font-face{font-family:'Inter';font-weight:700;font-style:normal;font-display:swap;src:url({{FONT:Bold}}) format('woff2')}
+@font-face{font-family:'Inter';font-weight:900;font-style:normal;font-display:swap;src:url({{FONT:Black}}) format('woff2')}
+
+/* ============ TOKENS ============ */
+:root{
+  --paper:#F7F6F1; --card:#FFFFFF; --ink:#14181D; --muted:#5C656E; --faint:#8A929A;
+  --hair:#E5E3DA; --hair2:#EFEEE7;
+  --brand:#152A40; --teal:#0E9AA0; --teal-d:#0B7C81;
+  --within:#2F7DC7; --across:#E0851B;
+  --win:#2C8A5B; --warn:#C0453B;
+  --wt:#4E88B4; --ht:#E0851B;
+  --sans:'Inter',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+  --heb:'Assistant','Rubik','Arial','Noto Sans Hebrew',sans-serif;
+  --sp:64px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{background:#070809;font-family:var(--sans);color:var(--ink);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;overflow:hidden}
+.tnum{font-variant-numeric:tabular-nums;font-feature-settings:'tnum' 1,'cv01' 1}
+
+/* ============ STAGE / SCALING ============ */
+#stage{position:fixed;inset:0;display:grid;place-items:center;background:radial-gradient(120% 120% at 50% 0%,#14181d 0%,#070809 70%)}
+#deck{width:1280px;height:720px;position:relative;transform-origin:center center;box-shadow:0 40px 120px rgba(0,0,0,.55);border-radius:4px;overflow:hidden;background:var(--paper)}
+
+/* ============ SLIDE BASE ============ */
+.slide{position:absolute;inset:0;background:var(--paper);padding:var(--sp) var(--sp) 52px;display:none;flex-direction:column;opacity:0;transition:opacity .38s ease}
+.slide.active{display:flex;opacity:1;z-index:2}
+.slide.leaving{z-index:1}
+.eyebrow{font-size:14px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--teal-d);margin-bottom:14px;display:flex;align-items:center;gap:10px}
+.eyebrow::before{content:"";width:26px;height:2px;background:var(--teal);display:inline-block;border-radius:2px}
+h1.t{font-size:40px;line-height:1.06;font-weight:800;letter-spacing:-.02em;color:var(--ink);max-width:22ch}
+h1.t .accent{color:var(--teal-d)}
+.lead{font-size:22px;line-height:1.4;color:var(--muted);font-weight:400;margin-top:14px;max-width:52ch}
+.slide .body{flex:1;display:flex;gap:40px;margin-top:26px;min-height:0}
+.fig{flex:1;display:flex;align-items:center;justify-content:center;min-width:0}
+.fig img{max-width:100%;max-height:100%;object-fit:contain;border-radius:8px}
+.fig.frame img{border:1px solid var(--hair);box-shadow:0 12px 34px rgba(20,30,45,.10)}
+.rail{width:38%;display:flex;flex-direction:column;gap:14px;justify-content:center}
+.rail.narrow{width:32%}
+
+/* bullets */
+ul.pts{list-style:none;display:flex;flex-direction:column;gap:14px}
+ul.pts li{font-size:21px;line-height:1.32;color:#2A3138;padding-left:26px;position:relative;font-weight:400}
+ul.pts li::before{content:"";position:absolute;left:0;top:11px;width:9px;height:9px;border-radius:2px;background:var(--teal);transform:rotate(45deg)}
+ul.pts li b,ul.pts li strong{font-weight:700;color:var(--ink)}
+.small{font-size:16px;color:var(--faint);line-height:1.4}
+
+/* cards */
+.card{background:var(--card);border:1px solid var(--hair);border-radius:12px;padding:18px 20px;box-shadow:0 6px 20px rgba(20,30,45,.05)}
+.card .ct{font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.card .cb{font-size:19px;line-height:1.32;color:var(--ink);font-weight:500}
+.card.win{border-color:#BFE3CE;background:#F1FBF5}.card.win .ct{color:var(--win)}
+.card.warn{border-color:#F0C9C4;background:#FDF3F1}.card.warn .ct{color:var(--warn)}
+.card.teal{border-color:#BFE7E8;background:#F0FBFB}.card.teal .ct{color:var(--teal-d)}
+.kicker{border-left:4px solid var(--across);background:#FEF6EC;padding:12px 16px;border-radius:0 10px 10px 0;font-size:18px;line-height:1.34;color:#5A431F}
+.kicker b{color:#8a5a12}
+
+/* stat strip */
+.stat{display:flex;gap:14px}
+.stat .s{flex:1;background:var(--card);border:1px solid var(--hair);border-radius:12px;padding:16px 14px;text-align:center}
+.stat .s .n{font-size:34px;font-weight:800;color:var(--brand);letter-spacing:-.02em}
+.stat .s .l{font-size:13px;color:var(--muted);margin-top:2px;font-weight:500}
+
+/* chips */
+.chips{display:flex;flex-wrap:wrap;gap:9px}
+.chip{font-size:15px;font-weight:600;padding:7px 13px;border-radius:20px;background:#EDECE4;color:#3A424A;border:1px solid var(--hair)}
+.chip.new{background:#EAF6EF;color:var(--win);border-color:#BFE3CE}
+.chip.base{background:#FEF1E4;color:#9a5c12;border-color:#F0D6B4}
+
+/* bignum */
+.bignum{font-size:120px;font-weight:900;letter-spacing:-.04em;line-height:.9}
+.bignum.within{color:var(--within)}.bignum.across{color:var(--across)}
+.bignum.warn{color:var(--warn)}.bignum.win{color:var(--win)}
+.numlabel{font-size:16px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+
+/* two-column semantic */
+.two{display:flex;gap:22px;width:100%}
+.two .col{flex:1;border-radius:14px;padding:22px;border:1px solid var(--hair)}
+.two .col.dep{background:linear-gradient(180deg,#EAF2FB,#F6FAFE);border-color:#C9DEF3}
+.two .col.ind{background:linear-gradient(180deg,#FDF1E3,#FEF9F2);border-color:#F2D8B6}
+.two .col h3{font-size:22px;font-weight:800;margin-bottom:4px}
+.two .col.dep h3{color:var(--within)}.two .col.ind h3{color:#C4720E}
+.two .col .q{font-size:16px;font-weight:600;color:var(--muted);margin-bottom:12px}
+.two .col p{font-size:17px;line-height:1.34;color:#333b42}
+
+/* flow */
+.flow{display:flex;align-items:stretch;gap:0;width:100%}
+.node{flex:1;background:var(--card);border:1px solid var(--hair);border-radius:12px;padding:14px 12px;text-align:center;position:relative;display:flex;flex-direction:column;justify-content:center;gap:5px}
+.node .nt{font-size:16px;font-weight:700;color:var(--ink);line-height:1.15}
+.node .nd{font-size:13px;color:var(--muted);line-height:1.25}
+.node.accent{border-color:var(--teal);background:#F0FBFB}
+.arrow{align-self:center;flex:0 0 26px;display:flex;align-items:center;justify-content:center;color:var(--faint);font-size:22px}
+
+/* research questions */
+.rqs{display:flex;flex-direction:column;gap:13px;width:100%}
+.rq{display:flex;gap:16px;align-items:flex-start;background:var(--card);border:1px solid var(--hair);border-radius:12px;padding:15px 18px}
+.rq .tag{flex:0 0 auto;font-size:14px;font-weight:800;color:#fff;background:var(--brand);border-radius:8px;padding:6px 11px;letter-spacing:.02em}
+.rq.eng .tag{background:var(--teal-d)}
+.rq .rt{font-size:19px;line-height:1.3;color:var(--ink);font-weight:500;padding-top:3px}
+.rq .rt b{font-weight:700}
+
+/* timeline */
+.tl{position:relative;width:100%;padding:20px 0}
+.tl .line{position:absolute;top:50%;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--across),var(--teal));border-radius:3px}
+.tl .row{display:flex;justify-content:space-between;position:relative}
+.tl .m{flex:1;text-align:center;position:relative;padding:0 4px}
+.tl .dot{width:15px;height:15px;border-radius:50%;background:var(--teal);border:3px solid #fff;box-shadow:0 0 0 1px var(--hair);margin:0 auto}
+.tl .m.first .dot{background:var(--across)}
+.tl .d{font-size:12px;font-weight:700;color:var(--brand);margin-bottom:6px}
+.tl .lab{font-size:12.5px;line-height:1.2;color:#333b42}
+.tl .up{margin-bottom:0}.tl .dn .d{margin-top:6px;margin-bottom:0}
+
+/* table */
+table.res{width:100%;border-collapse:collapse;font-size:15px}
+table.res th,table.res td{padding:8px 10px;text-align:right;border-bottom:1px solid var(--hair)}
+table.res th{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:700;border-bottom:2px solid var(--hair)}
+table.res td:first-child,table.res th:first-child{text-align:left;font-weight:600}
+table.res tr.hi{background:#F0FBFB}
+table.res .b{font-weight:800;color:var(--teal-d)}
+
+/* hero (dark full-bleed) */
+.slide.hero{background:linear-gradient(160deg,#16283b 0%,#0d1826 60%,#0a1420 100%);color:#EAF0F6;justify-content:center;padding:78px}
+.slide.hero .eyebrow{color:#5FC8CE}
+.slide.hero .eyebrow::before{background:#5FC8CE}
+.slide.hero h1.t{color:#fff;font-size:46px;max-width:26ch}
+.slide.hero .lead{color:#9FB3C6}
+.slide.hero.center{align-items:center;text-align:center}
+.hero-line{font-size:34px;line-height:1.32;font-weight:600;color:#EAF0F6;max-width:24ch;letter-spacing:-.01em}
+.hero-line .em{color:#5FC8CE}
+.hero-kick{font-size:23px;color:#9FB3C6;font-weight:400;margin-top:8px}
+
+/* title slide */
+.slide.title{background:linear-gradient(165deg,#16283b,#0c1723);color:#fff;justify-content:center;padding:74px}
+.slide.title .eyebrow{color:#6BD0D6}.slide.title .eyebrow::before{background:#6BD0D6}
+.slide.title h1{font-size:52px;font-weight:900;line-height:1.02;letter-spacing:-.025em;max-width:20ch;color:#fff}
+.slide.title .sub{font-size:20px;color:#A9BCCE;margin-top:18px;max-width:56ch;line-height:1.4}
+.slide.title .meta{margin-top:auto;display:flex;flex-direction:column;gap:3px;font-size:16px;color:#C6D4E1}
+.slide.title .meta .names{font-size:22px;font-weight:700;color:#fff;margin-bottom:6px}
+.slide.title .meta .adv{color:#9FB3C6}
+.title-bg{position:absolute;inset:auto 0 0 0;height:40%;opacity:.09;background-size:cover;background-position:center;-webkit-mask-image:linear-gradient(180deg,transparent,#000 70%);mask-image:linear-gradient(180deg,transparent,#000 70%)}
+
+/* close */
+.slide.close{background:linear-gradient(160deg,#16283b,#0b1622);color:#fff;align-items:center;justify-content:center;text-align:center;padding:70px}
+.slide.close .eyebrow{color:#6BD0D6;justify-content:center}
+.slide.close h1{font-size:64px;font-weight:900;color:#fff;letter-spacing:-.03em}
+.slide.close .q{font-size:24px;color:#9FB3C6;margin-top:6px}
+.slide.close .links{margin-top:30px;display:flex;gap:26px;font-size:15px;color:#8FA6BA}
+.slide.close .links b{color:#6BD0D6;font-weight:600}
+
+/* section divider tag on hero */
+.divtag{font-size:15px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#5FC8CE}
+
+/* footer + progress */
+.foot{position:absolute;left:var(--sp);right:var(--sp);bottom:20px;display:flex;align-items:center;justify-content:space-between;font-size:12px;color:var(--faint);z-index:5}
+.slide.hero .foot,.slide.title .foot,.slide.close .foot{color:rgba(255,255,255,.5)}
+.foot .sec{font-weight:600;letter-spacing:.04em}
+.prog{position:absolute;left:0;bottom:0;height:4px;background:var(--teal);z-index:6;transition:width .38s ease}
+
+/* fragments */
+.frag{opacity:0;transform:translateY(8px);transition:opacity .4s ease,transform .4s ease}
+.frag.on{opacity:1;transform:none}
+
+/* notes panel */
+#notesPanel{position:fixed;right:0;top:0;bottom:0;width:34%;max-width:460px;background:#0f1216;color:#e8edf2;padding:26px 26px 30px;overflow-y:auto;transform:translateX(100%);transition:transform .3s ease;z-index:50;box-shadow:-10px 0 40px rgba(0,0,0,.5);direction:rtl}
+#notesPanel.open{transform:none}
+#notesPanel .nhead{display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid #2a3038;padding-bottom:10px;margin-bottom:14px}
+#notesPanel .nnum{font-size:13px;color:#6BD0D6;font-weight:700;font-family:var(--sans)}
+#notesPanel .nwho{font-size:13px;color:#E0851B;font-weight:700;font-family:var(--sans)}
+#notesPanel h4{font-family:var(--heb);font-size:19px;color:#fff;margin-bottom:12px;line-height:1.3}
+#notesPanel ul{list-style:none;display:flex;flex-direction:column;gap:11px}
+#notesPanel li{font-family:var(--heb);font-size:16px;line-height:1.5;color:#d4dbe2;padding-right:16px;position:relative;text-align:right}
+#notesPanel li::before{content:"";position:absolute;right:0;top:9px;width:7px;height:7px;background:#5FC8CE;border-radius:50%}
+#notesPanel .hand{color:#E0851B;font-weight:700}
+#notesPanel .en{direction:ltr;unicode-bidi:isolate;font-family:var(--sans)}
+.notes{display:none}
+
+.hint{position:fixed;left:14px;bottom:12px;font-size:11px;color:#4a5560;z-index:40;font-family:var(--sans)}
+
+/* timeline */
+.tline{position:relative;height:300px;margin-top:20px;width:100%}
+.tline .axis{position:absolute;top:150px;left:2%;right:2%;height:3px;background:linear-gradient(90deg,var(--across) 0%,var(--teal) 100%);border-radius:2px}
+.tline .pt{position:absolute;top:150px;transform:translate(-50%,-50%);width:15px;height:15px;border-radius:50%;background:var(--teal);border:3px solid var(--paper);box-shadow:0 0 0 1px var(--hair);z-index:2}
+.tline .pt.first{background:var(--across);width:18px;height:18px}
+.tline .cap{position:absolute;width:150px;transform:translateX(-50%);text-align:center}
+.tline .cap .d{font-size:12px;font-weight:800;color:var(--teal-d);letter-spacing:.02em}
+.tline .cap .x{font-size:13px;line-height:1.22;color:#2A3138;margin-top:4px;font-weight:500}
+.tline .cap.up{top:24px}.tline .cap.dn{top:180px}
+
+/* inherited-vs-new split */
+.inh{display:flex;gap:22px;width:100%;align-items:stretch}
+.inh .old{flex:0 0 34%;background:linear-gradient(180deg,#FDF1E3,#FEF7EF);border:1px solid #F0D6B4;border-radius:14px;padding:22px;display:flex;flex-direction:column;gap:8px}
+.inh .old .h{font-size:15px;font-weight:800;color:#9a5c12;text-transform:uppercase;letter-spacing:.06em}
+.inh .old .m{font-size:20px;font-weight:700;color:var(--ink);line-height:1.2}
+.inh .old .s{font-size:15px;color:#7a5a2e;line-height:1.35}
+.inh .new{flex:1;background:linear-gradient(180deg,#EDF9F1,#F6FCF8);border:1px solid #C4E7D2;border-radius:14px;padding:20px}
+.inh .new .h{font-size:15px;font-weight:800;color:var(--win);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px}
+.inh .new .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.inh .new .g{background:#fff;border:1px solid #D6EEDF;border-radius:8px;padding:9px 12px;font-size:15px;font-weight:600;color:#1f5137;display:flex;align-items:center;gap:8px}
+.inh .new .g::before{content:"+";color:var(--win);font-weight:800}
+
+/* ranked list */
+.ranklist{display:flex;flex-direction:column;gap:11px;width:100%}
+.rank{display:flex;gap:15px;align-items:center;background:var(--card);border:1px solid var(--hair);border-radius:11px;padding:13px 18px}
+.rank .no{flex:0 0 auto;width:32px;height:32px;border-radius:50%;background:var(--brand);color:#fff;font-weight:800;display:grid;place-items:center;font-size:16px}
+.rank .rt{font-size:18px;color:var(--ink);font-weight:500;line-height:1.25}
+.rank .rt b{font-weight:700}
+.rank.top .no{background:var(--teal-d)}
+
+/* KPI number blocks */
+.kpirow{display:flex;gap:13px;width:100%}
+.kpi{flex:1;text-align:center;padding:15px 10px;border-radius:12px;border:1px solid var(--hair);background:var(--card)}
+.kpi .v{font-size:50px;font-weight:900;letter-spacing:-.03em;line-height:1;font-variant-numeric:tabular-nums}
+.kpi .k{font-size:12.5px;font-weight:600;color:var(--muted);margin-top:7px;text-transform:uppercase;letter-spacing:.04em}
+.kpi.within{background:#EFF5FC;border-color:#C9DEF3}.kpi.within .v{color:var(--within)}
+.kpi.across{background:#FDF3E8;border-color:#F2D8B6}.kpi.across .v{color:var(--across)}
+.kpi.win{background:#EFF9F3;border-color:#BFE3CE}.kpi.win .v{color:var(--win)}
+.kpi.warn{background:#FDF2F0;border-color:#F0C9C4}.kpi.warn .v{color:var(--warn)}
+
+/* decomposition flow */
+.decomp{display:flex;align-items:center;gap:0;width:100%;justify-content:center}
+.dstep{text-align:center;padding:18px 20px;border-radius:14px;border:1px solid var(--hair);background:var(--card);min-width:170px}
+.dstep .dv{font-size:46px;font-weight:900;letter-spacing:-.03em;line-height:1;font-variant-numeric:tabular-nums}
+.dstep .dl{font-size:13px;color:var(--muted);margin-top:6px;font-weight:500;line-height:1.2}
+.dstep.old{background:#F1F0EC;border-style:dashed}.dstep.old .dv{color:#9AA0A6;text-decoration:line-through;text-decoration-thickness:2px}
+.dstep.base .dv{color:var(--within)} .dstep.new{background:#EFF9F3;border-color:#BFE3CE}.dstep.new .dv{color:var(--win)}
+.darrow{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;color:var(--faint);padding:0 6px;min-width:120px}
+.darrow .lbl{font-size:12px;font-weight:700;color:var(--teal-d);text-align:center;line-height:1.2;margin-bottom:2px}
+.darrow .ar{font-size:24px}
+
+/* two-up generic panels (non-semantic) */
+.panels{display:flex;gap:18px;width:100%}
+.panels .p{flex:1;background:var(--card);border:1px solid var(--hair);border-radius:12px;padding:16px 18px}
+.panels .p h3{font-size:17px;font-weight:700;margin-bottom:8px;color:var(--brand)}
+.panels .p p{font-size:15px;line-height:1.34;color:#39424a}
+
+/* ============ PRINT (deck + notes handout) ============ */
+@page{size:1280px 720px;margin:0}
+@media print{
+  body{overflow:visible;background:#fff}
+  #stage{position:static;display:block;background:#fff}
+  #deck{transform:none!important;box-shadow:none;border-radius:0;width:1280px;height:auto;overflow:visible}
+  .slide{position:relative;overflow:hidden;display:flex!important;opacity:1!important;break-after:page;width:1280px;height:720px;box-shadow:none}
+  .slide:last-of-type{break-after:auto}
+  .frag{opacity:1!important;transform:none!important}
+  #notesPanel,.hint,.prog{display:none!important}
+  *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+}
+/* notes-handout print mode */
+body.mode-notes{overflow:auto;background:#fff}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="deck">
+
+  <!-- ==================== ACT 1 — WHY ==================== -->
+
+  <!-- 1 · TITLE -->
+  <section class="slide title" data-sec="Title">
+    <div class="eyebrow">M.Sc. Final Project · Data Science · HIT</div>
+    <h1>Analysis of Ultrasonic Vocalizations of Mice for Autism Detection</h1>
+    <div class="sub">A reproducible pipeline — and a calibrated account of what pup ultrasonic calls can, and cannot, tell us about an ASD genotype: on known animals, and on animals we have never heard before.</div>
+    <div class="meta">
+      <div class="names">Chen Aharon · Aviel Bitton</div>
+      <div class="adv">Advisor: Dr. Dror Lederman &nbsp;·&nbsp; Holon Institute of Technology</div>
+      <div class="adv">In collaboration with Dr. Hava M. Golan · Ben-Gurion University — biology lead &amp; data owner</div>
+      <div class="adv" style="margin-top:6px;color:#7C90A3">2026</div>
+    </div>
+    <div class="title-bg" style="background-image:url({{IMG:Fig04_annotated_spectrogram_MONEYSHOT}})"></div>
+    <div class="foot"><span class="sec">USV → Autism Detection</span><span class="pg"></span></div>
+    <div class="notes" data-n="1" data-title="פתיחה והצגת הפרויקט" data-who="Chen" data-time="0:30">
+      <ul>
+        <li>חן פותחת: לברך את הבוחן/ים והמנחה, להציג את שנינו בשם.</li>
+        <li>משפט אחד על הנושא: <span class="en">can ultrasonic calls of mouse pups flag an ASD genotype?</span></li>
+        <li>לציין שהמנחה הוא ד"ר דרור לדרמן, ושהנתונים של ד"ר חוה גולן מאונ' בן-גוריון.</li>
+        <li><span class="hand">מעבר:</span> "אבל לפני המדע — למה בכלל נכנסנו לזה." ומעבירה לאביאל.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 2 · PERSONAL MOTIVATION (hero) -->
+  <section class="slide hero center" data-sec="Why">
+    <div class="eyebrow">Why this project</div>
+    <div style="display:flex;flex-direction:column;gap:26px;align-items:center;max-width:760px">
+      <div class="hero-line frag" style="max-width:none">Someone I love was diagnosed with autism at the age of&nbsp;<span class="em">three</span>.</div>
+      <div class="hero-line frag" style="max-width:none">When her world was shaped around how she experiences it, she <span class="em">flourished</span>.</div>
+      <div class="hero-kick frag" style="max-width:36ch">Early recognition is what opens that door — yet today it rests on slow, subjective, behavioral assessment.</div>
+    </div>
+    <div class="foot"><span class="sec">Motivation</span><span class="pg"></span></div>
+    <div class="notes" data-n="2" data-title="המוטיבציה האישית" data-who="Aviel" data-time="1:30">
+      <ul>
+        <li>אביאל מספר בגוף ראשון, קצר ומכבד — בלי שם, בלי פרטים מזהים.</li>
+        <li>מישהי קרובה מאוד אליי אובחנה על הרצף בגיל שלוש.</li>
+        <li>ברגע שהתאימו לה את הסביבה לאיך שהיא חווה את העולם — היה שיפור ניכר בהתנהגות ובתקשורת.</li>
+        <li>המסר: ההתאמה המוקדמת היא קריטית, אבל האבחון היום איטי וסובייקטיבי.</li>
+        <li>מכאן נולדה השאלה — האם אפשר לזהות מוקדם יותר, ובאופן <span class="en">objective</span>?</li>
+        <li><span class="hand">מעבר:</span> "וזו בדיוק הבעיה המדעית." → שקופית הבעיה.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 3 · THE PROBLEM -->
+  <section class="slide" data-sec="Why">
+    <div class="eyebrow">The problem</div>
+    <h1 class="t">Autism is diagnosed by <span class="accent">behavior</span> — slowly, and late</h1>
+    <div class="body">
+      <div class="rail" style="width:52%">
+        <ul class="pts">
+          <li class="frag">Diagnosis rests on expert <b>behavioral assessment</b> — time-consuming and clinician-bound.</li>
+          <li class="frag">It is hardest exactly in <b>early infancy</b> — the window where intervention helps most.</li>
+          <li class="frag">This motivates an <b>objective, quantitative, early biomarker</b> of atypical neurodevelopment.</li>
+        </ul>
+      </div>
+      <div class="fig frag">
+        <div style="display:flex;flex-direction:column;gap:14px;width:100%">
+          <div class="card teal"><div class="ct">The gap</div><div class="cb">A signal that is <b>naturally produced</b>, <b>recordable</b>, and present <b>very early</b> — before language.</div></div>
+          <div class="stat">
+            <div class="s"><div class="n">1&nbsp;in&nbsp;36</div><div class="l">children diagnosed with ASD</div></div>
+            <div class="s"><div class="n">&lt;&nbsp;3y</div><div class="l">where early intervention pays off most</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="foot"><span class="sec">Motivation</span><span class="pg"></span></div>
+    <div class="notes" data-n="3" data-title="הבעיה — אבחון התנהגותי" data-who="Aviel" data-time="1:30">
+      <ul>
+        <li>אבחון אוטיזם היום הוא התנהגותי — דורש קלינאי מיומן וזמן רב.</li>
+        <li>הכי קשה דווקא בינקות המוקדמת — וזה בדיוק החלון שבו התערבות הכי משמעותית.</li>
+        <li>לכן יש ערך עצום ב<span class="en">biomarker</span> אובייקטיבי, כמותי ומוקדם.</li>
+        <li>הסטטיסטיקה (1 מ-36) רק כדי למקם את גודל הבעיה — לא להתעכב.</li>
+        <li><span class="hand">מעבר:</span> "איפה מוצאים אות כזה? מסתבר — אצל עכברים." → שקופית ה-USV.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 4 · WHY MICE / WHY USVs -->
+  <section class="slide" data-sec="Why">
+    <div class="eyebrow">The approach</div>
+    <h1 class="t">Mouse pups &ldquo;speak&rdquo; — in <span class="accent">ultrasound</span></h1>
+    <div class="body">
+      <div class="fig frame frag"><img src="{{IMG:Fig04_annotated_spectrogram_MONEYSHOT}}" alt="annotated spectrogram"></div>
+      <div class="rail">
+        <ul class="pts">
+          <li class="frag">Isolated pups emit <b>ultrasonic vocalizations</b> at <b>35&ndash;125&nbsp;kHz</b> — inaudible, natural, non-invasive.</li>
+          <li class="frag">These isolation calls are among the <b>earliest communicative behaviors</b>, sensitive to genotype.</li>
+          <li class="frag">Genetic ASD model: <b>Mthfr</b>. A pup is <span style="color:var(--ht);font-weight:700">HET</span> (ASD-model, positive) or <span style="color:var(--wt);font-weight:700">WT</span> (control).</li>
+        </ul>
+        <div class="kicker frag">Each cyan box is one detected <b>syllable</b>. Our corpus holds <b>125,576</b> of them.</div>
+      </div>
+    </div>
+    <div class="foot"><span class="sec">Background · the signal</span><span class="pg"></span></div>
+    <div class="notes" data-n="4" data-title="למה עכברים / למה USV" data-who="Aviel" data-time="2:00">
+      <ul>
+        <li>גורי עכברים שמופרדים מהאם פולטים קריאות על-קוליות בטווח <span class="en">35–125 kHz</span> — לא נשמעות לאוזן אנושית.</li>
+        <li>זו התנהגות תקשורתית מוקדמת, טבעית, ולא-פולשנית — מודל מצוין לפנוטיפ תקשורתי.</li>
+        <li>המודל הגנטי: <span class="en">Mthfr</span>. הגור הוא <span class="en">HET</span> (מודל-ASD, המחלקה החיובית) או <span class="en">WT</span> (ביקורת).</li>
+        <li>להצביע על הספקטרוגרמה: כל תיבה כחולה = הברה אחת שהמערכת זיהתה בהקלטה אמיתית.</li>
+        <li><span class="hand">מעבר:</span> "ולקריאות האלה יש צורה — שהגנוטיפ מעוות." → הטקסונומיה.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 5 · CALLS HAVE SHAPE -->
+  <section class="slide" data-sec="Why">
+    <div class="eyebrow">Background · the signal</div>
+    <h1 class="t">Calls have shape — and <span class="accent">genotype bends it</span></h1>
+    <div class="body">
+      <div class="fig frame frag"><img src="{{IMG:Fig05_syllable_taxonomy_MONEYSHOT}}" alt="syllable taxonomy"></div>
+      <div class="rail narrow">
+        <ul class="pts">
+          <li class="frag">A CNN types each syllable into <b>10 shapes</b> — sweeps, steps, harmonic stacks.</li>
+          <li class="frag">WT vs HET differ in <b>start / end frequency</b> and <b>duration</b> <span class="small">(Shekel et&nbsp;al. 2021)</span>.</li>
+        </ul>
+        <div class="card frag"><div class="ct">Two research threads</div><div class="cb"><b>Acoustic aggregates</b> per recording &nbsp;·&nbsp; and the <b>order</b> of the calls <span class="small">(Gal et&nbsp;al. 2023)</span>.</div></div>
+      </div>
+    </div>
+    <div class="foot"><span class="sec">Background · the signal</span><span class="pg"></span></div>
+    <div class="notes" data-n="5" data-title="לקריאות יש צורה" data-who="Aviel → Chen" data-time="2:00">
+      <ul>
+        <li>יש עשרה סוגי הברות — מ-<span class="en">upward/downward sweeps</span> ועד <span class="en">harmonic stacks</span>. רשת CNN מסווגת כל הברה.</li>
+        <li>ההבדל בין WT ל-HET הוא בעיקר בתדרי הקצה ובמשך ההברה — כפי ש-<span class="en">Shekel 2021</span> דיווחו.</li>
+        <li>שני כיוונים שנבדוק: (1) אגרגציה אקוסטית לכל הקלטה, (2) הסדר הזמני של הקריאות (<span class="en">Gal 2023</span>).</li>
+        <li>שני הכיוונים האלה יהפכו לשני מסלולי המודלים — tabular ו-sequence.</li>
+        <li><span class="hand">מעבר לחן:</span> "אבל לפני שנמדל — צריך להבין מאיפה התחלנו, וזה סיפור בפני עצמו." חן ממשיכה.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ==================== ACT 2 — QUESTIONS · INHERITANCE · ENGINEERING ==================== -->
+
+  <!-- 6 · RESEARCH QUESTIONS -->
+  <section class="slide" data-sec="Research questions">
+    <div class="eyebrow">What we set out to answer</div>
+    <h1 class="t">Four questions — three scientific, one <span class="accent">engineering</span></h1>
+    <div class="body" style="align-items:center">
+      <div class="rqs">
+        <div class="rq frag"><span class="tag">RQ1</span><div class="rt"><b>New models.</b> Do TabPFN and neural sequence models beat the inherited XGBoost at classifying HET vs WT pups?</div></div>
+        <div class="rq frag"><span class="tag">RQ2</span><div class="rt"><b>Which features.</b> Which acoustic characteristics drive classification — do a few consistent ones emerge?</div></div>
+        <div class="rq frag"><span class="tag">RQ3</span><div class="rt"><b>Regime &amp; generalization.</b> How does the evaluation split — known vs unseen animals, pooled vs per-strain — change performance?</div></div>
+        <div class="rq eng frag"><span class="tag">ENG</span><div class="rt"><b>Reproducibility.</b> Can a broken, inherited pipeline become a versioned, end-to-end system with a single source of truth?</div></div>
+      </div>
+    </div>
+    <div class="foot"><span class="sec">Research questions</span><span class="pg"></span></div>
+    <div class="notes" data-n="6" data-title="שאלות המחקר" data-who="Chen" data-time="1:30">
+      <ul>
+        <li>ארבע שאלות. שלוש מדעיות ואחת הנדסית — וזו לא פחות חשובה.</li>
+        <li><span class="en">RQ1</span>: האם המודלים החדשים (<span class="en">TabPFN</span>, רשתות רצף) מנצחים את ה-<span class="en">XGBoost</span> שירשנו.</li>
+        <li><span class="en">RQ2</span>: אילו מאפיינים אקוסטיים מניעים את הסיווג.</li>
+        <li><span class="en">RQ3</span>: איך משטר ההערכה (מוכר מול לא-מוכר, pooled מול per-strain) משפיע — זה הלב.</li>
+        <li>ההנדסית: לקחנו pipeline שבור והפכנו אותו למערכת רפרודוסבילית עם מקור-אמת יחיד.</li>
+        <li><span class="hand">מעבר:</span> "בואו נתחיל מאיפה שהתחלנו — וזה לא היה מקום טוב." → מה שירשנו.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 7 · WHAT WE INHERITED -->
+  <section class="slide" data-sec="Starting point">
+    <div class="eyebrow">The starting point</div>
+    <h1 class="t">We inherited a prototype that <span class="accent">didn&rsquo;t run</span></h1>
+    <div class="body" style="align-items:center">
+      <div class="inh">
+        <div class="old frag">
+          <div class="h">Inherited</div>
+          <div class="m">One subject-dependent XGBoost</div>
+          <div class="s">Hard-coded paths · no documentation · dormant ~2.5 years · would not run from a clean checkout.</div>
+        </div>
+        <div class="new frag">
+          <div class="h">Built by this project</div>
+          <div class="grid">
+            <div class="g">Modular, runnable pipeline</div>
+            <div class="g">Subject-independent evaluation</div>
+            <div class="g">Tuned XGBoost</div>
+            <div class="g">TabPFN foundation model</div>
+            <div class="g">3 sequence models</div>
+            <div class="g">Per-strain analysis</div>
+            <div class="g">Single source of truth</div>
+            <div class="g">Graphical curation app</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="foot"><span class="sec">Starting point</span><span class="pg"></span></div>
+    <div class="notes" data-n="7" data-title="מה שירשנו — פרוטוטייפ שבור" data-who="Chen" data-time="2:00">
+      <ul>
+        <li>נקודת ההתחלה: קוד מונוליטי שירשנו — מודל אחד בלבד, <span class="en">subject-dependent XGBoost</span>.</li>
+        <li>נתיבים קשיחים, אפס תיעוד, לא רץ מ-<span class="en">clean checkout</span>. ישן כשנתיים וחצי.</li>
+        <li>המסר החשוב: <b>כל</b> מה שמימין — אנחנו בנינו. תיבה כתומה אחת ירשנו, כל השאר חדש.</li>
+        <li>זה ממצב את התרומה: גם מדעית וגם הנדסית.</li>
+        <li><span class="hand">מעבר:</span> "איך הגענו מזה לזה? זה היה מסע." → ציר הזמן.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 8 · THE PROCESS / TIMELINE -->
+  <section class="slide" data-sec="The process">
+    <div class="eyebrow">The process</div>
+    <h1 class="t">From a dead prototype to a <span class="accent">reproducible system</span></h1>
+    <div class="body" style="align-items:center">
+      <div class="tline frag">
+        <div class="axis"></div>
+        <div class="pt first" style="left:4%"></div>
+        <div class="cap up" style="left:4%"><div class="d">2023</div><div class="x">Inherited prototype (single XGBoost)</div></div>
+        <div class="pt" style="left:17.7%"></div>
+        <div class="cap dn" style="left:17.7%"><div class="d">2025-11</div><div class="x">Authors take over</div></div>
+        <div class="pt" style="left:31.4%"></div>
+        <div class="cap up" style="left:31.4%"><div class="d">2026-03</div><div class="x">Whole-pipeline rebuild (src/)</div></div>
+        <div class="pt" style="left:45.1%"></div>
+        <div class="cap dn" style="left:45.1%"><div class="d">2026-04</div><div class="x">Subject-independent split &rarr; leakage found</div></div>
+        <div class="pt" style="left:58.8%"></div>
+        <div class="cap up" style="left:58.8%"><div class="d">2026-04</div><div class="x">Genotype fix (14 mice / 2,495 rows)</div></div>
+        <div class="pt" style="left:72.5%"></div>
+        <div class="cap dn" style="left:72.5%"><div class="d">2026-05</div><div class="x">TabPFN + sequence models</div></div>
+        <div class="pt" style="left:86.2%"></div>
+        <div class="cap up" style="left:86.2%"><div class="d">2026-05</div><div class="x">Per-strain + threshold tuning</div></div>
+        <div class="pt" style="left:96%"></div>
+        <div class="cap dn" style="left:96%"><div class="d">2026-06</div><div class="x">Thesis &amp; defense</div></div>
+      </div>
+    </div>
+    <div class="foot"><span class="sec">The process</span><span class="pg"></span></div>
+    <div class="notes" data-n="8" data-title="ציר הזמן — המסע" data-who="Chen" data-time="1:45">
+      <ul>
+        <li>שוחזר מהיסטוריית ה-<span class="en">git</span> — כרונולוגיה בלבד, בלי מספרי ביצועים.</li>
+        <li>מהפרוטוטייפ הבודד (2023), דרך ההשתלטות שלנו (סוף 2025) ובניית ה-pipeline מחדש.</li>
+        <li>נקודה קריטית: כשהוספנו <span class="en">subject-independent split</span> גילינו דליפת מידע — וגם את שגיאת הגנוטיפ.</li>
+        <li>ואז נוספו המודלים: <span class="en">TabPFN</span>, רשתות הרצף, ניתוח per-strain, וכיול הסף.</li>
+        <li><span class="hand">מעבר:</span> "שתי התחנות ב-2026-04 הן סיפור בפני עצמו — מקור אמת יחיד." → מקור האמת.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 9 · SINGLE SOURCE OF TRUTH + GENOTYPE FIX -->
+  <section class="slide" data-sec="Data integrity">
+    <div class="eyebrow">Reproducibility · data integrity</div>
+    <h1 class="t">One <span class="accent">source of truth</span> — and a correction it exposed</h1>
+    <div class="body">
+      <div class="fig frame frag"><img src="{{IMG:Fig08_data_provenance_source_of_truth}}" alt="data provenance"></div>
+      <div class="rail narrow">
+        <ul class="pts">
+          <li class="frag">All training now draws from <b>one canonical file</b> with a <b>versioned manifest</b> — not scattered spreadsheets.</li>
+          <li class="frag">Every filter stage and row count is documented and <b>reproducible</b>.</li>
+        </ul>
+        <div class="kicker frag">Curation exposed a genotype-labelling error: <b>14 mice · 2,495 rows</b> corrected <b>HET&nbsp;&rarr;&nbsp;WT</b>. A HET&times;WT cross yields ~&frac12; WT pups — genetically necessary, not a regression.</div>
+      </div>
+    </div>
+    <div class="foot"><span class="sec">Data integrity</span><span class="pg"></span></div>
+    <div class="notes" data-n="9" data-title="מקור אמת יחיד + תיקון הגנוטיפ" data-who="Chen" data-time="2:00">
+      <ul>
+        <li>כל האימון נשען על קובץ קנוני אחד עם <span class="en">manifest</span> מגורסר — במקום גיליונות מפוזרים ולא מתועדים.</li>
+        <li>כל שלב סינון וכל ספירת שורות מתועדים — הכל ניתן לשחזור ולביקורת.</li>
+        <li>תוך כדי האצירה גילינו שגיאת תיוג: גורים קיבלו את גנוטיפ האם במקום את שלהם.</li>
+        <li>תיקנו <b>14 עכברים / 2,495 שורות</b> מ-<span class="en">HET</span> ל-<span class="en">WT</span> — הצלבת <span class="en">HET×WT</span> נותנת חצי גורים <span class="en">WT</span>, אז זה תיקון גנטי הכרחי.</li>
+        <li>זה בדיוק מה שיסביר למה ה-baseline שלנו שונה מ-0.829 — נגיע לזה בתוצאות.</li>
+        <li><span class="hand">מעבר:</span> "ואת האצירה הזו אפשרנו עם כלי שבנינו לחוקרת." → האפליקציה.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 10 · SEGMENTATION APP -->
+  <section class="slide" data-sec="A tool for the lab">
+    <div class="eyebrow">Engineering deliverable</div>
+    <h1 class="t">A tool the biologist actually <span class="accent">uses</span></h1>
+    <div class="body">
+      <div class="fig frame frag" style="flex:1.5"><img src="{{IMG:Fig24_segmentation_app_screenshot}}" alt="USV Segmentation app"></div>
+      <div class="rail narrow">
+        <ul class="pts">
+          <li class="frag">A desktop app for <b>Dr. Hava Golan</b> — curate &amp; review USVs with <b>no code</b>.</li>
+          <li class="frag">Wraps the exact <b>segmentation + CNN typing</b> pipeline; produces the canonical file all models consume.</li>
+          <li class="frag">This is <b>how the label error was found</b> — curation in parallel with modelling.</li>
+        </ul>
+        <div class="card teal frag"><div class="ct">A real, citable artifact</div><div class="cb">One-click Windows installer · open source · <b>Zenodo v1.0.2</b> (doi:10.5281/zenodo.20096810).</div></div>
+      </div>
+    </div>
+    <div class="foot"><span class="sec">A tool for the lab</span><span class="pg"></span></div>
+    <div class="notes" data-n="10" data-title="אפליקציית ה-Segmentation" data-who="Chen" data-time="2:00">
+      <ul>
+        <li>בנינו אפליקציית דסקטופ עבור ד"ר חוה גולן — כדי שתוכל לאצור ולסקור את ה-USV בלי שורת פקודה.</li>
+        <li>היא עוטפת בדיוק את אותו pipeline — <span class="en">segmentation + CNN typing</span> — ומייצרת את הקובץ הקנוני שכל המודלים צורכים.</li>
+        <li>להראות את עץ השנים (2015–2024), בחירת התיקיות, וה-<span class="en">progress</span> — זה כלי אמיתי, לא מוקאפ.</li>
+        <li>זה גם הכלי שדרכו התגלתה שגיאת הגנוטיפ — האצירה קרתה במקביל למידול.</li>
+        <li>תוצר אמיתי: <span class="en">installer</span> ל-Windows, קוד פתוח, ופורסם ב-<span class="en">Zenodo</span> עם DOI.</li>
+        <li><span class="hand">מעבר לאביאל:</span> "עכשיו כשהנתונים נקיים ומסודרים — מה עושים איתם." אביאל ממשיך למסע הנתונים.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ==================== ACT 3 — DATA & METHOD ==================== -->
+
+  <!-- 11 · DATA JOURNEY / PIPELINE -->
+  <section class="slide" data-sec="The pipeline">
+    <div class="eyebrow">From sound to decision</div>
+    <h1 class="t">One recording &rarr; two representations &rarr; a <span class="accent">calibrated call</span></h1>
+    <div class="body" style="flex-direction:column;gap:16px;justify-content:center">
+      <div class="flow frag">
+        <div class="node"><div class="nt">Recordings</div><div class="nd">Avisoft 250&nbsp;kHz · P4&ndash;P12 isolation</div></div>
+        <div class="arrow">&rarr;</div>
+        <div class="node"><div class="nt">Segmentation</div><div class="nd">ERB gammatone detector</div></div>
+        <div class="arrow">&rarr;</div>
+        <div class="node"><div class="nt">CNN typing</div><div class="nd">10 syllable types</div></div>
+        <div class="arrow">&rarr;</div>
+        <div class="node accent"><div class="nt">125,576 syllables</div><div class="nd">the shared substrate</div></div>
+      </div>
+      <div class="two frag" style="gap:16px">
+        <div class="col dep"><h3>Tabular</h3><div class="q">recording-level · averages away order</div><p><b>12,323</b> rows &times; <b>48</b> features &rarr; XGBoost · tuned XGBoost · <b>TabPFN</b></p></div>
+        <div class="col ind" style="background:linear-gradient(180deg,#EEF7F2,#F7FCF9);border-color:#C6E7D4"><h3 style="color:var(--win)">Sequence</h3><div class="q">session-level · keeps the order of calls</div><p><b>408</b> sessions &times; &le;256 steps &rarr; BiLSTM · 1D-CNN · Transformer</p></div>
+      </div>
+      <div class="node frag" style="flex:none;border-color:var(--teal);background:#F0FBFB;text-align:center"><div class="nt">Evaluation &amp; interpretation &nbsp;&middot;&nbsp; <span style="color:var(--within)">within-subject</span> vs <span style="color:var(--across)">across-subject</span> &nbsp;&middot;&nbsp; pooled vs per-strain</div></div>
+    </div>
+    <div class="foot"><span class="sec">The pipeline</span><span class="pg"></span></div>
+    <div class="notes" data-n="11" data-title="מסע הנתונים — הצינור המלא" data-who="Aviel" data-time="2:15">
+      <ul>
+        <li>זה עמוד השדרה של כל העבודה — כדאי להישאר עליו רגע.</li>
+        <li>איסוף: מערכת <span class="en">Avisoft</span> ב-<span class="en">250 kHz</span>, בפרוטוקול בידוד בימים <span class="en">P4–P12</span>.</li>
+        <li>עיבוד: גלאי <span class="en">segmentation</span> על מסנן <span class="en">gammatone</span>, ואז רשת <span class="en">CNN</span> שמסווגת כל הברה לאחד מ-10 סוגים.</li>
+        <li>התוצאה: 125,576 הברות — המצע המשותף לשני המסלולים.</li>
+        <li>מסלול <span class="en">tabular</span>: אגרגציה לכל הקלטה, 48 פיצ'רים, 12,323 שורות → מודלי עצים ו-<span class="en">TabPFN</span>.</li>
+        <li>מסלול <span class="en">sequence</span>: שומר את הסדר, 408 sessions → שלוש רשתות נוירונים.</li>
+        <li>ושניהם נכנסים לאותו פרוטוקול הערכה — וזה מה שנפרק עוד רגע.</li>
+        <li><span class="hand">מעבר:</span> "אבל קודם — כמה מילים על הנתונים עצמם, כי המבנה שלהם קובע הכל." → הנתונים.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 12 · THE DATA -->
+  <section class="slide" data-sec="The data">
+    <div class="eyebrow">The data</div>
+    <h1 class="t">Big, imbalanced, and <span class="accent">longitudinal</span></h1>
+    <div class="body">
+      <div class="fig frame frag"><img src="{{IMG:Fig03_class_balance_donut}}" alt="class balance and per-mouse syllables"></div>
+      <div class="rail">
+        <div class="stat frag" style="margin-bottom:4px">
+          <div class="s"><div class="n">126</div><div class="l">pups</div></div>
+          <div class="s"><div class="n">35</div><div class="l">dams</div></div>
+          <div class="s"><div class="n">5</div><div class="l">years</div></div>
+        </div>
+        <ul class="pts">
+          <li class="frag">Class balance is <b>~3:1 WT:HET</b> — so plain accuracy already scores ~0.75 by guessing. We foreground <b>recall, precision, AUC</b>.</li>
+          <li class="frag">Each pup gives <b>many correlated recordings</b> (median 828 syllables) — a naive split leaks the <b>same animal</b> into train &amp; test.</li>
+        </ul>
+        <div class="card warn frag"><div class="ct">This one fact drives the whole evaluation</div><div class="cb">Because animals repeat, we must split <b>by mouse</b> — or we fool ourselves.</div></div>
+      </div>
+    </div>
+    <div class="foot"><span class="sec">The data</span><span class="pg"></span></div>
+    <div class="notes" data-n="12" data-title="הנתונים — לא מאוזנים ולונגיטודינליים" data-who="Aviel" data-time="2:00">
+      <ul>
+        <li>המספרים: 126 גורים, 35 אמהות, 5 שנות הקלטה, ~125 אלף הברות.</li>
+        <li>חוסר איזון של <span class="en">~3:1</span> לטובת <span class="en">WT</span> — לכן <span class="en">accuracy</span> לבד מטעה (ניחוש הרוב נותן 0.75). נסתכל על <span class="en">recall/precision/AUC</span>.</li>
+        <li>המבנה הלונגיטודינלי: כל גור תורם הרבה הקלטות מתואמות — חציון 828 הברות לגור.</li>
+        <li>המשמעות הקריטית: פיצול נאיבי מכניס את אותו עכבר גם ל-train וגם ל-test → ניפוח מלאכותי.</li>
+        <li>לכן חייבים לפצל <b>לפי עכבר</b> — וזה מוביל ישר לשקופית ההערכה.</li>
+        <li><span class="hand">מעבר:</span> "אבל לפני ההערכה — אילו מודלים בכלל הרצנו, ולמה TabPFN." → המודלים.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 13 · THE MODELS & WHY TabPFN -->
+  <section class="slide" data-sec="The models">
+    <div class="eyebrow">The models</div>
+    <h1 class="t">A tree, a transformer, and <span class="accent">no training at all</span></h1>
+    <div class="body">
+      <div class="fig frame frag"><img src="{{IMG:Fig01_TabPFN_vs_XGBoost_schematic}}" alt="TabPFN vs XGBoost"></div>
+      <div class="rail narrow">
+        <ul class="pts">
+          <li class="frag"><b>XGBoost</b> (inherited) — gradient-boosted trees, trained on our data. The reference baseline.</li>
+          <li class="frag"><b>TabPFN</b> (new) — a transformer <b>pre-fitted once</b> on millions of synthetic tables; it does <b>in-context</b> inference in a single pass — <b>no tuning</b> on our data.</li>
+        </ul>
+        <div class="chips frag">
+          <span class="chip base">XGBoost · baseline</span>
+          <span class="chip new">tuned XGBoost</span>
+          <span class="chip new">TabPFN</span>
+          <span class="chip new">BiLSTM</span>
+          <span class="chip new">1D-CNN</span>
+          <span class="chip new">Transformer</span>
+        </div>
+      </div>
+    </div>
+    <div class="foot"><span class="sec">The models</span><span class="pg"></span></div>
+    <div class="notes" data-n="13" data-title="המודלים — ולמה TabPFN" data-who="Aviel" data-time="2:00">
+      <ul>
+        <li>שני עולמות ב-tabular: <span class="en">XGBoost</span> שירשנו — עצים עם <span class="en">gradient boosting</span>, המודל-בסיס.</li>
+        <li>ו-<span class="en">TabPFN</span> — החידוש המתודולוגי: <span class="en">transformer</span> שאומן מראש על מיליוני טבלאות סינתטיות.</li>
+        <li>בזמן שימוש הוא לא מתאמן בכלל — מקבל את ה-train וה-test יחד ב-forward pass אחד, <span class="en">in-context learning</span>. אפס כיול על הנתונים שלנו.</li>
+        <li>להצביע על הסכמה: משמאל האימון האיטרטיבי של XGBoost, מימין ה-inference הקפוא של TabPFN.</li>
+        <li>שישה מודלים בסך הכל: אחד ירשנו (כתום), חמישה חדשים (ירוק).</li>
+        <li><span class="hand">מעבר:</span> "ועכשיו — השאלה שקובעת איך קוראים את כל התוצאות." → ההערכה.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 14 · EVALUATION — TWO QUESTIONS -->
+  <section class="slide" data-sec="Evaluation">
+    <div class="eyebrow">The heart of the study</div>
+    <h1 class="t">Two questions, reported <span class="accent">side by side</span></h1>
+    <div class="body" style="align-items:center">
+      <div class="two">
+        <div class="col dep frag">
+          <h3>Subject-dependent</h3>
+          <div class="q">within-subject · random split</div>
+          <p>The same animal may appear in train &amp; test. Answers: <b>&ldquo;How well on a new recording of a <u>known</u> animal?&rdquo;</b><br><br>Best-case, personalized — and directly comparable to prior work.</p>
+        </div>
+        <div class="col ind frag">
+          <h3>Subject-independent</h3>
+          <div class="q">across-subject · grouped by mouse</div>
+          <p>No animal is shared between sets. Answers: <b>&ldquo;How well on an <u>entirely unseen</u> animal?&rdquo;</b><br><br>The real generalization test — and it <b>should</b> score lower.</p>
+        </div>
+      </div>
+    </div>
+    <div class="card teal frag" style="margin-top:14px"><div class="cb" style="text-align:center">Both are legitimate. Reporting <b>only one</b> hides half the story — so we always show both.</div></div>
+    <div class="foot"><span class="sec">Evaluation</span><span class="pg"></span></div>
+    <div class="notes" data-n="14" data-title="ההערכה — שתי שאלות" data-who="Aviel" data-time="2:30">
+      <ul>
+        <li>זו השקופית הכי חשובה מבחינה מתודולוגית — כדאי להאט כאן.</li>
+        <li><span class="en">Subject-dependent</span> (כחול): פיצול אקראי, אותו עכבר יכול להופיע ב-train וב-test. עונה: כמה טוב על הקלטה חדשה של עכבר <b>מוכר</b>. זה ה-best-case, וזה מה שהעבודות הקודמות דיווחו.</li>
+        <li><span class="en">Subject-independent</span> (כתום): פיצול <b>לפי עכבר</b>, אף עכבר לא משותף. עונה: כמה טוב על עכבר <b>לגמרי חדש</b>. זה מבחן ההכללה האמיתי.</li>
+        <li>המסר: ה-independent תמיד נמוך יותר — וזה <b>לא</b> כישלון, זו התשובה לשאלה קשה יותר.</li>
+        <li>הבחירה לדווח את שניהם זה בדיוק מה שמבדיל את העבודה הזו — שקיפות מלאה.</li>
+        <li><span class="hand">מעבר:</span> "עם המסגרת הזו — הנה מה שמצאנו." → תוצאות.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ==================== ACT 4 — RESULTS ==================== -->
+
+  <!-- 15 · HEADLINE -->
+  <section class="slide" data-sec="Results · headline">
+    <div class="eyebrow">Results · RQ1</div>
+    <h1 class="t">TabPFN wins in <span class="accent">both regimes</span></h1>
+    <div class="body">
+      <div class="fig frame frag"><img src="{{IMG:Fig11_master_performance_dumbbells_HEADLINE}}" alt="dumbbell performance"></div>
+      <div class="rail narrow">
+        <div class="kpirow frag">
+          <div class="kpi within"><div class="v">.781</div><div class="k">known animals</div></div>
+          <div class="kpi across"><div class="v">.729</div><div class="k">unseen animals</div></div>
+        </div>
+        <ul class="pts">
+          <li class="frag">Best tabular model on <b>both</b> regimes — <span class="small">wF1 .743 · ROC-AUC .783 on unseen mice</span>.</li>
+          <li class="frag">Its <b>unseen</b>-animal accuracy (.729) ~matches the inherited model on <b>known</b> animals (.733).</li>
+        </ul>
+        <div class="card win frag"><div class="ct">Clinically, what matters most</div><div class="cb">Tuned XGBoost keeps <b>HT recall 0.869</b> on unseen mice — it rarely <b>misses</b> a true ASD-model pup.</div></div>
+      </div>
+    </div>
+    <div class="foot"><span class="sec">Results · headline</span><span class="pg"></span></div>
+    <div class="notes" data-n="15" data-title="תוצאה מרכזית — TabPFN מנצח" data-who="Aviel" data-time="2:45">
+      <ul>
+        <li>כל dumbbell מחבר את הציון על עכבר <b>מוכר</b> (כחול) לציון על עכבר <b>לא-מוכר</b> (כתום).</li>
+        <li><span class="en">TabPFN</span> הכי טוב בשני המשטרים — עונה חיובית על <span class="en">RQ1</span>: 0.781 מוכר, 0.729 לא-מוכר (wF1 0.743, AUC 0.783).</li>
+        <li>נקודה יפה: הדיוק שלו על עכבר <b>לא-מוכר</b> (0.729) שווה בערך לדיוק של המודל הישן על עכבר <b>מוכר</b> (0.733).</li>
+        <li>והכי חשוב קלינית: <span class="en">tuned-XGBoost</span> שומר <span class="en">HT recall 0.869</span> על עכברים לא-מוכרים — כמעט לא מפספס גור אוטיסט. לכלי סקר, זה הדבר.</li>
+        <li>"הכי טוב" תלוי במטרה: TabPFN לדיוק כולל, tuned-XGBoost לרגישות למיעוט.</li>
+        <li><span class="hand">מעבר:</span> "אבל רגע — היה מספר קודם, 0.829. מה קרה לו?" → פירוק ה-0.829.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 16 · THE 0.829 DECOMPOSED (native) -->
+  <section class="slide" data-sec="Results · data integrity">
+    <div class="eyebrow">Results · the honest baseline</div>
+    <h1 class="t">The prior <span class="accent">0.829</span>, decomposed</h1>
+    <div class="body" style="flex-direction:column;justify-content:center;gap:26px">
+      <div class="decomp frag">
+        <div class="dstep old"><div class="dv">.829</div><div class="dl">prior reported<br>(uncorrected, within-subject)</div></div>
+        <div class="darrow"><div class="lbl">fix genotype<br>labels</div><div class="ar">&rarr;</div></div>
+        <div class="dstep base"><div class="dv">.733</div><div class="dl">corrected baseline<br>(within-subject)</div></div>
+        <div class="darrow"><div class="lbl">new model:<br>TabPFN</div><div class="ar">&rarr;</div></div>
+        <div class="dstep new"><div class="dv">.781</div><div class="dl">TabPFN<br>(within-subject)</div></div>
+      </div>
+      <div class="frag" style="display:flex;gap:16px;align-items:stretch">
+        <div class="card" style="flex:1"><div class="ct">Not a regression — a data-integrity result</div><div class="cb">The earlier figure was inflated by mislabeled data. <b>.733</b> is the genetically-valid baseline — and the new model still <b>beats</b> it.</div></div>
+        <div class="card across" style="flex:0 0 34%;background:#FDF3E8;border-color:#F2D8B6"><div class="ct" style="color:#C4720E">On unseen animals</div><div class="cb">XGBoost <b>.693</b> · TabPFN <b>.729</b><br><span class="small">the expected within&rarr;across gap</span></div></div>
+      </div>
+    </div>
+    <div class="foot"><span class="sec">Results · data integrity</span><span class="pg"></span></div>
+    <div class="notes" data-n="16" data-title="פירוק ה-0.829" data-who="Aviel" data-time="2:45">
+      <ul>
+        <li>זו שקופית לתרגל הכי הרבה — כאן שאלות צצות.</li>
+        <li>בספרות הקודמת של הקו הזה דווח <span class="en">0.829</span> (within-subject, לפני התיקון).</li>
+        <li>שלב 1 — תיקון תיוג הגנוטיפ מוריד את ה-baseline של המודל הירושה ל-<span class="en">0.733</span>. זה <b>לא</b> רגרסיה — המספר הישן היה מנופח בגלל תוויות שגויות. 0.733 הוא הבסיס הגנטית-נכון.</li>
+        <li>שלב 2 — המודל החדש (<span class="en">TabPFN</span>) חוזר ועובר: <span class="en">0.781</span> within-subject.</li>
+        <li>ועל עכברים לא-מוכרים: <span class="en">XGBoost 0.693, TabPFN 0.729</span> — הפער הצפוי בין השאלות, לא פגם.</li>
+        <li>המשפט לזכור: "המספר הכן נמוך יותר — ואנחנו עדיין מנצחים אותו."</li>
+        <li><span class="hand">מעבר:</span> "איך אנחנו יודעים שהדירוג אמיתי ולא תלוי-סף?" → ROC.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 17 · ROC -->
+  <section class="slide" data-sec="Results · ranking">
+    <div class="eyebrow">Results · discrimination</div>
+    <h1 class="t">The ranking is real — and <span class="accent">threshold-free</span></h1>
+    <div class="body">
+      <div class="fig frame frag"><img src="{{IMG:Fig13_ROC_curves}}" alt="ROC curves"></div>
+      <div class="rail narrow">
+        <ul class="pts">
+          <li class="frag"><b>ROC-AUC</b> asks: does the model rank a random HET above a random WT? — independent of any threshold.</li>
+          <li class="frag">TabPFN leads in both regimes: <b>.908</b> known &rarr; <b>.783</b> unseen.</li>
+          <li class="frag">AUC drops from within &rarr; across for <b>every</b> model — that gap <b>is</b> the generalization cost.</li>
+        </ul>
+        <div class="card frag"><div class="ct">Honest footnote</div><div class="cb">Tuning helped <b>recall</b>, not ranking — tuned-XGBoost AUC actually dips below plain XGBoost on unseen mice.</div></div>
+      </div>
+    </div>
+    <div class="foot"><span class="sec">Results · ranking</span><span class="pg"></span></div>
+    <div class="notes" data-n="17" data-title="ROC — דירוג בלתי-תלוי-סף" data-who="Aviel" data-time="1:45">
+      <ul>
+        <li><span class="en">ROC-AUC</span> = ההסתברות שהמודל מדרג <span class="en">HET</span> אקראי מעל <span class="en">WT</span> אקראי — בלי תלות בסף החלטה.</li>
+        <li><span class="en">TabPFN</span> מוביל: <span class="en">0.908</span> על מוכר, <span class="en">0.783</span> על לא-מוכר.</li>
+        <li>ה-AUC יורד מ-within ל-across אצל כל מודל — הפער הזה <b>הוא</b> מחיר ההכללה.</li>
+        <li>הערה כנה: הכיוונון שיפר <span class="en">recall</span> אבל לא את הדירוג — ה-AUC של tuned אפילו יורד מעט מתחת ל-XGBoost הרגיל על לא-מוכר.</li>
+        <li>אם ישאלו על ה-kink בעקומת ה-independent: זה נובע ממעט ציוני-סף ייחודיים ב-test קטן של עכברים לא-מוכרים.</li>
+        <li><span class="hand">מעבר:</span> "אבל יש קיר — וזה החלק הכי מלמד." → precision wall.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 18 · PRECISION WALL -->
+  <section class="slide" data-sec="Results · the ceiling">
+    <div class="eyebrow">Results · the honest ceiling</div>
+    <h1 class="t">Why the classes <span class="accent">barely separate</span> at the call level</h1>
+    <div class="body">
+      <div class="fig frame frag"><img src="{{IMG:Fig07_acoustic_features_WT_vs_HT}}" alt="WT vs HT acoustic overlap"></div>
+      <div class="rail narrow">
+        <div class="kpirow frag"><div class="kpi warn"><div class="v">~.50</div><div class="k">HT precision · every model, every split</div></div></div>
+        <ul class="pts">
+          <li class="frag">Per-syllable, WT and HET distributions <b>overlap almost entirely</b>.</li>
+          <li class="frag">So at the default threshold, <b>~half of predicted-ASD calls are false alarms</b> — and it survives XGBoost, tuning, and TabPFN alike.</li>
+        </ul>
+        <div class="card warn frag"><div class="ct">A feature ceiling, not a model limit</div><div class="cb">The fix is <b>richer per-call features</b> (contour, bandwidth, FM depth) — not a bigger model.</div></div>
+      </div>
+    </div>
+    <div class="foot"><span class="sec">Results · the ceiling</span><span class="pg"></span></div>
+    <div class="notes" data-n="18" data-title="קיר ה-precision" data-who="Aviel" data-time="2:15">
+      <ul>
+        <li>זו התוצאה השלילית הכי מלמדת — ואנחנו מציגים אותה בגאווה, זו כנות מדעית.</li>
+        <li>בגרף: לכל הברה, ההתפלגויות של <span class="en">WT</span> ו-<span class="en">HET</span> כמעט חופפות לחלוטין — בתדרים ובמשך.</li>
+        <li>התוצאה: <span class="en">HT precision</span> תקוע סביב <span class="en">0.50</span> אצל <b>כל</b> מודל ובכל משטר — כמחצית מהחיוביים הם התרעות שווא.</li>
+        <li>כי זה שורד כל אסטימטור — זה מאפיין של ה<b>פיצ'רים</b>, לא של המודל.</li>
+        <li>הפתרון: פיצ'רים עשירים יותר לכל קריאה (קונטור תדר, רוחב פס, עומק אפנון) — לא מודל גדול יותר. זה גם ה-future work המרכזי.</li>
+        <li><span class="hand">מעבר:</span> "ניסינו משהו שאפתני כדי לשבור את זה — רשתות רצף." → הניסיון החדשני.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 19 · SEQUENCE MODELS — THE ATTEMPT -->
+  <section class="slide" data-sec="An innovative attempt">
+    <div class="eyebrow">An innovative attempt</div>
+    <h1 class="t">Does the <span class="accent">order</span> of the calls carry the signal?</h1>
+    <div class="body" style="flex-direction:column;justify-content:center;gap:16px">
+      <div class="card teal frag"><div class="ct">The hypothesis</div><div class="cb">Gal et&nbsp;al. (2023) found the <b>temporal dynamics</b> of isolation calls carry phenotype. So we modelled each session as an <b>ordered sequence</b> of syllables (&le;256 steps, 14 features each) — not just averages.</div></div>
+      <div class="panels frag">
+        <div class="p"><h3>Three architectures</h3><p>BiLSTM (149k) · 1D-CNN (86k) · Transformer (73k) — recurrence, convolution, and attention over the call stream.</p></div>
+        <div class="p"><h3>A systematic search</h3><p>8 imbalance-handling levers &times; 3 models &times; 2 regimes &asymp; <b>36 runs</b> — loss weighting, balanced sampling, focal loss, augmentation.</p></div>
+        <div class="p"><h3>What we hoped</h3><p>That temporal &ldquo;syntax&rdquo; would break the <b>~0.50 precision wall</b> the aggregates hit.</p></div>
+      </div>
+    </div>
+    <div class="foot"><span class="sec">An innovative attempt</span><span class="pg"></span></div>
+    <div class="notes" data-n="19" data-title="הניסיון החדשני — רשתות רצף" data-who="Aviel" data-time="2:00">
+      <ul>
+        <li>זה חלק שאני גאה בו גם אם התוצאה שלילית — ניסינו משהו שאפתני.</li>
+        <li>ההשערה: <span class="en">Gal 2023</span> הראו שהדינמיקה הזמנית של הקריאות נושאת מידע על הפנוטיפ.</li>
+        <li>אז דיברנו כל <span class="en">session</span> כרצף מסודר של הברות (עד 256 צעדים, 14 מימדים) — לא רק ממוצעים.</li>
+        <li>שלוש ארכיטקטורות: <span class="en">BiLSTM, 1D-CNN, Transformer</span> — רקורנטיות, קונבולוציה, ו-attention.</li>
+        <li>וחיפוש שיטתי: 8 מנופים לחוסר-איזון × 3 מודלים × 2 משטרים — בערך 36 ריצות.</li>
+        <li>התקווה: שה"תחביר" הזמני ישבור את קיר ה-0.50.</li>
+        <li><span class="hand">מעבר:</span> "אבל כשבדקנו את זה כמו שצריך..." → מה קרה.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 20 · SEQUENCE MODELS — THE RESULT -->
+  <section class="slide" data-sec="An innovative attempt">
+    <div class="eyebrow">An innovative attempt · the result</div>
+    <h1 class="t">A promising split that <span class="accent">didn&rsquo;t survive</span></h1>
+    <div class="body">
+      <div class="fig frame frag"><img src="{{IMG:Fig18_sequence_CV_deflation}}" alt="sequence CV deflation"></div>
+      <div class="rail narrow">
+        <div class="decomp frag" style="justify-content:flex-start">
+          <div class="dstep base" style="min-width:120px;padding:12px"><div class="dv" style="font-size:38px">.704</div><div class="dl">best single split</div></div>
+          <div class="darrow" style="min-width:90px"><div class="lbl">5-fold<br>grouped CV</div><div class="ar">&rarr;</div></div>
+          <div class="dstep old" style="min-width:120px;padding:12px"><div class="dv" style="font-size:38px;text-decoration:none;color:var(--warn)">.563</div><div class="dl">&plusmn; 0.063</div></div>
+        </div>
+        <ul class="pts">
+          <li class="frag">The single best run was a <b>lucky fold</b>; cross-validation collapses it toward chance.</li>
+          <li class="frag">Cause is <b>data scale</b> — only ~19 HET test sessions for ~70&ndash;150k-parameter nets.</li>
+        </ul>
+        <div class="card frag"><div class="cb">Not a refutation of Gal&nbsp;et&nbsp;al. — <b>&ldquo;not supported at this data scale.&rdquo;</b> Order may still help with more animals.</div></div>
+      </div>
+    </div>
+    <div class="foot"><span class="sec">An innovative attempt</span><span class="pg"></span></div>
+    <div class="notes" data-n="20" data-title="רשתות רצף — התוצאה" data-who="Aviel" data-time="2:00">
+      <ul>
+        <li>הריצה הבודדת הכי טובה נתנה <span class="en">balanced accuracy 0.704</span> (independent) — נראה מבטיח.</li>
+        <li>אבל תחת <span class="en">5-fold grouped CV</span> זה נפל ל-<span class="en">0.563 ± 0.063</span> — כלומר ה-0.704 היה <b>fold ממוזל</b>, לא אות אמיתי.</li>
+        <li>הסיבה: סקאלת נתונים — רק ~19 sessions של HET ב-test, מול רשתות של עשרות-אלפי פרמטרים.</li>
+        <li>המסגור הכן: זו <b>לא</b> הפרכה של <span class="en">Gal 2023</span> — אלא "לא נתמך בסקאלת הנתונים הזו".</li>
+        <li>עם יותר חיות, או אגרגציה לכל עכבר, ייתכן שהסדר כן יעזור — future work.</li>
+        <li><span class="hand">מעבר:</span> "ויש עוד אזהרה אחת, אולי הכי חשובה." → strain confound.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 21 · STRAIN CONFOUND -->
+  <section class="slide" data-sec="Discussion · key caution">
+    <div class="eyebrow">Discussion · our key caution</div>
+    <h1 class="t">When 0.90 is a <span class="accent">warning</span>, not a headline</h1>
+    <div class="body">
+      <div class="fig frame frag"><img src="{{IMG:Fig20_per_strain_confound}}" alt="per-strain heatmaps"></div>
+      <div class="rail narrow">
+        <ul class="pts">
+          <li class="frag"><b>Strain1</b> (2022&ndash;24) is ~<b>0.90</b> across-subject — but it&rsquo;s a newer, more separable cohort.</li>
+          <li class="frag">Strain / year / prevalence all <b>covary with genotype</b> — the model may read <b>cohort</b>, not ASD.</li>
+          <li class="frag">On <b>strain2</b> (47 mice) the minority class <b>collapses</b> — accuracy hides it.</li>
+        </ul>
+        <div class="card warn frag"><div class="ct">So which number do we trust?</div><div class="cb">The <b>pooled unseen</b> result — it averages the confound out. The clean test (train one strain, test the other) is future work.</div></div>
+      </div>
+    </div>
+    <div class="foot"><span class="sec">Discussion · key caution</span><span class="pg"></span></div>
+    <div class="notes" data-n="21" data-title="ה-strain confound" data-who="Aviel" data-time="2:15">
+      <ul>
+        <li>אנחנו <b>בעצמנו</b> מסמנים את זה — זו האזהרה הכי חשובה, ובוחן יעריך שאנחנו מקדימים אותו.</li>
+        <li><span class="en">strain1</span> (2022–24, רקע מעורב) מגיע ל-~0.90 על עכברים לא-מוכרים — אבל זה cohort חדש ונפרד יותר.</li>
+        <li>הבעיה: <span class="en">strain</span>, שנה, ושכיחות ה-HET כולם משתנים יחד עם הגנוטיפ — אז המודל אולי קורא <b>שייכות ל-cohort</b> ולא את הפנוטיפ.</li>
+        <li>על <span class="en">strain2</span> (רק 47 עכברים) מחלקת המיעוט <b>קורסת</b> — וה-accuracy (0.65) מסתיר את זה.</li>
+        <li>לכן המספר שמייצג אותנו הכי טוב הוא ה-<b>pooled</b> על עכברים לא-מוכרים — הוא ממצע את ה-confound.</li>
+        <li>המבחן המכריע — לאמן על strain אחד ולבחון על השני — הוא future work מוצהר.</li>
+        <li><span class="hand">מעבר לחן:</span> "אז מה בעצם אפשר לומר על USV ואוטיזם?" חן לסיכום.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ==================== ACT 5 — CLOSE ==================== -->
+
+  <!-- 22 · CONCLUSIONS -->
+  <section class="slide" data-sec="Conclusions">
+    <div class="eyebrow">Conclusions</div>
+    <h1 class="t">What USVs <span class="accent">can</span> — and cannot — support</h1>
+    <div class="body" style="align-items:center">
+      <div class="rqs" style="gap:10px">
+        <div class="rq frag"><span class="tag" style="background:var(--win)">RQ1&nbsp;&checkmark;</span><div class="rt">TabPFN <b>beats</b> the baseline in both regimes (.781 / .729); tuned-XGBoost holds <b>HT recall 0.869</b> on unseen mice.</div></div>
+        <div class="rq frag"><span class="tag" style="background:var(--win)">RQ2&nbsp;&checkmark;</span><div class="rt">Boundary <b>frequencies &amp; durations</b> carry the signal (Shekel 2021) — but minority precision is <b>capped ~0.50</b> at the feature level.</div></div>
+        <div class="rq frag"><span class="tag" style="background:var(--win)">RQ3&nbsp;&checkmark;</span><div class="rt">Known &ne; unseen (gap up to 0.30 in recall); sequence order didn&rsquo;t help at this scale; per-strain is <b>confounded</b>.</div></div>
+        <div class="rq eng frag"><span class="tag" style="background:var(--teal-d)">ENG&nbsp;&checkmark;</span><div class="rt">A reproducible, end-to-end pipeline with a single source of truth, a curation app, and a corrected, auditable baseline.</div></div>
+      </div>
+    </div>
+    <div class="card teal frag" style="margin-top:12px"><div class="cb" style="text-align:center">The headline is <b>calibrated</b>: a strong <b>within-subject</b> classifier (~0.78&ndash;0.80) and honest, above-chance <b>generalization</b> to unseen mice (0.729 · AUC 0.78) — and it is all reproducible.</div></div>
+    <div class="foot"><span class="sec">Conclusions</span><span class="pg"></span></div>
+    <div class="notes" data-n="22" data-title="מסקנות — תשובות לשאלות" data-who="Chen" data-time="2:00">
+      <ul>
+        <li>לחזור על כל שאלת מחקר עם תשובה קצרה — לסגור מעגל מול שקופית 6.</li>
+        <li><span class="en">RQ1</span>: כן — <span class="en">TabPFN</span> מנצח בשני המשטרים; <span class="en">tuned-XGBoost</span> שומר recall גבוה למיעוט.</li>
+        <li><span class="en">RQ2</span>: תדרי-קצה ומשך נושאים את האות, אבל ה-precision של המיעוט תקוע ~0.50 ברמת הפיצ'רים.</li>
+        <li><span class="en">RQ3</span>: מוכר ≠ לא-מוכר; הסדר לא עזר בסקאלה הזו; per-strain מבולבל עם cohort.</li>
+        <li>הנדסי: pipeline רפרודוסבילי, מקור אמת יחיד, אפליקציית אצירה, ו-baseline מתוקן וניתן לביקורת.</li>
+        <li>הכותרת הכנה: מודל within חזק (~0.78–0.80) והכללה מעל-מקרה לעכברים לא-מוכרים (0.729, AUC 0.78) — והכל ניתן לשחזור.</li>
+        <li><span class="hand">מעבר:</span> "ולאן ממשיכים מכאן." → future work.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 23 · FUTURE WORK -->
+  <section class="slide" data-sec="Future work">
+    <div class="eyebrow">Recommendations · future work</div>
+    <h1 class="t">Where the <span class="accent">next</span> gain comes from</h1>
+    <div class="body" style="align-items:center">
+      <div class="ranklist">
+        <div class="rank top frag"><div class="no">1</div><div class="rt"><b>Richer per-call features</b> — frequency contour, bandwidth, FM depth — to break the precision wall. Highest leverage.</div></div>
+        <div class="rank frag"><div class="no">2</div><div class="rt"><b>A genuine cross-cohort test</b> — train on one strain, test on the other — to separate phenotype from cohort.</div></div>
+        <div class="rank frag"><div class="no">3</div><div class="rt"><b>Per-mouse decisions</b> — aggregate recordings into one vote per animal, the clinically meaningful grain.</div></div>
+        <div class="rank frag"><div class="no">4</div><div class="rt"><b>More data for sequence models</b> — re-test the temporal-dynamics hypothesis at larger scale.</div></div>
+        <div class="rank frag"><div class="no">5</div><div class="rt"><b>Validate the front end</b> — segmentation vs ground truth, and a model card for the syllable typer.</div></div>
+      </div>
+    </div>
+    <div class="foot"><span class="sec">Future work</span><span class="pg"></span></div>
+    <div class="notes" data-n="23" data-title="Future work" data-who="Chen" data-time="1:30">
+      <ul>
+        <li>מסודר לפי ערך צפוי יורד — כל פריט קשור למגבלה שהראינו.</li>
+        <li>(1) הכי חשוב: פיצ'רים עשירים לכל קריאה — כדי לשבור את קיר ה-precision.</li>
+        <li>(2) מבחן cross-cohort אמיתי — לאמן על strain אחד, לבחון על השני — כדי להפריד פנוטיפ מ-cohort.</li>
+        <li>(3) החלטה לכל עכבר — הצבעה אחת לחיה, הרזולוציה הקלינית.</li>
+        <li>(4) יותר נתונים לרשתות הרצף. (5) ואימות ה-front end.</li>
+        <li><span class="hand">מעבר:</span> "תודה — ואנחנו פתוחים לשאלות." שניהם קמים. → סיום.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 24 · CLOSE -->
+  <section class="slide close" data-sec="Thank you">
+    <div class="eyebrow">Reproducible · honest · public</div>
+    <h1>Thank you</h1>
+    <div class="q">Questions welcome</div>
+    <div class="links">
+      <span>Pipeline &nbsp;<b>github.com/AvielBitton/mouse-usv-asd-pipeline</b></span>
+      <span>App &nbsp;<b>Zenodo 10.5281/zenodo.20096810</b></span>
+    </div>
+    <div class="foot"><span class="sec">Chen Aharon · Aviel Bitton · 2026</span><span class="pg"></span></div>
+    <div class="notes" data-n="24" data-title="סיום ו-Q&amp;A" data-who="Chen &amp; Aviel" data-time="0:30">
+      <ul>
+        <li>משפט סיכום אחד: בנינו מערכת רפרודוסבילית ונתנו תמונה מכוילת של מה ש-USV יכולים ולא יכולים.</li>
+        <li>להודות למנחה ד"ר לדרמן ולד"ר חוה גולן.</li>
+        <li>שניכם עומדים יחד לשאלות. לנשום. הנספח מוכן מאחורי השקופית הזו.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ==================== APPENDIX — Q&A BACKUP ==================== -->
+
+  <!-- A1 · MASTER TABLE -->
+  <section class="slide" data-sec="Appendix A1">
+    <div class="eyebrow">Appendix · A1</div>
+    <h1 class="t" style="font-size:32px">Master results — tabular models (pooled)</h1>
+    <div class="body" style="align-items:center">
+      <table class="res tnum">
+        <thead><tr><th>Model</th><th>Split</th><th>Acc</th><th>wF1</th><th>Bal&nbsp;acc</th><th>ROC-AUC</th><th>HT&nbsp;recall</th><th>HT&nbsp;prec</th><th>HT&nbsp;F1</th></tr></thead>
+        <tbody>
+          <tr><td>XGBoost (inherited)</td><td>dependent</td><td>.733</td><td>.749</td><td>.795</td><td>.876</td><td>.940</td><td>.496</td><td>.649</td></tr>
+          <tr><td>XGBoost (inherited)</td><td>independent</td><td>.693</td><td>.706</td><td>.678</td><td>.770</td><td>.637</td><td>.452</td><td>.529</td></tr>
+          <tr><td>XGBoost-tuned</td><td>dependent</td><td>.772</td><td>.785</td><td>.798</td><td>.885</td><td>.844</td><td>.543</td><td>.661</td></tr>
+          <tr><td>XGBoost-tuned</td><td>independent</td><td>.702</td><td>.719</td><td>.725</td><td>.753</td><td class="b">.869</td><td>.473</td><td>.612</td></tr>
+          <tr class="hi"><td>TabPFN</td><td>dependent</td><td class="b">.781</td><td class="b">.794</td><td>.828</td><td class="b">.908</td><td>.918</td><td>.550</td><td>.688</td></tr>
+          <tr class="hi"><td>TabPFN</td><td>independent</td><td class="b">.729</td><td class="b">.743</td><td>.662</td><td class="b">.783</td><td>.782</td><td>.499</td><td>.610</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="foot"><span class="sec">Appendix</span><span class="pg"></span></div>
+    <div class="notes" data-n="A1" data-title="טבלת התוצאות המלאה" data-who="—" data-time="Q&amp;A">
+      <ul><li>לשלוף כשנשאלים "מה המספרים המדויקים". חיובי = HET. TabPFN מודגש.</li></ul>
+    </div>
+  </section>
+
+  <!-- A2 · FEATURE IMPORTANCE / MOTHER GENOTYPE (honest) -->
+  <section class="slide" data-sec="Appendix A2">
+    <div class="eyebrow">Appendix · A2 · honest disclosure</div>
+    <h1 class="t" style="font-size:30px">Which features drive it — including a <span class="accent">confound</span></h1>
+    <div class="body">
+      <div class="fig frame frag"><img src="{{IMG:Fig21_feature_importance_MOTHER_GENOTYPE_dominates}}" alt="feature importance"></div>
+      <div class="rail narrow">
+        <ul class="pts">
+          <li class="frag"><b>Mother genotype</b> tops gain importance — because it is predictive <b>by breeding</b>: a WT dam yields only WT pups.</li>
+          <li class="frag">So the tabular model gets &ldquo;free&rdquo; stratification from <b>pedigree metadata</b>, not from the calls.</li>
+          <li class="frag">Excluding metadata, <b>boundary frequencies &amp; durations</b> lead — consistent with Shekel&nbsp;2021.</li>
+        </ul>
+        <div class="card warn frag"><div class="ct">Why we lean on the harder numbers</div><div class="cb">The <b>subject-independent</b>, <b>AUC</b>, and <b>precision-wall</b> results reflect the genuine acoustic signal. A metadata-free ablation is future work.</div></div>
+      </div>
+    </div>
+    <div class="foot"><span class="sec">Appendix</span><span class="pg"></span></div>
+    <div class="notes" data-n="A2" data-title="חשיבות פיצ'רים + confound של גנוטיפ האם" data-who="—" data-time="Q&amp;A">
+      <ul>
+        <li>שקופית הגילוי הכן — לשלוף אם שואלים "מה הפיצ'ר הכי חשוב" או "אולי המודל קורא רק את האם".</li>
+        <li>גנוטיפ האם שולט ב-gain כי הוא חוזה <b>מעצם ההצלבה</b>: אם WT → כל הגורים WT; רק HET יכולה להוליד HET.</li>
+        <li>כלומר המודל ה-tabular מקבל stratification "בחינם" ממטא-דאטה של יוחסין — לא מהקולות.</li>
+        <li>כשמוציאים מטא-דאטה, תדרי-הקצה והמשך מובילים — עקבי עם הספר ועם Shekel 2021.</li>
+        <li>לכן אנחנו נשענים על independent / AUC / precision-wall — הם משקפים את האות האקוסטי האמיתי. ablation בלי מטא-דאטה הוא future work.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- A3 · CONFUSION MATRICES -->
+  <section class="slide" data-sec="Appendix A3">
+    <div class="eyebrow">Appendix · A3</div>
+    <h1 class="t" style="font-size:32px">Confusion matrices — where the errors are</h1>
+    <div class="body"><div class="fig frame frag"><img src="{{IMG:Fig16_confusion_matrices}}" alt="confusion matrices"></div></div>
+    <div class="foot"><span class="sec">Appendix</span><span class="pg"></span></div>
+    <div class="notes" data-n="A3" data-title="Confusion matrices" data-who="—" data-time="Q&amp;A">
+      <ul><li>לשלוף על "איפה הטעויות". השורות מנורמלות ל-recall; הטעות השלטת = WT שסווג HET (false positive), עקבי עם קיר ה-0.50.</li></ul>
+    </div>
+  </section>
+
+  <!-- A4 · DESIGN MATRIX -->
+  <section class="slide" data-sec="Appendix A4">
+    <div class="eyebrow">Appendix · A4</div>
+    <h1 class="t" style="font-size:32px">What we ran — the design matrix</h1>
+    <div class="body"><div class="fig frame frag"><img src="{{IMG:Fig10_experimental_design_matrix}}" alt="design matrix"></div></div>
+    <div class="foot"><span class="sec">Appendix</span><span class="pg"></span></div>
+    <div class="notes" data-n="A4" data-title="מטריצת הניסויים" data-who="—" data-time="Q&amp;A">
+      <ul><li>לשלוף על "כמה שיטתי היה". כל מודל × split × cohort. תאים = test accuracy; לזכור ש-baseline של הרוב ~0.75.</li></ul>
+    </div>
+  </section>
+
+  <!-- A5 · BEST MODEL PER SCENARIO -->
+  <section class="slide" data-sec="Appendix A5">
+    <div class="eyebrow">Appendix · A5</div>
+    <h1 class="t" style="font-size:32px">Best model per scenario</h1>
+    <div class="body" style="align-items:center">
+      <table class="res tnum">
+        <thead><tr><th>Cohort</th><th>Split</th><th>Best model</th><th>Acc</th><th>wF1</th><th>HT&nbsp;F1</th></tr></thead>
+        <tbody>
+          <tr class="hi"><td>pooled</td><td>dependent</td><td>TabPFN</td><td>.781</td><td>.794</td><td>.688</td></tr>
+          <tr class="hi"><td>pooled</td><td>independent</td><td>TabPFN</td><td>.729</td><td>.743</td><td>.610</td></tr>
+          <tr><td>strain1</td><td>dependent</td><td>XGBoost-tuned</td><td>.789</td><td>.802</td><td>.649</td></tr>
+          <tr><td>strain1</td><td>independent</td><td>XGBoost</td><td>.903</td><td>.909</td><td>.753</td></tr>
+          <tr><td>strain2</td><td>dependent</td><td>TabPFN</td><td>.801</td><td>.809</td><td>.703</td></tr>
+          <tr><td>strain2</td><td>independent</td><td>TabPFN</td><td>.654</td><td>.659</td><td>.388</td></tr>
+          <tr><td>pooled (sequence)</td><td>dependent</td><td>Transformer</td><td>.659</td><td>&mdash;</td><td>.481</td></tr>
+          <tr><td>pooled (sequence)</td><td>independent</td><td>1D-CNN</td><td>.633</td><td>&mdash;</td><td>.267</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="foot"><span class="sec">Appendix</span><span class="pg"></span></div>
+    <div class="notes" data-n="A5" data-title="המודל הטוב ביותר לכל תרחיש" data-who="—" data-time="Q&amp;A">
+      <ul><li>לשלוף על "מי הכי טוב איפה". שים לב ל-strain1-independent 0.903 — מרשים אך מבולבל עם cohort (ראה שקופית 21).</li></ul>
+    </div>
+  </section>
+
+  <!-- A6 · THRESHOLD TUNING -->
+  <section class="slide" data-sec="Appendix A6">
+    <div class="eyebrow">Appendix · A6</div>
+    <h1 class="t" style="font-size:32px">Decision-threshold tuning</h1>
+    <div class="body" style="align-items:center">
+      <div class="panels">
+        <div class="p frag"><h3>Within-subject</h3><p>An F1 / target-recall objective lifts HT precision to <b>~0.62</b> (from .55) while holding recall ~0.81 — the only operating point that meaningfully clears the 0.50 wall.</p></div>
+        <div class="p frag"><h3>Across-subject</h3><p>Youden / balanced objectives degenerate. A <b>target-recall</b> floor (~0.80) is the sensible screening choice: HT recall ~0.86 at precision ~0.46.</p></div>
+        <div class="p frag"><h3>The honest limit</h3><p>Threshold tuning <b>relocates</b> the operating point on a fixed ROC — it <b>cannot</b> raise AUC or break the feature ceiling.</p></div>
+      </div>
+    </div>
+    <div class="foot"><span class="sec">Appendix</span><span class="pg"></span></div>
+    <div class="notes" data-n="A6" data-title="כיול סף החלטה" data-who="—" data-time="Q&amp;A">
+      <ul><li>לשלוף על "אפשר לשפר את ה-precision עם סף אחר". כן — within-subject עד ~0.62; across-subject עדיף target-recall (recall ~0.86, precision ~0.46). אבל זה לא מזיז AUC.</li></ul>
+    </div>
+  </section>
+
+  </div><!--/deck-->
+</div><!--/stage-->
+
+<aside id="notesPanel" aria-hidden="true">
+  <div class="nhead"><span class="nnum"></span><span class="nwho"></span></div>
+  <h4></h4><ul></ul>
+</aside>
+<div class="hint">← → navigate · N notes · F fullscreen</div>
+
+<script>
+(function(){
+  var deck=document.getElementById('deck');
+  var slides=[].slice.call(deck.querySelectorAll('.slide'));
+  var panel=document.getElementById('notesPanel');
+  var cur=0, step=0;
+
+  function frags(s){return [].slice.call(s.querySelectorAll('.frag'));}
+  function fit(){
+    var s=Math.min(window.innerWidth/1280, window.innerHeight/720);
+    deck.style.transform='scale('+s+')';
+  }
+  function renderFrags(s,showAll){
+    var f=frags(s);
+    f.forEach(function(el,i){ el.classList.toggle('on', showAll || i<step); });
+  }
+  function show(i,back){
+    i=Math.max(0,Math.min(slides.length-1,i));
+    slides.forEach(function(s){s.classList.remove('active','leaving')});
+    var s=slides[i]; s.classList.add('active');
+    cur=i;
+    if(back){ step=frags(s).length; renderFrags(s,true); }
+    else { step=0; renderFrags(s,false); }
+    updateChrome();
+  }
+  function next(){
+    var s=slides[cur], f=frags(s);
+    if(step<f.length){ step++; renderFrags(s,false); }
+    else if(cur<slides.length-1){ show(cur+1,false); }
+  }
+  function prev(){
+    if(step>0){ step--; renderFrags(slides[cur],false); }
+    else if(cur>0){ show(cur-1,true); }
+  }
+  function updateChrome(){
+    var s=slides[cur];
+    // progress bar
+    var pct=(cur)/(slides.length-1)*100;
+    var pb=document.getElementById('pbar'); if(pb) pb.style.width=pct+'%';
+    // footer page numbers
+    slides.forEach(function(sl){var p=sl.querySelector('.pg'); if(p)p.textContent=(slides.indexOf(sl)+1)+' / '+slides.length;});
+    // notes
+    var n=s.querySelector('.notes');
+    if(n){
+      panel.querySelector('.nnum').textContent='Slide '+(n.getAttribute('data-n')||cur+1)+' · '+(n.getAttribute('data-time')||'');
+      panel.querySelector('.nwho').textContent=n.getAttribute('data-who')||'';
+      panel.querySelector('h4').textContent=n.getAttribute('data-title')||'';
+      panel.querySelector('ul').innerHTML=n.querySelector('ul')?n.querySelector('ul').innerHTML:'';
+    }
+  }
+  // progress bar element
+  var pbar=document.createElement('div'); pbar.className='prog'; pbar.id='pbar'; deck.appendChild(pbar);
+
+  document.addEventListener('keydown',function(e){
+    if(e.key==='ArrowRight'||e.key==='PageDown'||e.key===' '){e.preventDefault();next();}
+    else if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();prev();}
+    else if(e.key==='Home'){show(0,false);}
+    else if(e.key==='End'){show(slides.length-1,true);}
+    else if(e.key==='n'||e.key==='N'){panel.classList.toggle('open');}
+    else if(e.key==='f'||e.key==='F'){if(!document.fullscreenElement)document.documentElement.requestFullscreen();else document.exitFullscreen();}
+  });
+  deck.addEventListener('click',function(e){
+    var r=deck.getBoundingClientRect();
+    if((e.clientX-r.left)/r.width>0.5) next(); else prev();
+  });
+  window.addEventListener('resize',fit);
+  fit(); show(0,false);
+
+  // print modes: ?mode=notes adds a body class the build/handout uses
+  var m=new URLSearchParams(location.search).get('mode');
+  if(m==='notes'){document.body.classList.add('mode-notes');}
+})();
+</script>
+</body>
+</html>

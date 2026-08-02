@@ -1,0 +1,1576 @@
+                       Department of Data Sciences
+                            M.Sc. Final Project
+
+
+Analysis of Ultrasonic Vocalization of Mice for Autism Detection
+
+
+                    Chen Aharon · Aviel Bitton
+                       305672255            204415418
+
+
+                     Advisor: Dr. Dror Lederman
+
+
+                 In collaboration with Prof. Hava M. Golan
+                      Ben-Gurion University of the Negev
+
+
+
+                                    2026
+
+
+
+
+                                      1
+Table of Contents
+Table of Contents .......................................................................................................................................... 2
+List of Tables ................................................................................................................................................ 4
+List of Figures ............................................................................................................................................... 5
+List of Abbreviations .................................................................................................................................... 6
+Abstract ......................................................................................................................................................... 7
+1. Introduction ............................................................................................................................................... 8
+   1.1 Motivation ........................................................................................................................................... 8
+   1.2 Research questions .............................................................................................................................. 8
+   1.3 Contributions....................................................................................................................................... 9
+   1.4 Research project structure ................................................................................................................... 9
+2. Background and Related Work ............................................................................................................... 10
+   2.1 Autism spectrum disorder and the Mthfr model ............................................................................... 10
+   2.2 Ultrasonic Vocalizations as a behavioral biomarker ......................................................................... 10
+   2.3 Automated USV analysis and machine learning ............................................................................... 10
+   2.4 The prior project in this lineage ........................................................................................................ 11
+   2.5 Machine-learning methods used in this work ................................................................................... 11
+   2.6 Model evaluation and metrics ........................................................................................................... 13
+   2.7 Where this work fits .......................................................................................................................... 13
+3. Materials and Methods ............................................................................................................................ 14
+   3.1 Provenance and recording rig ........................................................................................................... 14
+   3.2 Cohort composition ........................................................................................................................... 14
+   3.3 From recordings to syllables ............................................................................................................. 15
+   3.4 The baseline dataset and class balance ............................................................................................. 17
+   3.5 Single source of truth and a data-integrity correction ....................................................................... 18
+   3.6 Segmentation and syllable typing ..................................................................................................... 19
+   3.7 Two preprocessing representations ................................................................................................... 20
+   3.8 Models .............................................................................................................................................. 21
+   3.9 Class imbalance and metrics ............................................................................................................. 22
+   3.10 Evaluation protocol: the heart of the study ..................................................................................... 23
+4. Experiments and Results ......................................................................................................................... 25
+   4.1 Tabular models on the pooled cohort ................................................................................................ 25
+   4.2 The corrected baseline: a data-integrity result .................................................................................. 26
+
+                                                                                 2
+   4.3 Generalization, ranking, and minority-class behavior ...................................................................... 27
+   4.4 Sequence models and cross-validation deflation .............................................................................. 30
+   4.5 Decision-threshold tuning ................................................................................................................. 32
+   4.6 Per-strain analysis ............................................................................................................................. 33
+   4.7 Which features matter ....................................................................................................................... 33
+   4.8 Best model per scenario .................................................................................................................... 34
+5. Discussion ............................................................................................................................................... 36
+   5.1 What works, and in which regime .................................................................................................... 36
+   5.2 Why minority precision is capped .................................................................................................... 36
+   5.3 Sequence order did not help at this scale .......................................................................................... 36
+   5.4 The strain confound .......................................................................................................................... 37
+   5.5 The contribution in perspective......................................................................................................... 37
+6. Reproducibility and Engineering Contribution ....................................................................................... 38
+   6.1 The starting point: a broken inheritance............................................................................................ 38
+   6.2 Inherited versus new ......................................................................................................................... 38
+   6.3 Single source of truth and data provenance ...................................................................................... 39
+   6.4 The graphical segmentation app ....................................................................................................... 40
+   6.5 End-to-end reproducibility ................................................................................................................ 41
+7. Limitations .............................................................................................................................................. 42
+8. Conclusions and Future Work................................................................................................................. 43
+   8.1 Conclusions ....................................................................................................................................... 43
+   8.2 Future work ....................................................................................................................................... 43
+References ................................................................................................................................................... 45
+Appendix ..................................................................................................................................................... 48
+   A.1 Project timelines............................................................................................................................... 48
+   A.2 The graphical segmentation tool ...................................................................................................... 49
+   A.3 Code availability .............................................................................................................................. 50
+
+
+
+
+                                                                               3
+List of Tables
+Table 1. Tabular representation: recording-level features .......................................................................... 20
+Table 2. Sequence representation: per-syllable features ............................................................................. 21
+Table 3. Tabular model configurations ....................................................................................................... 22
+Table 4. Sequence model architectures ....................................................................................................... 22
+Table 5. Split sizes per evaluation regime .................................................................................................. 23
+Table 6. Tabular models, pooled baseline (recording level) ....................................................................... 25
+Table 7. Sequence models, pooled baseline (session level) ........................................................................ 31
+Table 8. Best model per scenario ................................................................................................................ 35
+Table 9. Inherited versus new capabilities .................................................................................................. 39
+
+
+
+
+                                                                         4
+List of Figures
+Figure 1. TabPFN in-context inference vs conventional training ............................................................... 12
+Figure 2. Dataset composition (small multiples) ........................................................................................ 14
+Figure 3. Class balance and syllables-per-subject ...................................................................................... 15
+Figure 4. Annotated segmentation example ................................................................................................ 16
+Figure 5. Syllable-type taxonomy (real spectrograms) ............................................................................... 16
+Figure 6. Syllable-type distribution ............................................................................................................ 17
+Figure 7. Acoustic-feature distributions by genotype ................................................................................. 17
+Figure 8. Data provenance & single source of truth ................................................................................... 18
+Figure 9. End-to-end USV-to-decision pipeline ......................................................................................... 19
+Figure 10. Experimental-design matrix ...................................................................................................... 24
+Figure 11. Tabular model performance - dependent vs independent .......................................................... 25
+Figure 12. Corrected baseline and recovery (subject-dependent vs subject-independent) ......................... 27
+Figure 13. ROC curves (headline tabular models) ...................................................................................... 28
+Figure 14. Precision–Recall curves (HT class) ........................................................................................... 28
+Figure 15. Generalization gap (HT recall & precision) .............................................................................. 29
+Figure 16. Confusion matrices (headline models) ...................................................................................... 29
+Figure 17. HT-precision wall ...................................................................................................................... 30
+Figure 18. Sequence-model lever sweep and CV deflation ........................................................................ 31
+Figure 19. Threshold-objective operating points ........................................................................................ 32
+Figure 20. Per-strain comparison ................................................................................................................ 33
+Figure 21. Feature importance (XGBoost) ................................................................................................. 34
+Figure 22. Commit-derived work timeline ................................................................................................. 38
+Figure 23. Model taxonomy - inherited vs new .......................................................................................... 39
+Figure 24. The USV Segmentation desktop application (main window) ................................................... 40
+Figure 25. Project timeline / Gantt (interim plan) ....................................................................................... 48
+Figure 26. The download page of the graphical segmentation tool on Zenodo .......................................... 49
+Figure 27. The public repository in GitHub for the full pipeline ................................................................ 50
+Figure 28. The public repository in GitHub for the graphical segmentation tool ....................................... 50
+
+
+
+
+                                                                          5
+List of Abbreviations
+Abbreviation   Meaning
+ASD            Autism Spectrum Disorder
+USV            Ultrasonic Vocalization
+WT             Wild-Type (control genotype)
+HET / HT       Heterozygous (Mthfr ASD-model genotype - positive class)
+UNK            Undetermined genotype
+Mthfr          Methylenetetrahydrofolate reductase
+CNN            Convolutional Neural Network
+BiT            Big Transfer (transfer-learning architecture)
+BiLSTM         Bidirectional Long Short-Term Memory network
+1D-CNN         One-Dimensional Convolutional Neural Network
+TabPFN         Tabular Prior-data Fitted Network
+XGBoost        Extreme Gradient Boosting
+ISI            Inter-Syllable Interval
+ROC-AUC        Area Under the Receiver-Operating-Characteristic Curve
+PR-AUC / AP    Area Under the Precision–Recall Curve / Average Precision
+RQ             Research Question
+CV             Cross-Validation
+ERB            Equivalent Rectangular Bandwidth
+P4-P12         Postnatal days 4-12
+
+
+
+
+                                                6
+Abstract
+Autism Spectrum Disorder (ASD) is diagnosed solely by expert behavioral assessment: there is currently
+no objective biological, physiological or imaging test in clinical use. Diagnosis therefore depends on
+trained clinicians, is subjective and time-consuming, and is hard to apply reliably in infancy precisely the
+window in which early intervention matters most. This motivates the search for objective, quantitative
+early biomarkers. In mouse models, pup Ultrasonic Vocalizations (USVs) are an established, non-
+invasive candidate. This project asks whether ASD-model mice (Mthfr heterozygotes) can be
+distinguished from wild-type controls by their USVs, and equally importantly how well such a classifier
+generalizes to unseen animals.
+This work develops and evaluates algorithms that decode these vocal signals into a genotype decision.
+Each recording is segmented into individual syllables, which are typed by a convolutional network and
+summarized into acoustic descriptors, classifiers are then trained to separate ASD-model from control
+pups. Because the labels drive every result, the data were first consolidated into a single curated source,
+during which an undocumented genotype-labelling error was identified and corrected (14 mice, 2,495
+rows, HET → WT).
+On a corpus of 125,576 syllables from 126 pups (35 dams, five recording years), two representations were
+built recording-level acoustic aggregates and ordered per-session syllable sequences and evaluated under
+two complementary regimes: subject-dependent (classifying a new recording of an already-seen animal)
+and subject-independent (generalizing to entirely unseen animals). Tabular models (XGBoost, tuned
+XGBoost, TabPFN) were compared with neural sequence models (BiLSTM, 1D-CNN, Transformer).
+TabPFN is the strongest tabular model in both regimes, reaching 0.781 subject-dependent accuracy (up to
+0.801 per cohort) and 0.729 subject-independent accuracy (weighted F1 0.743, ROC-AUC 0.783) on
+entirely unseen mice. Clinically most important, HT (ASD-model) recall stays high across the regime
+change the tuned XGBoost catches 0.869 of true ASD-model pups on unseen animals so the model rarely
+misses a positive case. A previously reported accuracy of 0.829 is clarified as an uncorrected subject-
+dependent figure: a data-integrity correction lowers the inherited subject-dependent baseline to 0.733, and
+TabPFN then exceeds it (0.781), the subject-dependent vs subject-independent gap is the expected
+difference between two legitimate questions. Minority-class precision is capped near 0.50 across all
+models a feature-level ceiling, not an estimator limit and sequence models do not improve on the tabular
+aggregates at this data scale, with a promising single-split result (0.704 balanced accuracy) deflating to
+0.563 ± 0.063 under cross-validation. Per-strain results are strongly confounded by cohort. The project
+delivers a reproducible pipeline and a calibrated account, under both evaluation regimes, of what USVs
+can and cannot support.
+
+
+
+
+                                                     7
+1. Introduction
+1.1 Motivation
+Autism Spectrum Disorder (ASD) is a neurodevelopmental condition defined by difficulties in social
+communication together with restricted and repetitive behavior. Diagnosis in humans rests on expert
+behavioral assessment, which is time-consuming, requires trained clinicians, and is especially hard to
+apply reliably in early infancy precisely the window in which early intervention is most valuable. This
+motivates a search for objective, quantitative, and early biomarkers of atypical neurodevelopment.
+Mouse models are a central tool in preclinical ASD research. When isolated from the nest, mouse pups
+emit Ultrasonic Vocalizations (USVs) calls in the 35-125 kHz range that are inaudible to humans,
+produced naturally, and recordable non-invasively. These isolation calls are sensitive to genetic and
+environmental manipulations relevant to neurodevelopment, and their temporal and spectral structure has
+been proposed as an early, communication-related biomarker of ASD-like phenotypes [1], [2], [3].
+Because mouse USVs share several organizational features with human speech temporal patterning,
+frequency modulation, and sensitivity to developmental disruption they offer a tractable bridge between
+molecular models and communication phenotypes [4].
+Most prior USV studies remain descriptive: they report group-level differences in call rate or in a handful
+of acoustic features. A smaller and more recent body of work asks the harder predictive question whether
+the differences between an ASD-model group and a wild-type group are large and consistent enough to
+classify an individual animal from its calls [5], [6], [7]. This project belongs to the predictive tradition and
+inherits a concrete experimental lineage: a long-running collaboration that recorded Mthfr
+(methylenetetrahydrofolate reductase) ASD-model mice and wild-type controls under a standardized
+isolation paradigm [8], [9].
+
+1.2 Research questions
+This project addresses three research questions:
+• RQ1 - Models. Which model families best classify ASD-model (Mthfr-HET) versus wild-type pups
+    from their USVs gradient-boosted trees (XGBoost), a prior-fitted tabular transformer (TabPFN), or
+    neural sequence models (BiLSTM, 1D-CNN, Transformer)?
+• RQ2 - Which features. Which acoustic characteristics drive the classification, and do a small
+    number (two or three) of consistent features emerge?
+• RQ3 - Evaluation regime and generalization. How does the evaluation regime subject-dependent
+    versus subject-independent splits, and per-strain versus pooled cohorts affect classification
+    performance and, above all, generalization to unseen mice?
+
+Beyond these three research questions, the project also pursues a central engineering goal: to turn the
+inherited, non-runnable prototype into a reproducible, documented, end-to-end pipeline built on a single,
+auditable source of truth (Chapter 6).
+
+
+
+
+                                                       8
+1.3 Contributions
+This research project makes the following contributions:
+•   A reproducible, documented pipeline that takes raw 250 kHz recordings to trained classifiers and
+    evaluation reports, replacing an inherited prototype that could not be run from a clean checkout
+    (Chapter 6).
+•   A single source of truth for the data, consolidated through a purpose-built graphical segmentation
+    tool and a versioned baseline manifest, including the discovery and correction of an undocumented
+    genotype-labelling error in the prior data (Chapters 3 and 6).
+•   A systematic model comparison spanning tabular models (XGBoost, tuned XGBoost, TabPFN) and
+    neural sequence models (BiLSTM, 1D-CNN, Transformer), under a controlled evaluation protocol
+    (Chapters 3 and 4).
+•   A dual-regime characterization of performance, reporting subject-dependent accuracy (on already-
+    seen animals) and subject-independent accuracy (generalization to unseen animals) side by side as
+    two complementary, legitimate questions, and exposing a feature-level ceiling on minority-class
+    precision (Chapters 4 and 5).
+•   A faithful account of the data-integrity finding, showing that the inherited subject-dependent
+    baseline is lower once genotype labels are corrected, that the new models nonetheless exceed it, and
+    decomposing the difference from a previously reported figure into a data-correction effect and a
+    within-vs-subject-independent effect. Figure 12 shows this decomposition and the recovery achieved
+    by the new models.
+
+1.4 Research project structure
+Chapter 2 reviews ASD, USVs, and the relevant machine-learning literature, and situates this work within
+its research lineage. Chapter 3 describes the materials and methods: the data provenance and composition,
+segmentation and syllable typing, the two representations, the models, and the evaluation protocol.
+Chapter 4 reports the experiments and results, including the full results table and the best model per
+scenario. Chapter 5 discusses what the results mean which features matter, how well the models
+generalize, and why. Chapter 6 presents the reproducibility and engineering contribution. Chapter 7 states
+the limitations, and Chapter 8 concludes with future work.
+
+
+
+
+                                                    9
+2. Background and Related Work
+2.1 Autism spectrum disorder and the Mthfr model
+ASD is a heterogeneous neurodevelopmental disorder with a strong but complex genetic component,
+interacting with environmental and metabolic factors. One metabolic pathway repeatedly implicated in
+neurodevelopment is one-carbon (folate) metabolism, of which the enzyme methylenetetrahydrofolate
+reductase (Mthfr) is a key component. Reduced Mthfr activity perturbs methylation reactions required for
+normal brain development, and Mthfr-deficient mice exhibit ASD-relevant behavioral and physiological
+alterations. The data analyzed in this project come from a genetic ASD model based on Mthfr
+haploinsufficiency maintained on a BALB/c background. The cohort actually spans two strain labels that
+share this BALB/c base: a pure BALB/c line (the 2015 and 2018 recordings) and a line with a mixed
+BALB/c x C57BL/6 background (the 2022-2024 recordings) a distinction detailed in Section 3.2 that later
+acts as an important cohort confound (Sections 4.6 and 5.4). In both, the genetic cross is the same: wild-
+type (WT) dams crossed with WT sires, or heterozygous (HET) dams crossed with WT sires, producing
+pups whose individual genotype is WT or HET. The HET pups constitute the ASD-model (positive) class,
+the WT pups are controls [8], [9].
+
+2.2 Ultrasonic Vocalizations as a behavioral biomarker
+Rodent USVs have become a standard tool for behavioral phenotyping of neurodevelopmental and
+neuropsychiatric models [1], [2], [3], [10], and serve as functional readouts of both brain and laryngeal
+function [11]. Pup isolation calls, emitted when a pup is separated from dam and littermates, are among
+the earliest measurable communicative behaviors and are sensitive to genotype, sex, and developmental
+stage. Caruso et al. [2] and Premoli et al. [3] review the use of USVs across ASD rodent models and
+argue for richer, automated analyses beyond simple call counts.
+Two studies from the research lineage of this project are particularly important because they characterize
+the specific dataset paradigm analyzed here:
+Shekel et al. (2021) [8] applied unsupervised clustering to the spectral properties of isolation syllables in
+environmental (chlorpyrifos) and genetic (Mthfr) ASD models. They reported that start frequency,
+bandwidth, and duration were the most ASD-sensitive syllable features, and documented sex differences
+and strain (C57Bl/6 vs BALB/c) baseline differences that act as confounds. This single-session isolation
+paradigm and its feature set directly motivate the acoustic features used in the present tabular pipeline.
+Gal et al. (2023) [9] studied the temporal dynamics of isolation calls under a two-session (maternal-
+potentiation) paradigm an isolation session, a reunion, and a second isolation session. They found
+dynamic, within-animal and between-session modulation of call quantity and spectral structure, with both
+ASD models increasing their use of harmonic calls over time, and interpreted altered dynamics as
+impaired regulation of vocalization. This finding that temporal organization of calls carries phenotypic
+information motivates the sequence-modelling track of the present work.
+
+2.3 Automated USV analysis and machine learning
+Automated USV analysis has progressed from manual spectrogram inspection toward computer-vision
+and deep-learning pipelines. Tools such as VocalMat [12] and the deep-learning segmentation studies of
+Baggi et al. [13] detect and classify syllables from spectrograms, TrackUSF [14] and ARBUR [15]
+integrate detection with downstream behavioral analysis in rats, and Scott et al. [16] and Johnson et al.
+
+                                                     10
+[17] address training-data scarcity through synthetic data and semi-automated labelling. On the prediction
+side, Qian et al. [5] piloted detection of ASD-model mice from USVs ("the sound of silence"), Wu et al.
+[7] extended this with empirical mode decomposition, and the Interspeech MADUV challenge (Mice
+Autism Detection via Ultrasound Vocalization) [6] established a public benchmark for mouse-ASD
+detection from ultrasound. Beyond rodents, deep-learning vocal biomarkers have also been explored for
+human infant ASD screening [18]. Yao et al. [4] connect mouse USVs to human speech, reinforcing the
+translational rationale.
+The present project sits within this predictive line but is distinguished by its engineering and evaluation
+rigour: a single, versioned data source, an explicit, side-by-side evaluation under both subject-dependent
+and subject-independent regimes, and a careful treatment of minority-class behavior rather than headline
+accuracy alone.
+
+2.4 The prior project in this lineage
+A previous M.Sc. project in the same research line on the same topic and supervised by the same advisor,
+Dr. Dror Lederman [19] approached the problem with pretrained audio neural networks (PANNs)
+operating on spectrograms and with a majority-voting scheme. That prior project is prior art and a
+structural reference only, none of its methods or results are reused or claimed here. The present work
+takes a different methodological route interpretable per-recording acoustic aggregates with tree-based
+models, and ordered syllable sequences with recurrent/convolutional/attention models and contributes the
+reproducible-pipeline and data-integrity work that the earlier iteration lacked. Framing the two together
+simply reflects the continuity of the advisor's research line.
+
+2.5 Machine-learning methods used in this work
+This section briefly introduces the model families and concepts used later, so that the methods and results
+chapters can be read without external references. Two broad approaches are compared: tabular models,
+which operate on a fixed vector of per-recording features, and neural sequence models, which operate on
+the ordered stream of syllables.
+Gradient-boosted trees (XGBoost) - A decision tree splits the feature space with a sequence of threshold
+tests and predicts a value in each resulting region. A single tree is weak, gradient boosting builds an
+ensemble of shallow trees in sequence, where each new tree is fit to the errors (gradients of the loss) of
+the ensemble so far, so that the trees progressively correct one another. XGBoost is an efficient,
+regularized implementation of this idea and a standard strong baseline for tabular data. It handles
+heterogeneous features (frequencies, durations, categorical metadata) without scaling, is relatively
+interpretable through per-feature "gain" importance (Section 4.7), and addresses class imbalance through
+a scale_pos_weight factor that up-weights the minority class. XGBoost is the model inherited with this
+project and therefore serves as the reference baseline.
+Prior-fitted transformers (TabPFN) - TabPFN (Tabular Prior-data Fitted Network) is the
+methodological centerpiece of the new models and represents a fundamentally different paradigm from
+XGBoost. Rather than being trained on the project's data, TabPFN is a transformer network that was pre-
+fitted once, offline, on millions of synthetic tabular datasets drawn from a structured prior over plausible
+data-generating processes. At use time it performs in-context learning: the entire labelled training set and
+the unlabeled test rows are fed together through a single forward pass, and the network's attention
+mechanism compares each test row against the training examples to output a calibrated posterior
+
+
+                                                    11
+predictive probability an approximation of Bayesian inference over the prior. Crucially, no gradient
+training and no hyperparameter tuning occur on the project's data, the model is used essentially "as is".
+This makes TabPFN fast, tuning-free, and well suited to tabular problems such as the recording-level
+matrix here. Figure 1 contrasts this in-context scheme with the fit-on-your-data workflow of XGBoost.
+This project uses TabPFN-3 (the Prior Labs tabpfn package), a newer version that supports far larger
+inputs than the original TabPFN on the order of a million rows so the 12,323-row recording matrix (48
+features) sits comfortably within range, the full training split is used, and the model's built-in class-
+imbalance correction replaces the manual class weighting applied to XGBoost.
+
+
+
+
+Figure 1
+The methodological novelty among the new models. XGBoost (A) is trained on the project's data by iterative gradient boosting.
+TabPFN (B) is a transformer pre-fitted once, offline, on millions of synthetic datasets, at use it is frozen and performs in-context
+learning - the labelled training set and the test rows are passed together through a single forward pass whose attention compares
+each test row against the training examples to output a calibrated P(HT), with no gradient training or hyperparameter tuning on
+the project's data.
+
+
+
+Neural sequence models - To test whether the temporal order of syllables carries phenotypic information
+(motivated by Gal et al. [9]), three architectures process each session as an ordered sequence of per-
+syllable feature vectors. A bidirectional LSTM (BiLSTM) [20] is a recurrent network that reads the
+sequence in both directions, maintaining a memory state that accumulates context, it is well suited to
+variable-length temporal data. A one-dimensional convolutional network (1D-CNN) slides learned filters
+along the time axis to detect local motifs (short patterns of consecutive syllables), pooling them into a
+fixed representation. A Transformer encoder replaces recurrence with self-attention: every syllable
+position computes weighted connections to every other position, so the model can relate distant syllables
+directly and learn which parts of the sequence matter, a learned "CLS" summary token aggregates the
+
+                                                                12
+sequence for classification. Attention is the same mechanism that underlies TabPFN and modern language
+models, applied here across syllable positions rather than across training examples.
+
+2.6 Model evaluation and metrics
+Because the results depend as much on how models are evaluated as on the models themselves, the key
+evaluation concepts are defined here.
+Data splitting and cross-validation - Data are partitioned into a training set (to fit the model), a
+validation set (to choose settings and operating thresholds), and a held-out test set (to estimate
+performance on unseen data). When test sets are small, a single split is noisy, so k-fold cross-validation
+repeats the procedure over k disjoint folds and averages the results, yielding a mean and a standard
+deviation that quantify stability. A critical refinement for this project is grouped splitting: when several
+rows belong to the same animal, the split must keep an animal wholly within one fold, or performance on
+unseen animals is overestimated the central evaluation issue developed in Section 3.10.
+Metrics under class imbalance - With a ~3:1 WT:HET class ratio, plain accuracy (fraction correct) is
+misleading, because always predicting the majority class already scores ~0.74. The research project
+therefore foregrounds imbalance-robust measures. Precision for the HET class is the fraction of
+"predicted HET" that are truly HET (false-alarm control), recall (sensitivity) is the fraction of true HET
+that are detected (catching ASD-model pups), their harmonic mean is the F1 score. Balanced accuracy
+averages the per-class recalls, so it is not inflated by the majority class. ROC-AUC measures threshold-
+free ranking quality the probability that a random HET is scored above a random WT while PR-AUC /
+average precision focuses on the minority class specifically. Reporting this suite, rather than accuracy
+alone, is what exposes the minority-class behavior (the "HT-precision wall") that dominates the
+discussion in Chapters 4 and 5.
+
+2.7 Where this work fits
+In summary, the biological grounding (USVs as an early ASD biomarker, the Mthfr model, the isolation
+paradigm) is well established [1], [2], [3], [8], [9], automated detection of ASD-model mice from USVs is
+an active and still-open problem [6], [5], [7], and the chief gaps this research project addresses are
+reproducibility, data integrity, and a rigorous dual-regime (subject-dependent and subject-independent)
+evaluation of which models and which features drive classification and generalization to unseen animals.
+
+
+
+
+                                                    13
+3. Materials and Methods
+3.1 Provenance and recording rig
+The corpus consists of pup-isolation USV recordings collected over five years (2015, 2018, 2022, 2023,
+2024) in the laboratory of Prof. Hava M. Golan, the biology lead researcher and data owner for this
+project. Animals are Mthfr mice maintained on a BALB/c background that spans two strain labels a pure
+BALB/c line and a mixed BALB/c + C57BL/6 line, detailed in Section 3.2, the ASD-model (positive)
+class is the heterozygous (HET) pup and the control class is the wild-type (WT) pup, as described in
+Section 2.1 and in the project's data documentation.
+Recordings were made with an Avisoft Ultrasonic system: an UltraSoundGate 116Hm interface and a
+CM16/CMPA condenser microphone placed approximately 10 cm above the pup, sampling at 250 kHz
+(Nyquist 125 kHz, comfortably covering the 35-125 kHz mouse-USV band). Pups were recorded under
+an isolation paradigm at postnatal days P4-P12, in a single-session protocol [8] and, in later cohorts, a
+two-session maternal-potentiation protocol [9].
+
+3.2 Cohort composition
+The raw corpus comprises 125,576 detected syllables from 126 pups born to 35 dams, across the five
+recording years. At the level of unique animals, the offspring-genotype composition is 91 WT, 29 HET,
+and 6 of undetermined genotype (UNK), the UNK pups are dropped from analysis. Figure 2 summarizes
+the composition across genotype, year, strain, sex, and postnatal day, and Figure 3 shows the class
+balance and the per-mouse syllable counts.
+
+
+
+
+Figure 2
+Counts of mice and syllables across genotype, year, strain, sex, and postnatal day for the raw corpus. The cohort is WT-skewed
+(~3:1) and longitudinal (P4/P6 dominate).
+
+                                                             14
+Figure 3
+Left: recording-level class balance (9,283 WT / 3,040 HT, ~3:1). Right: per-mouse syllable counts (median 828), showing the
+strongly longitudinal structure that motivates subject-grouped evaluation.
+
+
+
+Two structural features of the cohort are important for everything that follows. First, the cohort is WT-
+skewed: at the recording level the baseline class balance is roughly three WT to one HET (Section 3.4).
+Second, the cohort is strongly longitudinal: each pup contributes many recordings across multiple ages
+and sessions (a median of several hundred syllables per pup), so syllables and recordings from the same
+animal are highly correlated. This longitudinal structure is the single most important fact for the
+evaluation design (Section 3.10): a naive row-level split lets the same animal appear in both training and
+test data, inflating apparent performance.
+A further cohort distinction is strain/background, used as a cohort scope in the experiments: the 2015 and
+2018 recordings are labelled pure BALB/c ("strain2"), while the 2022-2024 recordings are labelled with a
+mixed BALB/c + C57 background ("strain1"). This label reflects a genuine genetic cross onto a C57BL/6
+background (confirmed with the biology team), so strain1 and strain2 differ in genetic background as well
+as recording era which makes the cohort a real biological confound with genotype and must be treated
+with care (Chapter 7).
+
+3.3 From recordings to syllables
+Each WAV recording is processed into a table of syllables, one row per detected call, carrying the animal
+metadata (genotype, sex, day, session, strain), the call's timing (start, end, duration, inter-syllable
+interval), two boundary-frequency features (start and end frequency in Hz), a CNN-assigned syllable type,
+and a noise flag. The detection and typing algorithm is described in Section 3.6, Figure 4 shows a
+representative recording with its detected syllables overlaid. The ten confidently-typed classes range from
+simple single-vowel calls (upward and downward sweeps, flat and short calls, the chevron arch) through
+multi-component calls ("frequency steps", "two syllables") to harmonic calls (composite and harmonic
+stacks), Figure 5 shows a representative real spectrogram of each. The corpus is dominated by frequency-
+modulated call types "Frequency steps" alone accounts for 44,547 syllables with a long tail of rarer types
+and a post-hoc "Undefined" class for low-confidence detections. Figure 6 shows the full distribution of
+
+                                                            15
+the ten typed classes, colored by complexity group. At the syllable level, the spectral and temporal
+features (start/end frequency, duration, inter-syllable interval) differ between WT and HET pups in the
+directions reported by Shekel et al. [8]. Figure 7 compares these four distributions between the two
+genotypes.
+
+
+
+
+Figure 4
+Spectrogram of a representative pup recording with the 36 automatically detected syllables overlaid (blue boxes span each call's
+time extent and start/end-frequency band).
+
+
+
+
+Figure 5
+One representative real spectrogram for each of the ten confidently-typed syllable classes (the example nearest each type's
+median duration), ordered from simple single-vowel calls to multi-component and harmonic calls. The characteristic morphology
+is visible: upward/downward sweeps, flat and short calls, the chevron arch, stepped 'frequency steps', and the harmonic stacks of
+composite/harmonic calls. These are the shapes the CNN typer assigns and that the acoustic features summarize.
+
+
+
+
+                                                              16
+Figure 6
+Distribution of the 10 confidently-typed classes plus the post-hoc low-confidence 'Undefined' class, colored by complexity group.
+'Frequency steps' dominates, 'Undefined' (~10%) is dropped in the tabular track but retained in the sequence track.
+
+
+
+
+Figure 7
+Per-syllable start/end frequency, duration and inter-syllable interval for WT vs HT (outliers hidden, display-clipped). These are
+the spectral/temporal features Shekel et al. (2021) reported as most ASD-sensitive.
+
+
+
+3.4 The baseline dataset and class balance
+Not all syllables enter model training. A documented filtering pipeline defines the baseline dataset: rows
+with invalid genotype or invalid sex are removed, and the separate dietary-supplement experimental arm
+is excluded, while noise-flagged rows are retained. This yields a baseline pool of 112,234 syllables from
+106 mice, aggregated to 12,323 recording-level rows for the tabular models (the unlabeled aggregate
+exports 12,322 rows, the one-row difference is an export artefact and does not affect training). At the
+recording level the baseline class balance is 9,283 WT and 3,040 HET recordings about 75% / 25%, the
+~3:1 imbalance that governs metric choice throughout. For the sequence models the same baseline is
+grouped into 408 isolation sessions.
+
+                                                              17
+3.5 Single source of truth and a data-integrity correction
+A defining feature of this project is that all model training draws from one canonical data file the
+segmentation output segmentation_classification_all_data.xlsx rather than from scattered, undocumented
+spreadsheets. This file is produced by the graphical segmentation tool (Section 6.4) and is versioned
+through a baseline data manifest that records the exact input, the filter stages, and the resulting row
+counts. The provenance chain is shown in Figure 8.
+
+
+
+
+Figure 8
+From scattered, undocumented inputs to a curated canonical dataset (single source of truth) with a versioned manifest and a
+reproducible pipeline, the genotype data-integrity correction is applied at the canonical-file stage.
+
+
+
+During the curation of this canonical file, the project discovered and corrected an undocumented
+genotype-labelling error in the prior data: in six metadata files, some pups had been given their dam's
+HET genotype rather than their own, so a number of genetically WT pups of HET dams were labelled
+HET. Using individual genotyping, 14 such mice (2,495 metadata rows) were identified and corrected
+from HET to WT. This is a genetically necessary fix a HET x WT cross yields roughly half WT offspring
+and a localized correction, not a systematic relabeling: most WT pups of HET dams (37 in total) were
+already recorded correctly. This correction, applied at the canonical-file stage, is one reason the project's
+clean baseline differs from previously reported numbers a point developed quantitatively in Section 4.2
+and Figure 12. We treat this as a data-integrity result, not a regression: the corrected labels are the
+genetically correct ones, and the lower subject-dependent baseline they produce is the correct reference
+against which the new models are measured (Section 4.2).
+
+
+
+
+                                                            18
+The end-to-end pipeline is summarized in Figure 9: from the recording rig and raw WAV files, through
+segmentation and CNN syllable typing, to two parallel preprocessing representations (tabular and
+sequence), the model families, the evaluation protocol, and interpretation. This chapter describes each
+stage.
+
+
+
+
+Figure 9
+Signature figure: the full pipeline from the recording rig through segmentation and CNN syllable typing to the two preprocessing
+representations (tabular and sequence), the model families, the evaluation protocol, and interpretation.
+
+
+
+3.6 Segmentation and syllable typing
+Segmentation detects syllable boundaries with a classical signal-processing detector operating on a
+cochlear (gammatone) filterbank of 90 filters spaced on the Equivalent Rectangular Bandwidth (ERB)
+scale a psychoacoustic frequency scale that mimics the resolution of biological hearing covering 35-125
+kHz. Audio is analyzed in short overlapping frames, a tonality criterion (energy concentrated in few
+channels) flags candidate syllables, short silent gaps are bridged so that frequency-modulated sweeps are
+not split, and calls shorter than 10 ms or closer than 20 ms are merged or discarded. Each detected
+syllable yields a start time, end time, and duration. The detector is deterministic, fast, and tuned to this
+laboratory's rig, it is comparable in spirit to MUPET [21] and USVSEG [22] and predates fully learned
+detectors such as DeepSqueak [23] and VocalMat [12]. Its thresholds are fixed constants, and it has not
+been validated against hand-labelled ground truth limitations noted in Chapter 7.
+
+
+                                                              19
+For each syllable, two boundary-frequency features (start and end frequency) are estimated by Welch
+power-spectral-density peak-picking in a short window centered on each boundary, restricted to the > 40
+kHz band, and the inter-syllable interval (ISI) is computed as the gap to the previous syllable in the same
+recording (undefined for the first syllable).
+Syllable typing assigns each syllable to one of ten classes using a convolutional neural network. The
+recovered architecture is a Big-Transfer (BiT) ResNet-50×3 backbone [24], pretrained on ImageNet-21k
+and fine-tuned on 128×128 spectrogram images of individual syllables, with a 10-way softmax head.
+Predictions whose maximum probability falls below 0.5 are relabeled "Undefined" (an eleventh, post-hoc
+class). Representative spectrograms of the ten classes are shown in Figure 5, and their corpus counts in
+Figure 6, the dominant type is "Frequency steps". Figure 4 shows the typer applied to a full recording,
+with every detected syllable boxed and typed. No published model card accompanies the typing network
+(training set and per-class accuracy are unknown), a limitation carried to Chapter 7.
+
+3.7 Two preprocessing representations
+The syllable table feeds two independent representations, which differ in what they preserve:
+Tabular (recording-level) - Each recording is reduced to a fixed 48-column vector (Table 1):
+
+
+Table 1
+The 48-column recording-level feature vector. Undefined-typed syllables and each recording's first syllable (undefined ISI) are
+dropped before aggregation, the baseline matrix has 12,323 rows. Models: XGBoost and TabPFN.
+
+Block                    Columns                             Count      Description
+Start frequency          syll1_s_freq ... syll10_s_freq         10      Mean start frequency per syllable type (Hz), absent
+                                                                        types -> 0
+End frequency            syll1_e_freq ... syll10_e_freq         10      Mean end frequency per syllable type (Hz)
+Relative frequency       syll1_dist ... syll10_dist             10      Each type's share of the recording's syllables (sums to
+                                                                        1)
+Duration                 syll1_dur ... syll10_dur               10      Mean duration per syllable type (s)
+Average ISI              avg_ISI_time                           1       Mean inter-syllable interval over the recording
+Sex                      pup_sex                                1       Pup sex (F 0 / M 1)
+Age                      pup_age                                1       Postnatal day
+Session                  session                                1       Isolation session (1 / 2)
+Strain                   pup_strain                             1       Strain background (1 / 2)
+Mother genotype          mother_gen                             1       Maternal genotype (WT 0 / HET 1)
+Features total                                                  46
+
+Label                    label                                  1       Pup genotype (target)
+Grouping index           mouse_idx                              1       Mouse ID - used only for subject-grouped splits, not a
+                                                                        feature
+Total columns                                                   48
+
+
+
+
+                                                               20
+Sequence (session-level) - Each isolation session is an ordered sequence of its syllables, each represented
+by a 14-dimensional feature vector (Table 2):
+
+
+Table 2
+The 14-dimensional per-syllable feature vector for the sequence track. Each session is an ordered sequence of up to 256 steps,
+the baseline yields 408 sessions. Models: BiLSTM, 1D-CNN, Transformer.
+
+ Feature                         Dim      Type            Description
+ Start frequency                   1      continuous      standard-scaled on the training set
+ End frequency                     1      continuous      standard-scaled
+ Duration                          1      continuous      standard-scaled
+ ISI                               1      continuous      standard-scaled
+ Syllable-type embedding           8      learned         8-dim embedding of the syllable type (keeps "Undefined")
+ Noise flag                        1      binary          noise-flagged syllable
+ Recording-boundary flag           1      binary          marks recording transitions within a session
+ Total per step                   14                      sequence padded / truncated to 256 steps
+
+
+
+Because the two tracks make different decisions (recording vs session grain, dropping vs keeping first and
+Undefined syllables), any comparison between them is a comparison of representation plus model, not of
+model alone a caveat respected throughout Chapter 4.
+
+3.8 Models
+XGBoost (inherited baseline) - A gradient-boosted tree ensemble (XGBoost [25]) using the legacy
+untuned recipe inherited with the project, with class imbalance handled by scale_pos_weight = n_WT /
+n_HT (≈3.1). This is the only model that existed at handoff and serves as the reference baseline.
+
+Tuned XGBoost (new) - A 200-trial randomized hyperparameter search with cross-validation, selecting a
+recipe per split regime. Because the best recipes differ between the dependent and independent regimes,
+the tuned results are reported as separate per-regime models, not as one model improving across regimes.
+The final per-regime recipes contrast sharply the subject-dependent model is deep (96 trees, depth 8)
+while the subject-independent model is shallow and heavily regularized (20 trees, depth 3,
+min_child_weight 20), reflecting the smaller, data-limited independent split.
+TabPFN-3 (new) - A prior-data-fitted transformer for tabular data [26] that performs in-context Bayesian
+inference in a single forward pass with no hyperparameter tuning. TabPFN merges its validation split into
+training, so it sees more data than XGBoost (≈80% vs 60%), this is noted wherever the two are compared.
+
+
+
+
+                                                               21
+Table 3
+Tabular model configurations. The tuned XGBoost recipes are the winners of the 200-trial random search, reported separately
+per split regime, TabPFN-3 is tuning-free.
+    Model                                     Key hyperparameters
+    XGBoost (inherited baseline)              50 trees, max_depth 5, learning rate 0.1, scale_pos_weight = n_WT/n_HT
+                                              (~3.1)
+    XGBoost-tuned (subject-dependent)         96 trees, max_depth 8, lr 0.08, min_child_weight 2, reg_lambda 3.0,
+                                              reg_alpha 1.0, subsample 0.6, colsample_bytree 0.7
+    XGBoost-tuned (subject-independent)       20 trees, max_depth 3, lr 0.10, min_child_weight 20, reg_lambda 3.0,
+                                              reg_alpha 0.05, subsample 0.6, colsample_bytree 0.6
+    TabPFN-3                                  No tuning (prior-fitted transformer), balance_probabilities enabled,
+                                              pretraining-limit guard disabled
+
+
+
+Sequence models (new) - Three architectures over the ordered syllable sequences: a two-layer BiLSTM
+[20] (≈149k parameters), a three-block 1D-CNN (≈86k), and a small Transformer encoder [27] with a
+learned CLS token (≈73k). All use BCEWithLogitsLoss with pos_weight = n_WT / n_HT (≈3.2), the Adam
+optimizer, learning-rate reduction and early stopping on validation AUC, gradient clipping, and a fixed
+seed. A family of imbalance-handling levers (loss weighting, balanced sampling, focal loss,
+regularization, augmentation) is explored in Section 4.4.
+
+
+Table 4
+Sequence model architectures. The three models share a single training configuration (bottom row).
+
+    Model          Architecture                                                                        ~Params
+    BiLSTM         2 layers, hidden size 64, bidirectional                                               149k
+    1D-CNN         3 convolutional blocks (64 -> 128 -> 128), kernel size 3                               86k
+    Transformer    d_model 64, 4 attention heads, 2 layers, feed-forward 128, learned CLS token           73k
+
+
+
+3.9 Class imbalance and metrics
+Under a ~3:1 class imbalance, raw accuracy is misleading: a constant "predict WT" classifier already
+scores ~0.74. We therefore report a suite of metrics and foreground imbalance-robust ones:
+•      Accuracy and weighted F1 for overall performance (comparable to prior reports),
+•      Balanced accuracy (mean of per-class recall) as the primary imbalance-robust score,
+•      ROC-AUC (threshold-free ranking) and PR-AUC / average precision (focused on the minority HET
+       class),
+•      Per-class precision, recall, and F1 for WT and HT separately the clinically meaningful breakdown,
+       since HT recall is "catching ASD-model pups" and HT precision is the false-alarm rate.
+Throughout, the positive class is HET.
+
+
+
+
+                                                             22
+3.10 Evaluation protocol: the heart of the study
+Two split regimes are used, and the distinction between them is the central methodological point of the
+research project:
+Subject-dependent: a random 60/20/20 split at the row/session level. Because the cohort is longitudinal,
+the same animal may appear in training and test. This answers the question: how accurately can a new
+recording of an already-seen animal be classified?
+Subject-independent: a 60/20/20 split grouped by mouse, with stratification on the label and explicit
+disjointness checks, so that no animal appears in two sets. This answers the question: how accurately can
+an entirely unseen animal be classified?
+The two tracks and regimes yield the split sizes in Table 5.
+
+
+Table 5
+Split sizes under each regime (baseline: 106 mice / 12,323 recordings / 408 sessions). Subject-dependent splits at the row/session
+level, subject-independent splits by mouse (60/20/20), so the test set is entirely held-out animals. TabPFN merges val into train
+(9,858 train rows), so its dependent test set equals the val split.
+
+ Track            Regime                 Train                  Val                 Test           Test composition
+ Tabular          subject-                7,393                2,465                2,465          WT 73.8% / HT 25.2%
+ (recordings)     dependent
+ Tabular          subject-          7,866 (63 mice)      2,318 (21 mice)      2,139 (22 mice)      WT 72.9% / HT 26.1%
+ (recordings)     independent
+ Sequence         subject-                 244                  82                    82           WT 77% / HT 23%
+ (sessions)       dependent
+ Sequence         subject-                 238                  80              90 (22 mice)       WT 79% / HT 21%
+ (sessions)       independent
+
+
+
+These two regimes are complementary and both legitimate, they simply answer different questions. The
+subject-dependent setting is the standard, valid evaluation for a personalized model and is directly
+comparable to the prior work in this line, which reported subject-dependent results. The subject-
+independent setting is the stricter test relevant to this project's stated goal flagging a new, unseen animal
+and is expected to score lower because it cannot use any animal-specific information seen in training. The
+distinction between record-wise (within-subject) and subject-wise (across-subject) evaluation, and the fact
+that the two answer different questions, is well established in clinical machine learning [28]. Reporting
+both side by side, rather than either alone, is a deliberate methodological choice of this research project:
+the subject-dependent number states best-case accuracy on known animals, and the subject-independent
+number states expected accuracy on new ones.
+In addition, models are evaluated pooled across all cohorts and per-strain (strain1 = 2022-2024, strain2 =
+2015/2018), to probe whether a learned signal is genotype or cohort. The full grid of what was run is
+shown in Figure 10.
+
+
+
+
+                                                               23
+Figure 10
+Which model/representation was evaluated under which split and cohort scope, cells show test accuracy (— = not run). Tabular
+models are evaluated at recording level, sequence models at session level, the sequence cells (per-session, tiny test folds) are
+single-split point estimates and are shown for completeness only their cross-validated, deflated values (Section 4.4) are the
+reliable summary.
+
+
+
+Tabular models are evaluated at the recording level and sequence models at the session level, the test sets
+therefore differ in size and grain, so cross-track numbers are directional rather than like-for-like. For the
+small sequence test sets, single-split estimates are supplemented by 5-fold grouped cross-validation
+(Section 4.4).
+A separate decision-threshold tuning step (Section 4.5) derives an operating threshold on the held-out
+validation split and freezes it before touching the test set, it relocates the operating point but cannot
+change AUC.
+
+
+
+
+                                                              24
+4. Experiments and Results
+The positive class is HET throughout, and "dependent"/"independent" denote the subject-dependent and
+subject-independent split regimes defined in Section 3.10.
+
+4.1 Tabular models on the pooled cohort
+Table 6 reports the three tabular models on the pooled baseline, in both split regimes. Figure 11 visualizes
+the same numbers as dependent-versus-independent dumbbells for accuracy, weighted F1, and AUC.
+
+
+
+
+Figure 11
+Headline comparison of the three tabular models on the pooled baseline. Each dumbbell links the subject-dependent score (blue,
+known animals) to the subject-independent score (orange, unseen animals). TabPFN is best on both, the within → subject-
+independent drop is the difference between the two questions.
+
+
+
+Table 6
+Tabular models, pooled baseline (recording level). Best dependent and independent rows in bold.
+ Model          Split           Accuracy      Weighted      Balanced        ROC-        HT recall       HT           HT F1
+                                                F1            acc.          AUC                      precision
+ XGBoost        dependent          0.733         0.749         0.795        0.876         0.940         0.496        0.649
+ (inherited)
+ XGBoost        independent        0.693         0.706         0.678        0.770         0.637         0.452        0.529
+ (inherited)
+ XGBoost-       dependent          0.772         0.785         0.798        0.885         0.844         0.543        0.661
+ tuned
+ XGBoost-       independent        0.702         0.719         0.725        0.753         0.869         0.473        0.612
+ tuned
+ TabPFN         dependent          0.781         0.794         0.828        0.908         0.918         0.550        0.688
+ TabPFN         independent        0.729         0.743         0.662        0.783         0.782         0.499        0.610
+
+
+
+Three findings stand out. First, TabPFN is the strongest tabular model in both regimes on overall
+accuracy and weighted F1, answering RQ1 in the affirmative for the tabular foundation model: it beats the
+
+                                                             25
+inherited XGBoost subject-dependent (0.781 vs 0.733 accuracy) and subject-independent (0.729 vs
+0.693). The subject-dependent 0.781 accuracy / 0.794 weighted F1 is a strong result on known animals,
+and TabPFN reaches even higher subject-dependent accuracy on the individual cohorts (up to 0.801,
+Section 4.6). Second, the within → subject-independent drop is real and model-dependent: the inherited
+XGBoost loses the most (accuracy 0.733 → 0.693, HT recall 0.940 → 0.637), whereas TabPFN transfers
+best, its subject-independent accuracy (0.729) essentially matching the subject-dependent accuracy of the
+inherited baseline (0.733). Third, and most important clinically, HT recall the ability to catch ASD-model
+pups stays high across the regime change: the tuned XGBoost keeps HT recall at 0.869 on entirely unseen
+mice (balanced accuracy 0.725, the best subject-independent), and TabPFN holds HT recall at 0.782.
+Because a screening tool must above all not miss true cases, this sustained recall is a key positive result,
+"best model" therefore depends on the objective overall accuracy (TabPFN) versus minority-class
+sensitivity (tuned XGBoost) a trade-off revisited in Sections 4.5 and Chapter 5.
+
+4.2 The corrected baseline: a data-integrity result
+A previously reported subject-dependent accuracy of 0.829 (the prior baseline in this research line) is not
+reproduced by the corrected pipeline for the inherited XGBoost model. Figure 12 decomposes the
+difference into two separable, well-understood effects and, crucially, shows that the new models more
+than recover it:
+Data-integrity correction (subject-dependent regime): 0.829 → 0.733. Correcting the genotype
+mislabeling (Section 3.5) and the class-weighting computation lowers the inherited XGBoost subject-
+dependent accuracy to 0.733. This is not a performance regression, the earlier figure was inflated by
+mislabeled data, and 0.733 is the corrected, genetically-valid subject-dependent baseline.
+Subject-dependent vs Subject-independent question (regime change): 0.733 → 0.693. Evaluating the
+same inherited model on unseen animals (subject-independent) rather than known ones (subject-
+dependent) costs a further ~0.04 in accuracy. This is not an error being removed but the expected
+difference between two legitimate questions (Section 3.10): known-animal accuracy versus new-animal
+accuracy.
+Two points reframe this positively. First, the new models restore and exceed the corrected subject-
+dependent baseline: TabPFN reaches 0.781 subject-dependent (0.801 on strain2), well above the corrected
+XGBoost's 0.733 so after fixing the data, a stronger model was still obtained. Second, the best subject-
+independent model, TabPFN, generalizes to 0.729 accuracy on entirely unseen mice, essentially matching
+the subject-dependent accuracy of the old baseline. The headline of this project is therefore twofold and
+calibrated: a strong subject-dependent model (~0.78–0.80 accuracy on known animals) and a realistic
+subject-independent estimate (~0.73 accuracy / 0.74 weighted F1 / 0.78 ROC-AUC on new animals), with
+the prior 0.829 now understood as an uncorrected, subject-dependent figure.
+The test-set confusion matrices behind these accuracies, for all three models under both regimes, are
+shown in Figure 13 (Section 4.3).
+
+
+
+
+                                                    26
+Figure 12
+The previously reported accuracy (0.829) was an uncorrected subject-dependent figure. (i) Correcting the genotype labels lowers
+the inherited subject-dependent baseline to 0.733, (ii) the new model (TabPFN) recovers and exceeds it, reaching 0.781 subject-
+dependent. Evaluated subject-independent (on entirely unseen animals) the models score lower 0.693 for XGBoost and 0.729 for
+TabPFN which is the expected difference between the subject-dependent and subject-independent questions, not a defect.
+
+
+
+4.3 Generalization, ranking, and minority-class behavior
+Figure 13 (ROC) and Figure 14 (precision–recall) confirm the ranking and quantify the regime cost from
+held-out probabilities. ROC-AUC falls from the dependent to the independent split for every model (e.g.
+TabPFN 0.908 → 0.783), and the precision–recall curves show that minority-class precision degrades
+sharply at high recall on the independent split.
+
+
+
+
+                                                             27
+Figure 13
+ROC for XGBoost, XGBoost-tuned and TabPFN, recomputed from held-out test probabilities. AUC drops from the subject-
+dependent to the subject-independent split, quantifying the gap between known-animal and unseen-animal performance.
+
+
+
+
+Figure 14
+Precision–recall for the HT (ASD-model) minority class. The dashed line is HT prevalence (no-skill). Precision degrades sharply
+at high recall on the independent split.
+
+
+
+Figure 15 makes the minority-class story explicit. As evaluation moves from dependent to independent,
+HT precision stays pinned near 0.50 for every tabular model (0.452-0.550), regardless of model family,
+tuning, or regime. We call this the HT-precision wall (Figure 17): at the default threshold, roughly half of
+all positive (HT) calls are false alarms. The confusion matrices in Figure 16 show the same thing
+structurally the dominant error in every panel is WT recordings predicted HT. Because the wall survives
+
+
+                                                             28
+every estimator and every split, it is a property of the features, not of the classifier (Section 5.2), and
+answers part of RQ2: the current per-recording acoustic aggregates carry only enough information to rank
+well (AUC up to 0.78 on unseen mice) but not to achieve high-purity positive calls.
+
+
+
+
+Figure 15
+Slope chart of HT recall and HT precision as evaluation moves from subject-dependent to subject-independent. HT precision
+stays pinned near 0.50 for every model a property of the features, not the estimator.
+
+
+
+
+Figure 16
+Test-set confusion matrices at threshold 0.4. The dominant error in every panel is WT recordings predicted HT (false positives),
+consistent with the ~0.50 HT-precision ceiling.
+
+                                                              29
+Figure 17
+HT precision at the default threshold across every tabular configuration clusters near 0.50 (grey band), the easier strain1 cohort
+escapes upward. The strain2-independent configurations fall below the band most severely XGBoost and tuned-XGBoost, which
+collapse on the minority class (near-zero HT recall), so their precision is not meaningful. For the pooled and dependent
+configurations, about half of all positive calls are false alarms a ceiling set by the features.
+
+
+
+4.4 Sequence models and cross-validation deflation
+Table 7 reports the three sequence models on the pooled baseline (session level, 82 dependent and 90
+independent test sessions, of which 19 are HT). These numbers are not like-for-like with the tabular
+models, which are evaluated at the recording level on far larger test sets.
+
+
+
+
+                                                               30
+Table 7
+Sequence models, pooled baseline (session level).
+ Model              Split             Accuracy      Balanced      ROC-AUC      HT recall         HT         HT F1
+                                                      acc.                                    precision
+ BiLSTM             dependent           0.232        0.500         0.790         1.000          0.232        0.376
+ BiLSTM             independent         0.456        0.655         0.749         1.000          0.279        0.437
+ 1D-CNN             dependent           0.500        0.564         0.604         0.684          0.271        0.388
+ 1D-CNN             independent         0.633        0.517         0.609         0.316          0.231        0.267
+ Transformer        dependent           0.659        0.668         0.655         0.684          0.371        0.481
+ Transformer        independent         0.544        0.634         0.675         0.789          0.288        0.423
+
+
+
+The sequence models are markedly weaker and prone to collapse. The clearest pathology is the BiLSTM
+on the dependent split: it predicts HT for all 82 test sessions (accuracy 0.232 = the HT base rate, WT
+recall 0, balanced accuracy 0.500), yet its ROC-AUC is 0.790 the ranking is informative but the operating
+point is broken, a failure that only the imbalance-robust metrics expose. The Transformer is the most
+stable baseline (balanced accuracy 0.668 dependent, 0.634 independent) but does not approach the tabular
+models.
+A sweep of eight imbalance-handling levers (A-H) was run across the three architectures. Figure 18 (left)
+shows the balanced accuracy of every lever-architecture combination, and (right) the cross-validation
+deflation discussed below. The best single-split result was a BiLSTM with a balanced minibatch sampler
+reaching independent balanced accuracy 0.704. However, 5-fold grouped cross-validation of this
+configuration deflates the estimate to 0.563 ± 0.063 (independent) and 0.609 ± 0.055 (dependent) (Figure
+18, right). The single 0.704 was a lucky fold, the true sequence-model signal is weak and data-limited
+(≈19 HT test sessions), and is not recoverable by configuration changes. This answers RQ3 for the
+sequence track: at the current data scale, temporal call order does not yield a reliable gain over the tabular
+aggregates.
+
+
+
+
+Figure 18
+Left: balanced accuracy across the A-H imbalance-handling levers (E run only for BiLSTM). Right: the lucky single-split
+BiLSTM independent score (0.704) deflates to 0.563 ± 0.063 under 5-fold grouped CV the true sequence-model signal is weak
+and data-limited.
+
+                                                             31
+4.5 Decision-threshold tuning
+Threshold tuning derives an operating point on the validation split and freezes it before the test set, it
+cannot change AUC but can move the precision/recall trade-off. Figure 19 shows the effect on TabPFN.
+On the dependent split, an F1- or target-recall objective lifts HT precision to ~0.62 (from 0.55) while
+holding HT recall ~0.81, and raises accuracy to ~0.82 the only operating point that meaningfully exceeds
+the 0.50 precision wall, and then only subject-dependent. On the independent split, the Youden and
+balanced objectives degenerate (threshold collapses toward 0, HT recall → 1, precision pinned ~0.48), a
+target-recall objective (recall floor ≈0.80) is the sensible choice for a screening tool, keeping HT recall
+~0.86 at precision ~0.46 deliberately favoring sensitivity (catching ASD-model pups) over false-alarm
+control. Threshold tuning is thus best understood as principled operating-point hygiene, not as a way to
+break the feature-level ceiling.
+
+
+
+
+Figure 19
+Effect of the threshold objective on TabPFN. On the dependent split, f1/target_recall lift HT precision to ~0.62 while holding
+recall ~0.81, on the independent split, Youden/balanced degenerate (recall → 1, precision pinned ~0.48), so target_recall is the
+only sensible objective.
+
+
+
+
+                                                              32
+4.6 Per-strain analysis
+Splitting the cohort by strain reveals a strong interaction. Figure 20 shows all four metrics for every
+model under both regimes, split by strain. On the strain1 cohort (2022-2024, mixed background) all three
+tabular models are highly separable even subject-independent independent accuracy around 0.90 for each
+(XGBoost 0.903, XGBoost-tuned 0.899, TabPFN 0.897, weighted F1 ~0.90), higher than the pooled
+subject-dependent baseline. On the strain2 cohort (2015/2018, pure BALB/c, only 47 mice) the picture is
+model-dependent under the independent split: the tree models collapse on the minority class (XGBoost
+HT recall 0.089 / HT F1 0.122, XGBoost-tuned 0.057 / 0.081), while TabPFN avoids full collapse but
+stays weak (HT recall 0.410, HT F1 0.388, accuracy 0.654).
+
+
+
+
+Figure 20
+Per-strain results for all three tabular models. strain1 (recent mixed-background cohort) is highly separable subject-independent
+for every model (~0.90), whereas on strain2 (small pure-BALB/c cohort) the tree models collapse on the minority class under the
+independent split while TabPFN stays weak but does not fully collapse evidence that strain/cohort confounds genotype.
+
+
+
+This is the project's most important cautionary result. The exceptional strain1-independent score should
+not be read as a general headline: strain1 is a more recent, lower-HT-prevalence, more separable cohort,
+and because strain/background is confounded with genotype, a model trained on it may be reading cohort
+membership rather than the ASD phenotype. The strain2-independent breakdown a full collapse for the
+tree models and a steep drop for TabPFN despite subject-grouping, reflects both the small cohort and this
+confound. A genuine cross-cohort test (train on one strain, test on the other) is the definitive validation
+and is left to future work.
+
+
+
+4.7 Which features matter
+Figure 21 shows the top-15 features by XGBoost gain importance, averaged over the dependent and
+independent models.
+
+                                                              33
+Figure 21
+Top-15 features by XGBoost gain importance, averaged across the dependent and independent models. Per-syllable-type
+start/end frequencies and durations dominate consistent with Shekel et al. (2021), note the syllN columns map type N → slot via
+a documented off-by-one.
+
+
+
+The classification is driven overwhelmingly by the per-syllable-type start- and end-frequency aggregates
+and durations, with metadata features (age, session, strain) and the average ISI playing secondary roles.
+This is consistent with Shekel et al. (2021) [8], who identified start frequency, bandwidth, and duration as
+the most ASD-sensitive syllable features. The result partially answers RQ2: a small set of
+spectral/temporal feature families (boundary frequencies and durations) dominates, rather than any single
+feature and the absence of a richer per-call descriptor (e.g. full frequency contour, bandwidth, frequency-
+modulation depth) is the most plausible explanation for the HT-precision wall (Section 5.2).
+
+4.8 Best model per scenario
+Table 8 collects the best model for each scenario. The pattern is consistent: TabPFN is best on the pooled
+cohort in both regimes (by accuracy/weighted F1), strain1 is highly separable, strain2 does not generalize,
+and tabular models dominate sequence models at this data scale.
+
+
+
+
+                                                             34
+Table 8
+Best model per scenario (by weighted F1 / accuracy).
+ Cohort              Split                Best model           Accuracy   Weighted F1   HT F1
+ pooled              dependent            TabPFN                0.781        0.794      0.688
+ pooled              independent          TabPFN                0.729        0.743      0.610
+ strain1             dependent            XGBoost-tuned         0.789        0.802      0.649
+ strain1             independent          XGBoost               0.903        0.909      0.753
+ strain2             dependent            TabPFN                0.801        0.809      0.703
+ strain2             independent          TabPFN                0.654        0.659      0.388
+ pooled              dependent            Transformer           0.659         —         0.481
+ (sequence)
+ pooled              independent          1D-CNN                0.633         —         0.267
+ (sequence)
+
+
+
+
+                                                          35
+5. Discussion
+5.1 What works, and in which regime
+The results give a clear, calibrated answer to RQ1 and RQ3. Among the new models, TabPFN is the best
+tabular model in both regimes: it reaches a strong 0.781 subject-dependent accuracy on the pooled cohort
+(up to 0.801 per cohort) and generalizes to 0.729 accuracy / 0.743 weighted F1 / 0.783 ROC-AUC on
+entirely unseen mice a genuine improvement over the inherited XGBoost (0.693 / 0.706 / 0.770), and an
+subject-independent score that matches the inherited model's subject-dependent accuracy (0.733). The
+tuned XGBoost is the best minority-aware model, with the highest subject-independent balanced accuracy
+(0.725) and, clinically most important, HT recall of 0.869 on unseen mice. The choice between them is a
+deployment decision: if the goal is overall correctness, TabPFN, if the goal is a screening tool that catches
+as many ASD-model pups as possible (high HT recall) at the cost of more false alarms, the tuned
+XGBoost or a target-recall threshold (Section 4.5).
+The single most decision-relevant methodological finding is the size of the within → subject-independent
+gap. Subject-dependent evaluation answers "how well does the model do on animals it has seen?",
+subject-independent evaluation answers "how well on new animals?" and on the pooled cohort the two
+differ by roughly 4-7 accuracy points and, more dramatically, by up to 0.30 in HT recall for the inherited
+model. Reporting both distinguishes best-case from generalization performance. Any USV-classification
+result reported under only one regime should be read with the other in mind. This is the practical payoff
+of the dual-regime protocol that this project adopted.
+
+5.2 Why minority precision is capped
+The HT-precision wall near 0.50 (Sections 4.3, 4.5) is the most informative negative result. It appears for
+every model tried it does not change whether the classifier is a gradient-boosted tree ensemble (XGBoost)
+or a pre-trained transformer (TabPFN), whether the trees are tuned or not, or whether evaluation is within-
+or subject-independent and it survives threshold relocation subject-independent (subject-dependent, an F1
+objective can trade recall for precision up to ~0.62, but this only moves along a fixed ROC curve and
+cannot raise AUC). The natural conclusion is that the ceiling is set by the representation, not the
+estimator: the per-recording aggregates (mean start/end frequency, relative frequency, and mean duration
+per syllable type, plus a few metadata fields) summarize each recording into 48 numbers that rank WT
+and HT well (AUC up to 0.78 on unseen mice) but do not separate the two cleanly at the individual level.
+The feature-importance analysis (Section 4.7) points in the same direction: the model leans on boundary
+frequencies and durations exactly the features Shekel et al. [8] flagged but lacks richer per-call descriptors
+such as full frequency contours, bandwidth, and frequency-modulation depth. Enriching the per-call
+feature set is therefore the most promising route to breaking the wall, more so than larger models.
+
+5.3 Sequence order did not help at this scale
+RQ3 asked whether temporal call order adds signal. The sequence models, motivated by Gal et al.'s [9]
+finding that call dynamics carry phenotypic information, did not beat the tabular aggregates, and several
+collapsed to degenerate predictors despite informative AUCs. Cross-validation deflated the most
+promising configuration from a single-split 0.704 to 0.563 ± 0.063 balanced accuracy. The most likely
+explanation is data scale: the session-level representation reduces the corpus to 408 sessions with ~19 HT
+sessions in an independent test fold, far too few for ~70k–150k-parameter networks to learn temporal
+structure reliably. This is a statement about the present dataset, not about the hypothesis: Gal et al.'s
+
+                                                     36
+dynamics may well be real and learnable with more animals or with per-mouse aggregation of session
+predictions. We therefore frame the sequence result as "not supported at this data scale" rather than
+"temporal order is uninformative".
+
+5.4 The strain confound
+The per-strain analysis (Section 4.6) is a caution against over-claiming. Strain1 is almost perfectly
+separable subject-independent for every model (~0.90), while on strain2 the minority class collapses for
+the tree models (HT recall 0.089 for XGBoost and 0.057 for the tuned XGBoost) and drops steeply for
+TabPFN (0.410). Because strain/background, recording year, and HT prevalence all covary with
+genotype, a model trained within or across strains may be exploiting cohort membership rather than the
+ASD phenotype. The pooled subject-independent numbers (Section 4.1) are the most defensible single
+summary precisely because they average across this confound, but even they cannot fully disentangle
+phenotype from cohort. The definitive test train on one strain, evaluate on the other is identified as future
+work (Chapter 8).
+
+5.5 The contribution in perspective
+Read together, the scientific results are solid and calibrated: USVs support a strong subject-dependent
+classifier (~0.78–0.80 accuracy) and above-chance, AUC-0.78 generalization to unseen Mthfr mice,
+driven by spectral and temporal syllable features, with sustained minority-class recall (up to 0.87 on
+unseen animals), a clear feature-level ceiling on precision, and no benefit from sequence modelling at this
+scale. The larger contribution of this iteration is methodological and infrastructural: a reproducible
+pipeline, a single source of truth, the discovery and correction of a data error that had inflated a prior
+result, and a dual-regime evaluation protocol that reports subject-dependent and subject-independent
+performance side by side. In a field where descriptive, single-regime analyses are common, establishing
+what can be claimed for known animals versus new ones and making it reproducible is itself a result.
+
+
+
+
+                                                     37
+6. Reproducibility and Engineering Contribution
+This chapter documents the project's principal engineering contribution: turning an inherited, non-
+runnable prototype into a versioned, documented, end-to-end-reproducible system with a single source of
+truth, and building a graphical tool that lets the biology researcher curate the data in parallel.
+
+6.1 The starting point: a broken inheritance
+At handoff the repository was a monolithic prototype with hard-coded paths, authored years earlier and
+then left dormant. It contained a single classifier a basic, subject-dependent XGBoost and no other
+models, no modular structure, no documentation of the data, and no way to run the pipeline from a clean
+checkout. Reaching a state in which even that one model could be reproduced required rebuilding the
+whole pipeline. Figure 22 reconstructs the timeline of this work from the project's version-control history,
+from the inherited prototype through the takeover, the whole-pipeline refactor, the addition of subject-
+independent evaluation, the genotype correction, and the successive additions of models.
+
+
+
+
+Figure 22
+Milestones reconstructed from the local git history (chronology only - no metrics). From the inherited single-model prototype to
+the final multi-model, dual-regime pipeline.
+
+
+
+6.2 Inherited versus new
+A precise accounting of what was inherited and what this project built is given in Table 9 and visualized
+in Figure 23. The distinction matters for both the scientific narrative (everything beyond the inherited
+model is a new result) and the assessment of the engineering contribution.
+
+
+
+
+                                                              38
+Table 9
+Inherited versus new capabilities.
+ Capability                                                     Status
+ Basic subject-dependent XGBoost                                Inherited (only model at handoff)
+ Modular, runnable pipeline (src/preprocessing,                 New
+ src/classification)
+ Subject-independent / group-aware evaluation                   New
+ Tuned XGBoost (hyperparameter search)                          New
+ TabPFN tabular model                                           New
+ Sequence models (BiLSTM, 1D-CNN, Transformer)                  New
+ Per-strain cohort analysis                                     New
+ Decision-threshold tuning (held-out, multi-objective)          New
+ Canonical external data source + baseline manifest             New
+ Genotype data-integrity correction                             New
+ Graphical segmentation app for the researcher                  New
+
+
+
+
+Figure 23
+Model families tried, by representation. Only the single subject-dependent XGBoost existed at handoff, the tuned XGBoost,
+TabPFN, and all three sequence models were added by this project.
+
+
+
+6.3 Single source of truth and data provenance
+The data-integrity backbone of the rebuilt system is a single canonical input file with a versioned
+manifest, replacing the previous practice of scattered, undocumented spreadsheets. The provenance chain
+
+
+                                                           39
+(Figure 8) runs: raw recordings → metadata extraction → the graphical segmentation tool → the
+canonical segmentation_classification_all_data.xlsx → baseline filters and manifest → the aggregated tabular
+and sequence training matrices → per-run result directories. Each stage has a documented script and, for
+the data, a manifest recording the exact input, the filter rules, and the resulting row counts (Section 3.4).
+Two integrity findings emerged from this work and are recorded honestly in the research project: the
+genotype mislabeling (14 mice / 2,495 rows corrected from HET to WT, Section 3.5) and the resulting,
+correct, lower baseline (Section 4.2). Both are consequences of having established a single, auditable
+source of truth where previously there was none.
+
+6.4 The graphical segmentation app
+To let the biology researcher (Prof. Hava Golan) curate and review the USV data without using the
+command line, the project built a graphical segmentation application that wraps the existing segmentation
+and typing algorithms behind a simple interface (select data and output folders, choose recording years,
+run, and inspect results). Its main window (Figure 24) lists each recording year with its detected
+recording-file count and an auto-detected metadata status, and lets the user browse the year → pup →
+recording → day → session hierarchy before running. The tool runs the same algorithms as the Python
+pipeline and produces the canonical segmentation file that all model training consumes, it is the
+mechanism by which the data-curation process (and the discovery of the prior-data errors) was carried out
+in parallel with the modelling work. It is distributed as a one-click Windows installer and a portable build,
+and published as a citable artifact: USV Segmentation (v1.0.2), Zenodo [29], with source code on GitHub
+[30].
+
+
+
+
+Figure 24
+Main window of the USV Segmentation application. The researcher selects a data folder (here the recordings root) and an output
+folder, the app then lists each recording year with its detected recording-file count and an auto-detected metadata status,
+browsable as an expandable year -> pup -> recording -> day -> session tree. A run mode (e.g. "Segmentation + Classification")
+is chosen and "Run" executes the same pipeline as the command-line tool, with a live progress bar and log. The tool produces the
+canonical segmentation file consumed by all model training. Version 1.0.2, published on Zenodo [29].
+
+                                                              40
+6.5 End-to-end reproducibility
+The rebuilt system is runnable end-to-end from a clean checkout of the public repository [31].
+Environment setup is pinned (a requirements file and a Dockerfile), the preprocessing pipeline is
+decomposed into documented steps (ingestion, segmentation, feature computation, typing, enrichment,
+aggregation), and training is driven by documented command-line flags that select the model, the split
+regime (--independent), the cohort scope (--strain), and the baseline data. Every run writes a result directory
+with its configuration, metrics, plots, and a human-readable README, so that each number in this
+research project is traceable to a specific, reproducible run. The documentation set itself the data manifest,
+the segmentation and preprocessing references, the CLI reference, and the per-run reports is a deliverable
+of the project, and is what makes the integrity claims in this research project checkable.
+
+
+
+
+                                                      41
+7. Limitations
+This work is deliberately explicit about what it cannot claim.
+Data scale and cohort - The corpus is 126 pups (29 HET) from one laboratory and one genetic model
+(Mthfr, on a BALB/c background spanning two strain labels a pure BALB/c line and a BALB/c ×
+C57BL/6 line). After subject-grouped splitting, an independent test fold contains only a few dozen mice,
+and the sequence representation reduces to ~19 HT test sessions. This limits the power of any model
+especially the neural sequence models and means confidence intervals on the headline numbers are wide.
+The single-fold sequence results in particular must be read together with their cross-validated, deflated
+estimates (Section 4.4).
+Strain/cohort confound - Recording year, strain/background label, and HT prevalence covary with
+genotype (Section 5.4). The strong strain1-independent result (~0.90 for every model) reflects this
+confound, while the strain2-independent breakdown a collapse for the tree models and a steep drop for
+TabPFN reflects both the small cohort and the same confound. Without a cross-cohort experiment, we
+cannot fully separate a learned ASD phenotype from learned cohort membership. The difference between
+the 2018 and 2022 cohorts is a confirmed genetic cross onto a C57BL/6 background a real genetic-
+background difference, not a labelling artefact which makes the cohort confound genuine and reinforces
+the need for a cross-cohort test.
+Evaluation grain - Metrics are reported at the recording level (tabular) and session level (sequence), they
+are not aggregated to a single per-mouse decision. A per-subject vote (e.g. majority over a mouse's
+recordings) might change both the numbers and their interpretation and is left to future work.
+Consequently, tabular and sequence results are directional, not like-for-like.
+Feature representation - The tabular features are per-syllable-type aggregates of boundary frequencies,
+relative frequencies, and durations. They lack richer per-call descriptors (full frequency contour,
+bandwidth, frequency-modulation depth). Section 5.2 argues this is the most likely cause of the HT-
+precision wall, it is a limitation of the inherited feature set, not a fundamental limit of USV-based
+classification.
+Segmentation and typing provenance - The segmentation detector uses fixed, hand-set thresholds and
+has not been validated against hand-labelled ground truth, so its precision/recall and boundary accuracy
+are unquantified. The CNN syllable-typer has no published model card (training set, class balance, and
+per-class accuracy are unknown), and a weight shard is absent from the public checkout. Downstream
+features inherit any errors from these stages.
+Preprocessing choices - The tabular track silently drops each recording's first syllable (undefined ISI)
+and all Undefined-typed syllables, the sequence track keeps both. These undocumented-in-prior-work
+choices were surfaced during the rebuild and are reasonable but not validated (e.g. ISI could be imputed
+instead of dropped).
+Methodological scope vs. the original plan - The interim report proposed spectrogram-based CNN
+classifiers, the delivered system instead uses tabular tree-based models and syllable-sequence networks.
+This was a deliberate, advisor-guided pivot toward what the rebuilt, dual-regime infrastructure could
+evaluate rigorously, but it means the spectrogram-CNN approach of the original plan (and of the prior
+project [19]) is not evaluated here.
+
+
+                                                    42
+8. Conclusions and Future Work
+8.1 Conclusions
+This project rebuilt an inherited, non-runnable USV-classification prototype into a versioned,
+documented, end-to-end-reproducible system with a single source of truth, and used it to evaluate under
+both the subject-dependent and subject-independent regimes whether ASD-model (Mthfr-HET) mice can
+be distinguished from wild-type controls by their Ultrasonic Vocalizations.
+Returning to the research questions:
+RQ1 (new models) - Yes: TabPFN improves on the inherited XGBoost in both regimes the strongest
+subject-dependent model (accuracy 0.781, up to 0.801 per cohort) and the best subject-independent model
+(accuracy 0.729, weighted F1 0.743, ROC-AUC 0.783). The tuned XGBoost is the best minority-aware
+model, sustaining HT recall 0.869 on unseen mice (subject-independent balanced accuracy 0.725) a
+strong sensitivity for a screening use-case.
+RQ2 (features) - Classification is driven by per-syllable-type boundary frequencies and durations
+consistent with Shekel et al. [8] but minority-class precision is capped near 0.50 across all models, a
+ceiling we attribute to the feature representation rather than the estimator.
+RQ3 (regime and generalization) - The evaluation regime matters decisively: subject-dependent
+accuracy (on known animals) exceeds subject-independent accuracy (on new animals) by several points
+and up to ~0.30 in HT recall, so the two must be reported separately. Per-strain results are strongly
+confounded by cohort (strain1 subject-independent 0.903 vs strain2 collapse). Sequence models did not
+beat the tabular aggregates at this data scale, the most promising configuration deflated from 0.704 to
+0.563 ± 0.063 under cross-validation.
+Engineering goal - met: beyond the three research questions, the project delivered its central engineering
+contribution. The pipeline is now reproducible end-to-end, with a single canonical data source, a
+versioned manifest, a graphical curation tool for the researcher, and per-run reports that make every
+number in this project traceable. The rebuild also surfaced and corrected an undocumented genotype error
+that had inflated a prior baseline.
+The headline is therefore twofold and calibrated: USVs support a strong subject-dependent classifier
+(~0.78–0.80 accuracy) on known animals and above-chance, AUC-0.78 generalization to unseen Mthfr
+mice, with high minority-class recall, a clear feature-level precision ceiling, and a strong cohort confound
+findings that are now reproducible and auditable.
+
+8.2 Future work
+The results point to concrete next steps, in roughly descending order of expected value:
+1. Richer per-call features - Add full frequency-contour descriptors (mean/min/max/slope, bandwidth,
+   frequency-modulation depth) to the tabular representation to test whether the HT-precision wall is
+   broken the highest-leverage experiment.
+2. A genuine cross-cohort test - Train on one strain and evaluate on the other to separate the learned
+   ASD phenotype from cohort membership, and control for the confirmed genetic-background
+   difference (BALB/c × C57BL/6) between the 2018 and 2022 cohorts.
+
+                                                    43
+3. Per-subject decisions - Aggregate recording/session predictions into a single per-mouse vote and
+   report subject-level metrics, which is the clinically meaningful grain.
+4. More data for sequence models - Re-test the temporal-dynamics hypothesis [9] with more animals
+   or with per-mouse aggregation, before concluding on whether call order helps.
+5. Validate the front end - Quantify the segmentation detector against hand-labelled ground truth and
+   publish a model card for the syllable-typing CNN, so that downstream feature quality is
+   characterized.
+6. Threshold-calibrated deployment - If the tool is used to flag candidate ASD-model pups, adopt a
+   target-recall operating point and report the expected false-alarm rate explicitly.
+
+
+
+
+                                                 44
+References
+[1] M. L. Scattoni, J. Crawley, and L. Ricceri, “Ultrasonic vocalizations: A tool for behavioural
+phenotyping of mouse models of neurodevelopmental disorders,” Neurosci. Biobehav. Rev., vol. 33, no.
+4, pp. 508–515, Apr. 2009, doi: 10.1016/j.neubiorev.2007.07.003.
+
+[2] A. Caruso, L. Ricceri, and M. L. Scattoni, “Ultrasonic vocalizations as a fundamental tool for early
+and adult behavioral phenotyping of Autism Spectrum Disorder rodent models,” Neurosci. Biobehav.
+Rev., vol. 116, pp. 31–43, Sep. 2020, doi: 10.1016/j.neubiorev.2020.05.011.
+
+[3] M. Premoli, S. Pietropaolo, M. Wöhr, N. Simola, and S. A. Bonini, “Mouse and rat ultrasonic
+vocalizations in neuroscience and neuropharmacology: State of the art and future applications,” Eur. J.
+Neurosci., vol. 57, no. 12, pp. 2062–2096, Jun. 2023, doi: 10.1111/ejn.15956.
+
+[4] K. Yao, M. Bergamasco, M. L. Scattoni, and A. P. Vogel, “A review of ultrasonic vocalizations in
+mice and how they relate to human speech,” J. Acoust. Soc. Am., vol. 154, no. 2, pp. 650–660, Aug. 2023,
+doi: 10.1121/10.0020544.
+
+[5] K. Qian, T. Koike, K. Tamada, T. Takumi, B. W. Schuller, and Y. Yamamoto, “Sensing the Sounds
+of Silence: A Pilot Study on the Detection of Model Mice of Autism Spectrum Disorder from Ultrasonic
+Vocalisations,” in 2021 43rd Annual International Conference of the IEEE Engineering in Medicine &
+Biology Society (EMBC), Mexico: IEEE, Nov. 2021, pp. 68–71. doi:
+10.1109/EMBC46164.2021.9630793.
+
+[6] Z. Yang et al., “MADUV: The 1st INTERSPEECH Mice Autism Detection via Ultrasound
+Vocalization Challenge,” in Interspeech 2025, ISCA, Aug. 2025, pp. 1718–1722. doi:
+10.21437/Interspeech.2025-126.
+
+[7] C. Wu et al., “Exploring the Power of Empirical Mode Decomposition for Sensing the Sound of
+Silence: A Pilot Study on Mice Autism Detection via Ultrasonic Vocalisation,” in Interspeech 2025,
+ISCA, Aug. 2025, pp. 1708–1712. doi: 10.21437/Interspeech.2025-571.
+
+[8] I. Shekel et al., “Isolation-Induced Ultrasonic Vocalization in Environmental and Genetic Mice
+Models of Autism,” Front. Neurosci., vol. 15, p. 769670, Nov. 2021, doi: 10.3389/fnins.2021.769670.
+
+[9] A. Gal, E. Raykin, S. Giladi, D. Lederman, O. Kofman, and H. M. Golan, “Temporal dynamics of
+isolation calls emitted by pups in environmental and genetic mouse models of autism spectrum disorder,”
+Front. Neurosci., vol. 17, p. 1274039, Oct. 2023, doi: 10.3389/fnins.2023.1274038.
+
+[10] A. Venkatraman et al., “Stress-Induced Ultrasonic Vocalization in Laboratory Rats and Mice: A
+Scoping Review,” Brain Sci., vol. 14, no. 11, p. 1109, Oct. 2024, doi: 10.3390/brainsci14111108.
+
+[11] A. C. Shembel, A. M. Johnson, M. R. Ciucci, C. L. Lunaris, R. A. Morrison, and D. M. Rudisch,
+“The role of ultrasonic vocalizations in rat laryngological investigations,” Physiol. Behav., vol. 294, p.
+114887, May 2025, doi: 10.1016/j.physbeh.2024.114886.
+
+[12] A. H. Fonseca, G. M. Santana, G. M. Bosque Ortiz, S. Bampi, and M. O. Dietrich, “Analysis of
+ultrasonic vocalizations from mice using computer vision and machine learning,” eLife, vol. 10, p.
+e59161, Mar. 2021, doi: 10.7554/eLife.59161.
+
+
+
+
+                                                     45
+[13] D. Baggi et al., “Extended performance analysis of deep-learning algorithms for mice vocalization
+segmentation,” Sci. Rep., vol. 13, no. 1, p. 11238, Jul. 2023, doi: 10.1038/s41598-023-38186-6.
+
+[14] S. Netser et al., “TrackUSF, a novel tool for automated ultrasonic vocalization analysis, reveals
+modified calls in a rat model of autism,” BMC Biol., vol. 20, no. 1, p. 159, Dec. 2022, doi:
+10.1186/s12915-022-01299-y.
+
+[15] Z. Chen et al., “ARBUR, a machine learning-based analysis system for relating behaviors and
+ultrasonic vocalizations of rats,” iScience, vol. 27, no. 6, p. 109998, Jun. 2024, doi:
+10.1016/j.isci.2024.109997.
+
+[16] K. J. Scott, L. J. Speers, and D. K. Bilkey, “Utilizing synthetic training data for the supervised
+classification of rat ultrasonic vocalizations,” J. Acoust. Soc. Am., vol. 155, no. 1, pp. 306–314, Jan. 2024,
+doi: 10.1121/10.0024340.
+
+[17] A. M. Johnson, C. Lenell, E. Severa, D. M. Rudisch, R. A. Morrison, and A. C. Shembel, “Semi-
+Automated Training of Rat Ultrasonic Vocalizations,” Front. Behav. Neurosci., vol. 16, p. 826550, Mar.
+2022, doi: 10.3389/fnbeh.2022.826550.
+
+[18] J. H. Lee, G. W. Lee, G. Bong, H. J. Yoo, and H. K. Kim, “Deep-Learning-Based Detection of
+Infants with Autism Spectrum Disorder Using Auto-Encoder Feature Representation,” Sensors, vol. 20,
+no. 23, p. 6762, Nov. 2020, doi: 10.3390/s20236762.
+
+[19] M. Moshe and R. Fisher, “Analysis of ultrasonic vocalization in mice for the diagnosis of autism,”
+M.Sc. project, Holon Institute of Technology, Department of Data Sciences, 2024.
+
+[20] S. Hochreiter and J. Schmidhuber, “Long Short-Term Memory,” Neural Comput., vol. 9, no. 8, pp.
+1735–1780, Nov. 1997, doi: 10.1162/neco.1996.8.7.1734.
+
+[21] M. Van Segbroeck, A. T. Knoll, P. Levitt, and S. Narayanan, “MUPET—Mouse Ultrasonic Profile
+ExTraction: A Signal Processing Tool for Rapid and Unsupervised Analysis of Ultrasonic Vocalizations,”
+Neuron, vol. 94, no. 3, pp. 465-484.e5, May 2017, doi: 10.1016/j.neuron.2016.04.004.
+
+[22] R. O. Tachibana, K. Kanno, S. Okabe, K. I. Kobayasi, and K. Okanoya, “USVSEG: A robust method
+for segmentation of ultrasonic vocalizations in rodents,” PLOS ONE, vol. 15, no. 2, p. e0228907, Feb.
+2020, doi: 10.1371/journal.pone.0228906.
+
+[23] K. R. Coffey, R. E. Marx, and J. F. Neumaier, “DeepSqueak: a deep learning-based system for
+detection and analysis of ultrasonic vocalizations,” Neuropsychopharmacology, vol. 44, no. 5, pp. 859–
+868, Apr. 2019, doi: 10.1038/s41386-018-0303-5.
+
+[24] A. Kolesnikov et al., “Big Transfer (BiT): General Visual Representation Learning,” in Computer
+Vision – ECCV 2020, vol. 12350, A. Vedaldi, H. Bischof, T. Brox, and J.-M. Frahm, Eds., in Lecture
+Notes in Computer Science, vol. 12350. , Cham: Springer International Publishing, 2020, pp. 491–506.
+doi: 10.1007/978-3-030-58558-7_28.
+
+[25] T. Chen and C. Guestrin, “XGBoost: A Scalable Tree Boosting System,” in Proceedings of the 22nd
+ACM SIGKDD International Conference on Knowledge Discovery and Data Mining, San Francisco
+California USA: ACM, Aug. 2016, pp. 785–794. doi: 10.1145/2939672.2939784.
+
+
+
+                                                     46
+[26] N. Hollmann, S. Müller, K. Eggensperger, and F. Hutter, “TabPFN: A Transformer That Solves
+Small Tabular Classification Problems in a Second,” 2022, arXiv. doi: 10.48550/ARXIV.2206.01847.
+
+[27] A. Vaswani et al., “Attention Is All You Need,” 2017, arXiv. doi: 10.48550/ARXIV.1705.03762.
+
+[28] S. Saeb, L. Lonini, A. Jayaraman, D. C. Mohr, and K. P. Kording, “The need to approximate the use-
+case in clinical machine learning,” GigaScience, vol. 6, no. 5, p. gix019, May 2017, doi:
+10.1093/gigascience/gix018.
+
+[29] C. Aharon and A. Bitton, USV Segmentation App. (May 09, 2026). Zenodo. doi:
+10.5281/ZENODO.20096810.
+
+[30] C. Aharon and A. Bitton, USV Segmentation App - Source Code. (2026). [Online]. Available:
+https://github.com/chenaharon/usv-segmentation-app
+
+[31] C. Aharon and A. Bitton, Mouse-USV ASD Pipeline - Source Code. (2026). [Online]. Available:
+https://github.com/AvielBitton/mouse-usv-asd-pipeline
+
+
+
+
+                                                  47
+Appendix
+A.1 Project timelines
+The Gantt chart redraws the planned schedule from the interim report. The work-timeline figure
+reconstructs the actual work chronology from the project's version-control history: from the inherited
+single-model prototype, through the takeover and whole-pipeline refactor, the addition of subject-
+independent evaluation, the genotype correction, and the successive additions of the tuned XGBoost,
+TabPFN, the sequence models, per-strain analysis, and threshold tuning.
+
+
+
+
+Figure 25
+Planned project schedule redrawn from the interim report's work plan, the dashed line marks the interim-report milestone.
+
+
+
+
+                                                               48
+A.2 The graphical segmentation tool
+The USV Segmentation application (v1.0.2, Zenodo doi:10.5281/zenodo.20096810 [29]) is described in
+Section 6.4 and its main window is shown in the corresponding figure. It was the vehicle for the parallel
+data-curation work by the biology researcher, including the review that surfaced the genotype-labelling
+error.
+
+
+
+
+Figure 26
+The download page of the graphical segmentation tool on Zenodo for the latest version.
+
+
+
+
+                                                              49
+A.3 Code availability
+The pipeline source code is available at https://github.com/AvielBitton/mouse-usv-asd-pipeline [31].
+The graphical segmentation application source code is available at https://github.com/chenaharon/usv-
+segmentation-app [30].
+
+
+
+
+Figure 27
+The public repository in GitHub for the full pipeline.
+
+
+
+
+Figure 28
+The public repository in GitHub for the graphical segmentation tool.
+
+
+
+
+                                                              50
+

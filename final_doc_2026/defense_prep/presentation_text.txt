@@ -1,0 +1,1282 @@
+M A S T E R ' S F I N A L P R O J E C T · D ATA S C I E N C E · H O LO N I N S T I T U T E O F T E C H N O LO G Y
+
+
+
+
+Analysis of Ultrasonic
+Vocalizations of Mice
+for Autism Detection
+Chen Aharon · Aviel Bitton
+Advisor: Dr. Dror Lederman
+In collaboration with Prof. Hava M. Golan · Ben-Gurion University
+2026
+OVERVIEW
+
+
+Agenda
+     Motivation                       Methods
+01   Why it matters
+                                 06   From audio to typed syllables
+
+
+
+     Background                       Models
+02   The problem and the model
+                                 07   Tabular & sequence classifiers
+
+
+
+     The solution                     Results
+03   USVs as a biomarker
+                                 08   Performance and baselines
+
+
+
+     Research questions               Engineering
+04   Aims and hypotheses
+                                 09   A reproducible system
+
+
+
+     Dataset                          Conclusions
+05   Recordings and cohorts
+                                 10   Answers and next steps
+SECTION 01
+
+
+
+
+Motivation - Personal
+Seeing a young family member thrive after early, well-matched
+care — early detection is personal.
+SECTION 01
+
+
+
+
+Motivation -
+Professional
+Applying machine learning to real biomedical data — in search
+of an objective biomarker.
+                                            02
+SECTION 02
+
+
+
+
+Background
+Autism, the diagnostic gap, and why mouse
+vocalizations.
+B AC KG R O U N D
+
+
+Autism Spectrum Disorder (ASD)
+
+
+1 in 31
+Children diagnosed with autism — CDC (2025)
+
+A complex neurodevelopmental condition, defined
+by two core behavioral domains:
+
+  Difficulties in social communication
+  Restricted, repetitive patterns of behavior
+
+ ≈4× more common in boys
+
+ ↑ Diagnoses rising steadily
+B AC KG R O U N D
+
+
+The diagnostic gap
+Today, autism is diagnosed only through expert behavioral assessment — a
+slow, multi-step clinical pipeline.
+
+  Subjective, expert-only — no objective test
+  Standardized observation such as ADOS, across multiple sessions
+
+
+
+
+Referral & waitlist                             Assessment · ADOS      Average diagnosis
+    6–12+ months                                   weeks–months            age 3–4
+B AC KG R O U N D
+
+
+The need for a biomarker
+Diagnosis lands years after infancy,
+exactly the window when early intervention matters most.
+
+
+
+
+                                                          THE NEED
+W H Y T O D AY ' S D I A G N O S I S FA L L S S H O R T
+                                                          An objective biomarker
+   Entirely dependent on the clinician's subjective
+   judgment                                               A biological, quantitative measure for early, fast,
+                                                          and independent detection.
+   Hard to apply reliably in infancy
+                                                           Objective    Quantitative    Early
+B AC KG R O U N D
+
+How would you model autism in a mouse?
+
+
+
+
+Not one gene                           MTHFR mutation                                 ASD-like, not autism
+A recipe of many genes and metabolic   Leaves the enzyme only partially functional.   Mice show autism-like behavior only.
+steps.
+B AC KG R O U N D
+
+So why do vocal signals matter?
+Vocal communication is one of the most basic behavioral outputs in nature,
+a direct readout of brain activity.
+
+
+
+
+                                                                01   Fundamental behavioral output
+                                                                     One of the most basic signals in nature.
+
+                                                                02   Speech-like structure
+                                                                     Shares timing and frequency modulation with
+                                                                     human speech.
+
+                                                                03   Sensitive to neurodevelopment
+                                                                     Brain-development disruptions surface in the
+                                                                     calls.
+B AC KG R O U N D
+
+Why a mouse?
+Four reasons the mouse is the right animal model for a neurodevelopmental disorder.
+
+
+
+                    GENETIC HOMOLOGY                                                     ISOLATED VARIABLES
+                    Nearly the same genome                                               A clean research instrument
+                    Protein-coding genes are shared, and human                           Same genetics, food and housing — the only
+  85–95%            MTHFR has an exact mouse ortholog, Mthfr —             1 variable    difference between groups is the gene, with none
+                    doing the same biological job.                                       of the environmental noise of humans.
+
+
+
+
+                    FAST LIFECYCLE                                                  VOCAL COMMUNICATION
+                    Development you can watch                                       A direct link to our signal
+                    Gestation ~20 days, adulthood in weeks — whole                  Social ultrasonic calls arise from circuits sharing an
+  ~20 days          critical windows of brain development observed in      USVs     evolutionary basis with human communication —
+                    a short time, not the 3–4 years a child takes.                  disrupted calls flag social-communication deficits.
+
+
+
+
+                       A mouse is not a small human — but an excellent biological test-bed for how a single gene shapes brain development
+  BOTTOM LINE
+                       and social behavior.
+                                                            03
+SECTION 03
+
+
+
+
+The solution
+Mouse ultrasonic vocalizations as an objective biomarker.
+THE SOLUTION
+
+The candidate biomarker: mouse USVs
+
+
+
+
+35–125 kHz calls                  Earliest signal                      Our hypothesis
+Emitted when pups are isolated.   The first measurable communicative   A non-invasive, objective, quantifiable ASD
+                                  behavior.                            biomarker.
+                                               04
+SECTION 04
+
+
+
+
+Research questions
+Three research questions — models, features,
+and generalization.
+RESEARCH QUESTIONS
+
+Three questions frame the study
+
+      MODELS
+RQ1
+      Which model family best classifies HET vs wild-type pups from their USVs — XGBoost, TabPFN,
+      or sequence models?
+
+      F E AT U R E S
+RQ2
+      Which acoustic characteristics drive the classification — and do two or three consistent
+      features emerge?
+
+      R E G I M E & G E N E R A L I Z AT I O N
+RQ3
+      How do the evaluation regime (subject-dependent vs -independent) and cohort (per-strain vs
+      pooled) affect performance — above all, generalization to unseen mice?
+
+      E N G I N E E R I N G G OA L
+      Turn the inherited, non-runnable prototype into a reproducible, documented, end-to-end
+      pipeline built on a single, auditable source of truth.
+PROJECT TIMELINE
+
+
+Reconstructed from the commit history
+ 2023-05                    2026-03                       2026-04                     2026-05                      2026-06
+ Inherited                  Pipeline                       Subject-               Sequence models                  Threshold
+  project                   refactor                     independent            (BiLSTM/CNN/Transf.)                tuning
+   (single                                                was added
+ XGBoost)
+
+
+
+
+                                                                                                                               Summarized
+                                                                                                                                    and
+                                        Data integrity                                                                         documented
+             Authors take              14 mice / 2,495                                              Cohort -                      project
+                 over                     syllables                    TabPFN added              Strain analysis                 findings
+              2025-11                    2026-04                        2026-04                    2026-05                      2026-07
+                                               05
+SECTION 05
+
+
+
+
+Dataset
+Recordings, syllables, strains, labels, etc.
+D ATA S E T
+
+The raw data: metadata & audio
+Raw material arrives as thousands of WAV recordings + per-year Excel metadata file.
+
+                                                                      TARGET
+ Mother            Mother genotype      Pup ID            Sex                             Day (P4–P12)   Session   Recording no.
+                                                                     Offspring genotype
+
+ 08001P            HT                   08130I            F          HT                   P12            1         T0000001 .wav
+
+
+ 08017Q            WT                   08206D            M          WT                   P8             2         T0031544 .wav
+
+
+ 15044B            HT                   15229K            F          HT                   P6             1         T0102337 .wav
+
+
+Highlighted column = the target label · HT (model-autism) vs WT (healthy).
+
+
+
+              126                                408                           125,576                              5
+               pups                              sessions                           syllables                      years
+D ATA S E T
+
+Dataset composition
+Raw corpus · 126 mice · 35 dams · 125,576 syllables
+
+  Mice by offspring genotype                    Mice by year                          Mice by strain
+        91                                        31             30                                                  76
+                                                                         22    24
+                                                         19                                    50
+
+                     29
+                                   6
+
+       WT           HT            UNK            2015   2018    2022    2023   2024         BALB/c               BALB/c + C57
+                                                                                           (strain2)               (strain1)
+
+
+  Mice by sex                                   Mice by postnatal day                 Syllables by year
+       69                                                96                           35,680
+                                                                                                        30,894
+                     47                           71                                                                      26,729
+                                                                                                                 21,543
+                                                                 42
+                                                                         32    26              10,730
+                                  10
+
+        F            M             U              P4     P6      P8     P10    P12     2015     2018      2022    2023    2024
+D ATA S E T
+
+Class balance & longitudinal structure
+   Recording-level class balance                       Syllables per mouse (n = 126)
+   Baseline · 12,323 recordings
+
+
+
+                                                                                      median = 828      mean = 997
+                                                                                 12
+
+
+
+
+                                                        e ci m f o r e b m u n
+                            ≈3:1                                                 8
+                            WT : HT
+                                                                                 4
+
+                                                                                 0
+                                                                                                 1000                  2000   3000
+
+
+
+      WT · 9,283 75.3%
+      HT · 3,040 24.7%                                                                               syllables per mouse
+
+
+
+   One mouse contributes hundreds of correlated syllables.
+D ATA S E T
+
+Strain: a biological confound
+
+
+                                                                     BALB/c + C57 · mixed
+       BALB/c · pure
+
+    50        mice
+                                                                  76       mice
+                                                                  Recorded 2022–2024 · real cross on a C57BL/6
+    Recorded in 2015 and 2018 · labeled strain2
+                                                                  background · labeled strain1
+
+
+
+
+   Strain differs in both genetic background and recording era — so it is confounded with genotype. We treat it as an
+   explicit cohort scope and handle it carefully in the discussion.
+                                                         06
+SECTION 06
+
+
+
+
+Methods
+From raw ultrasonic audio to model-ready spectrograms.
+METHODS · OVERVIEW
+
+From recordings to a diagnosis
+Every recording passes through two learned stages before a prediction.
+
+
+
+
+                                                                             2   Classification
+                               1   Syllable typing
+                                                                             Tabular + sequence models
+  INPUT                        Segment → spectrogram → CNN                                                           D I AG N O S I S
+  Raw                                                                             Tabular                                    HT · autism
+  recordings                                                                      XGBoost · TabPFN
+                                                                                                                         WT · healthy
+                             detect calls spectrogram CNN types                   Sequence
+                                                                                  BiLSTM · 1D-CNN ·
+                                                                                  Transformer
+
+
+
+
+                Stage 1 turns audio into typed syllables · Stage 2 turns a subject's syllables into a WT-vs-HT prediction.
+M E T H O D S · S TA G E 1
+
+Finding the calls
+A classical energy detector — not a network — locates every ultrasonic call in each recording.
+
+
+
+
+Detected calls (blue boxes) overlaid on a 10-second recording — 36 syllables located automatically.
+
+ 90 gammatone filters · 35–125 kHz      Tonal vs noise per 6 ms frame    Merge gaps < 20 ms · drop calls < 10 ms   Output: start · end · duration
+M E T H O D S · S TA G E 1
+
+Typing each call with a CNN
+Syllable typing is a computer-vision task — each call becomes a spectrogram image the network classifies.
+
+
+
+
+                                                                        CNN backbone
+                                     Spectrogram image                   BiT ResNet-50×3
+  Syllable clip                                                                                             Syllable type
+                                      128×128×3
+  One detected call, padded                                             ~211M params ·                      Softmax over 10 types ·
+  to 0.25 s and centered so          High-pass 30 kHz · STFT            GroupNorm + Weight                  confidence < 0.5 →
+  only its shape matters.            win 512 / hop 128 · resize ·       Standardization ·                   Undefined.
+                                     normalize to 3 channels.           pretrained on ImageNet-
+                                                                        21k.
+        pad            pad
+
+
+
+
+   A strong ImageNet backbone, fine-tuned on hand-labeled USV spectrograms — so it learns the call shapes from limited labeled data.
+M E T H O D S · S TA G E 1
+
+Model card: the syllable-typing CNN
+What the network is, how it was trained, and what it outputs.
+
+
+    MODEL CARD
+
+    BiT ResNet-50×3                                     TASK            Multi-class syllable typing — a spectrogram image →
+    Big Transfer · ResNet-v2 bottleneck · width ×3                      one call type
+
+                                                        BACKBONE        ResNet-v2 bottleneck · blocks (3, 4, 6, 3) · width ×3
+
+                                                        NORMALIZATION   Group Norm + Weight Standardization — the BiT
+                                                                        signature
+
+                                                        PRETRAINING     ImageNet-21k, then fine-tuned with a new
+                                                                        Dense(→10) head on USV spectrograms
+
+                                                        OUTPUT          Softmax over 10 types · confidence < 0.5 →
+                                                                        Undefined (11th class, post-hoc)
+    ~211M
+    trainable parameters                                INFERENCE       Batched (chunk 2048 · batch 32) — tens of
+                                                                        thousands of syllables in minutes
+    128×128×3
+    input spectrogram (RGB)
+M E T H O D S · S TA G E 1
+
+The network, layer by layer
+
+                                                                                        Dense → 10 · softmax
+                                      ResNet-50 ×3 backbone                                                    Frequency steps ← argmax
+                                 Weight-Standardized conv · Group Norm
+                                                                                                               Two syllables
+                                                                                                               Composite
+                                                                                                               Harmonic
+                                                                                                               Chevron
+                                                                                                               Short
+                                                                                                               Complex
+     128×128×3                                                                                                 Flat
+    spectrogram                                                                     global avg pool
+                      3 blocks          4 blocks       6 blocks      3 blocks                                  Upward
+                                                                                                               Downward
+                                                                                                               Undefined (max prob < 0.5)
+
+                        Undefined           Single vowel          Multiple vowels   Advanced harmonic
+M E T H O D S · S TA G E 1
+
+A repertoire of 10 call types
+Each call is one of ten shapes — which the CNN reads from its spectrogram — grouped into four complexity levels.
+
+
+
+
+    Single vowel                       Multiple vowels                   Advanced harmonic          Undefined
+  Upward · Downward · Flat · Short   Frequency steps · Two syllables   Composite · Harmonic       Low-confidence calls
+  · Chevron · Complex
+M E T H O D S · S TA G E 1
+
+Syllable-type distribution
+125,576 syllables, typed by the CNN and colored by complexity group.
+  Single vowel      Multiple vowels      Advanced harmonic       Undefined
+
+
+
+
+  44,547
+
+
+
+
+                 17,816
+                              13,006         12,311     12,105
+                                                                       6,996    6,713     5,246        4,316
+                                                                                                                   1,798     722
+ Frequency    Composite        Two         Undefined   Chevron         Short   Complex     Flat      Harmonic     Upward   Downward
+    steps                    syllables
+
+  'Frequency steps' alone accounts for 44,547 calls. 'Undefined' (~10%) is dropped in the tabular path but kept in the
+  sequence path.
+M E T H O D S · S TA G E 1
+
+The acoustic signal: WT vs HT
+Per-syllable features differ subtly but consistently by genotype — the ASD-sensitive cues from Shekel et al. (2021).
+
+
+
+
+  WT · wild-type       HT · model-autism   Start / end frequency · duration · inter-syllable interval (rhythm)
+                                                                07
+SECTION 07
+
+
+
+
+Models
+Turning the syllable fingerprint into a WT-vs-HT prediction —
+tabular vs sequence classifiers.
+S TA G E 2 · M O D E L S
+
+Two families of classifiers
+The typed syllables feed two representations — and two very different model families.
+
+
+   Tabular models                                          Our focus   Sequence models                                     Explored
+
+   Recording matrix · 12,323 × 48                                      Per-session sequences · 408 × ≤256
+
+     XGBoost · inherited baseline                                       BiLSTM
+
+     XGBoost-tuned · new                                                1D-CNN
+
+     TabPFN-3 · new                                                     Transformer
+
+
+
+
+                                                                       Did not outperform the tabular path — summarized, not
+   Strong results — the main story of this presentation.               deepened.
+
+
+
+                  One shared evaluation protocol · subject-dependent vs subject-independent · per-strain vs pooled
+S TA G E 2 · M O D E L S
+
+One recording → 48 numbers
+Each recording is reduced to a fixed 48-column vector — which averages away the temporal order of the calls.
+
+  10 syllable types × 4 features = 40                           Example · one recording
+   Syllable type              Mean start Mean end    Relative freq           Mean dur.
+                              kHz        kHz                                 ms
+
+        Complex                         68      61                     6%            78
+
+        Frequency steps                 63     60                     35%            62       METADATA · 6
+
+        Composite                       62      58                    15%            84        Avg ISI   Sex    Age   Session
+
+                                                                                               Strain    Mother genotype
+        Two syllables                   66      63                     11%           66
+
+        Upward                          74      84                     4%                41
+                                                                                              TARGET     Pup genotype
+        Flat                            60      59                     5%            33
+
+        Harmonic                        58      54                     4%            96       Mouse index grouping only
+        Downward                        78      66                     2%            45
+
+        Chevron                         66      70                    10%            52
+
+        Short                           79      77                     8%                18
+E VA L U AT I O N
+
+Two ways to split the data
+Same 106 mice — what changes is what you split.         WT · 82     HT · 24
+
+
+                    Subject-dependent                                         Subject-independent
+                    Split by recording.                                       Split by mouse · stratified · no overlap.
+
+                     106 mice                                                  Train · 63             Val · 21            Test · 22
+                                                                               49 WT · 14 HT          16 WT · 5 HT        17 WT · 5 HT
+
+
+
+
+                     Every mouse feeds all three splits — so the
+     Train 60%       same animal appears in Train and Test.
+     Val 20%         Optimistic.
+     Test 20%                                                                   Only 24 HT mice in total → ≈ 5 land in Test → high-
+                                                                                variance folds.
+ same 60/20/20
+    in both
+
+
+
+
+                    within-subject: classify a new recording of a
+                    known animal.                                             across-subject: classify a completely unseen animal.
+S TA G E 2 · M O D E L S
+
+Model card: XGBoost baseline
+   MODEL CARD · INHERITED
+
+   XGBoost
+   Gradient-boosted trees · the baseline we
+   inherited
+                                              TYPE        Gradient-boosted decision trees (ensemble)
+
+                                              RECIPE      The old, un-tuned config shipped with the project
+
+                                              TREES       50 · max_depth 5 · learning rate 0.1
+
+                                              IMBALANCE   scale_pos_weight = n_WT / n_HT ≈ 3.1 (manual)
+
+                                              ROLE        The single model that existed at handover — our
+                                                          reference point
+
+                                              STATUS      The starting point for everything that follows
+   50
+   trees · depth 5 · lr 0.1
+
+   1
+   the only model at handover
+S TA G E 2 · M O D E L S
+
+How gradient boosting decides
+The inherited baseline — with its real test numbers.
+
+
+
+
+                                    50 shallow trees
+  46                                                                                Σ → sigmoid
+                                                                                                                          HT
+  features                                                           ×50
+  40 acoustic (10×4) + 6                                                            p(HT) · threshold 0.5                 WT
+                                    each fits the previous tree's residual ·
+  meta
+                                    depth 5 · lr 0.1
+
+
+                                scale_pos_weight = 3.12 → up-weights the rare HT class (WT:HT ≈ 3:1)
+
+
+
+
+          0.733                               0.94                               0.50                       0.749
+             Accuracy                           HT recall                        HT precision               weighted F1
+
+                                     inherited XGBoost · subject-dependent eval · test WT 74% / HT 26%
+R E S U LT S
+
+Baseline
+The inherited XGBoost, re-measured on corrected labels — the same model under two different evaluation regimes.
+
+
+
+
+                          0.829                      −0.096
+                                                            always-guess-WT floor ≈ 0.73 — raw accuracy just tracks the class split
+
+                                                                                    −0.040
+                                                          0.733
+                                                                                           0.693
+                      Previously reported            Genotype labels fixed            Grouped by mouse
+                     subject-dependent · legacy        subject-dependent              subject-independent
+
+
+
+
+                                             Subject-dependent and subject-independent test seen vs unseen animals — two
+   TWO REGIMES, TWO QUESTIONS
+                                             different questions, not better-and-worse.
+S TA G E 2 · M O D E L S
+
+Why tuned beats default
+In the regime that counts — unseen mice — tuning kills the overfit.
+
+                                                 Default (legacy)              Tuned (200-trial)
+                 1.0
+                                                                                                      0.87
+                                                                                                             ↑ +0.23
+                                                     0.755
+               0.75                    0.675                        ↑ +0.08
+                                                                                     0.64
+               0.50
+
+
+               0.25
+
+
+                  0
+                                       Balanced accuracy                                  HT recall
+                                          the honest score                             catches ASD mice
+                                         subject-independent · 22 held-out mice the model never saw
+
+
+  LEANER TREES                                    STRONGER REGULARIZATION                          FOUND BY SEARCH
+  50 · depth 5 → 20 · depth 3                     min_child_weight 20 · reg_lambda                 200-trial random · cross-validated
+                                                  3.0
+
+
+   TA K E AWAY         Same features, same mice — tuning alone turned memorization into generalization.
+S TA G E 2 · M O D E L S
+
+Three tabular classifiers
+From the inherited baseline to a tabular foundation model.
+
+
+    Inherited                                  New                                      New
+
+   XGBoost baseline                           XGBoost tuned                            TabPFN-3
+   Gradient-boosted trees on the old, un-     A 200-trial randomized hyper-            A prior-data-fitted transformer: in-
+   tuned recipe shipped with the project.     parameter search with cross-validation   context Bayesian inference in a single
+   Imbalance handled with                     — selecting a distinct recipe for each   forward pass, with no hyper-parameter
+   scale_pos_weight ≈ 3.1. The only model     split regime.                            tuning. Our strongest tabular model.
+   at handover — our reference point.
+S TA G E 2 · M O D E L S
+
+What is TabPFN?
+A foundation model for tables — it learns to predict during pre-training, then classifies your data in a single forward pass.
+
+
+    CLASSIC ML · E.G. XGBOOST                                                TABPFN · TABULAR FOUNDATION MODEL
+
+         Your table                                                              Pre-trained once on millions of synthetic tables
+
+
+         Train a new model — minutes to hours                                    Feed labeled rows + query as context — no fitting
+
+
+         Search hyper-parameters                                                 One forward pass · no tuning
+                                                                   vs
+
+         Predict                                                                 Predict WT / HT
+
+
+
+
+   A fresh model, fitted from scratch for every dataset.                   Brings the learning with it — in-context, like an LLM for tables.
+
+
+
+                       A language model for spreadsheets — pre-trained to predict, it reads your labeled rows as a prompt and
+   IN ONE LINE
+                       answers in one shot. No training, no tuning — which is exactly why it shines on small data like ours.
+S TA G E 2 · M O D E L S
+
+What is TabPFN?
+A tabular foundation model — pre-trained once, it then classifies your data in a single forward pass.
+
+  Average accuracy across 51 OpenML datasets                                THE WAY IT WORKS TODAY                             a new model every dataset
+
+
+
+
+                                                                                                  Train a model      Search hyper-
+                                                                           Your data                                                          Prediction
+                                                                                                  from scratch        parameters
+
+
+
+
+                                                                            THE TABPFN WAY                                    pre-trained once · no tuning
+
+
+
+
+                                                                          Your labeled rows +            Frozen pre-trained
+                                                                                                                                        Predict WT / HT
+                Default     Tuned       + Ensembled                              query                         model
+  TabPFN-3-Thinking leads the best boosted trees by ~420 ELO.
+
+
+
+  93% win rate over classic ML                          0.2s to predict 1M samples                            80% of cases beat AutoML
+  on TabArena — the leading structured-data             fast inference for real-world workflows               TabPFN-3-Plus · Thinking mode (+420 ELO)
+  benchmark
+S TA G E 2 · M O D E L S
+
+Model card: TabPFN-3
+   MODEL CARD
+
+   TabPFN-3
+   Prior-data-fitted transformer for tabular data
+                                                    TYPE         Foundation model for tabular data (prior-data-fitted
+                                                                 network)
+
+                                                    INFERENCE    In-context Bayesian prediction in a single forward pass
+
+                                                    TUNING       None — no hyper-parameter search required
+
+                                                    DATA USAGE   Folds its validation split into training — sees ≈ 80% of
+                                                                 data vs XGBoost’s ≈ 60%
+
+                                                    INPUT        The 48-column recording matrix (10 types × 4 features
+                                                                 + 8 meta)
+
+   1                                                ROLE         Our best-performing tabular classifier
+   forward pass — no training loop
+
+   0
+   hyper-parameters to tune
+S TA G E 2 · M O D E L S
+
+How TabPFN decides — without training
+A transformer pre-trained once on millions of synthetic tables — no fitting, one forward pass.
+
+
+
+
+  46 × N                                Pre-trained transformer (PFN)
+  training rows
+  the labeled context (the                                                              in-context posterior                          HT
+  prompt)
+                                                                                        p(HT) · threshold 0.5                         WT
+                                        frozen weights · in-context learning · no
+  + 1 new recording
+                                        gradient descent on your data
+  the query
+
+
+        No fitting on your data · no hyper-parameter tuning · balance_probabilities = True → native 3:1 class-imbalance correction
+
+
+
+
+           0.781                                0.92                                0.55                               0.794
+              Accuracy                            HT recall                         HT precision                        weighted F1
+               +0.048                              −0.02                               +0.05                              +0.045
+
+                    Best model in both regimes — barely drops on unseen mice: 0.729 subject-independent, vs XGBoost's 0.693.
+S TA G E 2 · M O D E L S · S E Q U E N C E T R A C K
+
+What if the order of the calls is the signal?
+The tabular models average each recording, discarding order and rhythm. So we looked at a session as a sequence.
+
+   ONE SESSION ≈ 10 MINUTES OF A PUP'S ISOLATION CALLS, IN THE ORDER THEY HAPPEN
+
+                                                                                                                                              time →
+
+
+   each call →                            14 numbers — 4 acoustic · 8 type embedding · 2 flags · up to 256 steps per session
+
+
+
+
+  TABULAR TRACK · ORDER DISCARDED                                                SEQUENCE TRACK · ORDER PRESERVED
+                      Collapses to per-type averages — the                                                    Keep the calls in order — the
+                      sequence is gone.                                                                       melody, not just the notes.
+
+
+
+
+  Gal et al. (2023): the temporal dynamics of these calls carry phenotypic signal.   Models tried:   BiLSTM    1D-CNN     Transformer
+S TA G E 2 · M O D E L S · S E Q U E N C E T R A C K
+
+A lucky fold, not a real gain
+One split looked excellent; cross-validation showed the cause was data scale — not the hypothesis.
+
+
+   BALANCED ACCURACY · UNSEEN MICE                                                      WHY · DATA STARVATION
+
+
+
+
+                                                                                                       125,576 syllables
+
+         0.704
+            best single split
+                                         −0.141
+                                          5-fold
+                                                       0.563± 0.063
+                                                                                                         408 sessions
+                                       grouped CV
+            looked fantastic                              honest estimate
+                                                                                                              ~19 HT / fold
+
+
+
+
+   Chance = 0.50 · some models even predicted HT for every session — a score that
+                                                                                              Only 24 HT mice in the whole dataset
+   looks high but has no real skill.
+
+
+
+  Honest conclusion — not supported at this data scale, not that temporal order is uninformative. With more                   VERDICT
+  animals, the dynamics reported by Gal et al. may well be learnable.                                                Explored, not chosen
+                                                            08
+SECTION 08
+
+
+
+
+Results
+Performance, discrimination, and comparison to baselines.
+R E S U LT S · S C O P E
+
+Everything we evaluated
+Every model, on each representation, across cohort scope and split regime — plus the search, sweep and validation behind them.
+
+
+                                                                                           24
+                              POOLED              STRAIN 1            STRAIN 2
+                           dep       ind       dep        ind       dep       ind
+  TABULAR MODELS 48-feature per-recording aggregates                                       reported model × cohort × split evaluations
+
+  XGBoost                                                                                AND, BEHIND THEM
+  inherited baseline
+
+  XGBoost-tuned                                                                           200 trial search
+                                                                                              hyperparameters · per regime
+  200-trial search
+                                                                                                   imbalance levers
+  TabPFN-3                                                                                8        × 3 sequence architectures
+  foundation model
+                                                                                                   fold grouped CV
+  SEQUENCE MODELS 256×14 ordered-syllable tensors
+                                                                                          5        mice separate across folds
+  BiLSTM
+                                                ·          ·          ·          ·
+  2-layer bidirectional                                                                            CNN syllable typer
+                                                                                          1        BiT ResNet-50×3 · transfer learning
+  1D-CNN
+                                                ·          ·          ·          ·
+  conv + masked pool
+
+  Transformer
+  CLS + 2 encoder                               ·          ·          ·          ·
+  layers
+R E S U LT S
+
+Two numbers, honestly reported
+TabPFN reaches the highest accuracy of our tabular models — and it beats the inherited baseline in both regimes.
+
+
+
+
+                                                                         SUBJECT-INDEPENDENT
+
+
+
+                                                                         0.729
+    SUBJECT-DEPENDENT
+
+
+
+    0.781
+    accuracy on animals seen before · up to 0.801 per cohort
+                                                                         accuracy on completely unseen animals · weighted F1
+                                                                         0.743 · ROC-AUC 0.783
+
+
+
+
+                      Inherited XGBoost baseline, for reference: 0.733 subject-dependent · 0.693 subject-independent
+R E S U LT S
+
+The tabular models, side by side
+Recording level, grouped by split regime: seen vs unseen animals. TabPFN leads overall; tuned-XGBoost gives the best
+minority recall on unseen animals.
+
+ Model                                Acc           Wtd F1          Bal. acc        ROC-AUC        HT recall   HT prec   HT F1
+
+    Subject-dependent · seen animals — same mouse in train & test
+
+ XGBoost · inherited                 0.733          0.749            0.795            0.876         0.940      0.496     0.649
+
+
+ XGBoost-tuned                       0.772          0.785            0.798            0.885         0.844      0.543     0.661
+
+
+ TabPFN                              0.781          0.794            0.828            0.908         0.918      0.550     0.688
+
+    Subject-independent · completely unseen animals
+
+ XGBoost · inherited                 0.693          0.706            0.678            0.770         0.637      0.452     0.529
+
+
+ XGBoost-tuned                       0.702          0.719            0.725             0.753        0.869      0.473     0.612
+
+
+ TabPFN                              0.729          0.743            0.662            0.783         0.782      0.499     0.610
+
+   TabPFN — best overall   best HT recall in each regime   Positive class = HT (Mthfr model-ASD)
+R E S U LT S
+
+The generalization gap
+Every model drops from seen animals to unseen — but TabPFN transfers best.
+
+
+
+                                            0.693
+XGBoost · inherited
+                                                                            0.733
+
+
+                                                    0.702
+XGBoost-tuned
+                                                                                                           0.772
+
+
+                                                                        0.729
+TabPFN
+                                                                                                                   0.781
+
+
+                subject-dependent · seen animals     subject-independent · unseen animals   accuracy scale 0.66 – 0.80
+R E S U LT S
+
+Catching the true cases: HT recall
+Recall = the share of real model-ASD pups a model flags. All models score high on seen animals — but on unseen ones the
+ranking flips.
+
+
+                      1.00    0.940                                                          0.918
+                                                               0.844 0.869
+                                                                                                       0.782
+                      0.75
+                                            0.637
+
+                     0.50
+
+
+
+
+                          XGBoost · inherited                XGBoost-tuned                      TabPFN
+
+                                                                      On unseen animals the inherited model collapses to 0.637 — tuning
+  dependent · seen   independent · unseen     best recall in regime
+                                                                      restores recall to 0.869, the best of any model.
+R E S U LT S
+
+The clinically important number
+A screening tool must not miss true cases — so HT recall on unseen animals matters most.
+
+
+
+
+    HT RECALL · UNSEEN ANIMALS                                        BEST MODEL DEPENDS ON THE GOAL
+
+
+
+    0.869
+    tuned XGBoost catches ~87% of true model-ASD pups ·
+                                                                      Overall accuracy
+                                                                      → TabPFN
+
+
+                                                                      Minority-class recall (screening)
+    TabPFN holds 0.782                                                → tuned XGBoost
+R E S U LT S · U N S E E N A N I M A L S
+
+Where each true class goes
+Each bar splits a true class into correctly classified vs confused. True HT is mostly caught; true WT always leaks ~30% into HT —
+the precision wall.
+                           true WT · n = 1,560
+XGBoost ·                    71%                                                                                  29%
+                             correct WT (specificity)                                                             missed
+inherited
+                           true HT · n = 579
+misses 36% of cases
+                             64%                                                                         36%
+                             correct HT (recall)                                                         missed
+
+                           true WT · n = 1,560
+
+XGBoost-tuned                64%                                                                         36%
+                             correct WT (specificity)                                                    missed
+best recall · misses
+                           true HT · n = 579
+13%
+                             87%                                                                                                    13%
+                             correct HT (recall)                                                                                    missed
+
+                           true WT · n = 1,560
+                             71%                                                                                  29%
+TabPFN                       correct WT (specificity)                                                             missed
+misses 22% of cases        true HT · n = 579
+                             78%                                                                                           22%
+                             correct HT (recall)                                                                           missed
+
+            Tuning cuts missed cases 36% → 13% — but ~30% of healthy pups are still flagged HT: the precision wall, a feature-level limit.
+R E S U LT S
+
+Ranking quality: ROC and precision–recall
+Ranking is strong and well above chance — but the regime shift and the minority-class precision decay both show here.
+ROC                                                                   Precision–recall · HT
+
+
+
+
+  TabPFN ranks best                           Regime cost ≈ −0.12 AUC                         Above prevalence (0.26)
+  ROC-AUC 0.908 seen → 0.783 unseen           the generalization gap, quantified              real signal — but precision decays at high
+                                                                                              recall
+R E S U LT S
+
+What the signal can and can’t do
+Two ceilings that shape every conclusion.
+
+
+
+
+    THE HT PRECISION WALL                                           STRAIN = COHORT CONFOUND
+
+
+    ~0.50                                                           0.903               strain1 across-subject
+    HT precision is pinned near 0.50 across every model,            …while strain2 collapses. Strain is confounded with both
+    tuning and split — about half of positive alerts are false. A   recording era and genetic background — so per-strain
+    feature-level ceiling, not the classifier.                      numbers can’t be read as pure phenotype.
+R E S U LT S
+
+The HT precision wall
+HT precision clusters around 0.50 across every tabular configuration — a feature-level ceiling, not a classifier limit.
+R E S U LT S
+
+Which features drive the call?
+Averaged XGBoost gain importance — metadata dominates; among acoustic cues, border frequencies and per-type
+durations lead.
+
+
+      Mother genotype                                                                                           0.585
+                Strain                                                                                          0.033
+                        Sex                                                                                     0.028
+                  syll3_dist                                                                                    0.018
+              syll6_dist                                                                                        0.016
+    Age (postnatal day)                                                                                         0.016
+                  syll1_dist                                                                                    0.013
+               syll1_s_freq                                                                                     0.012
+               syll3_e_freq                                                                                     0.011
+                   syll2_dist                                                                                   0.010
+                  syll3_dur                                                                                     0.010
+               syll1_e_freq                                                                                     0.009
+               syll6_e_freq                                                                                     0.009
+                   syll6_dur                                                                                    0.008
+                     Avg ISI                                                                                    0.008
+
+
+
+  metadata           acoustic feature   much of the signal is metadata — part of why the precision wall holds
+R E S U LT S
+
+Strain confounds the phenotype
+strain1 (the recent, mixed-background cohort) is separable; strain2 collapses — strain is entangled with cohort and
+genetic background.
+R E S U LT S · O P E R AT I N G P O I N T
+
+The threshold is a dial we control
+The precision wall is fixed — but the decision threshold is ours. For a screening tool we can trade toward high recall.
+
+
+
+
+  Same model, moved point                         Recall → ~1.0 on unseen                       Precision holds ~0.47
+  one TabPFN — @0.5, Youden, F1, target-recall,   push the operating point to catch nearly      the wall stays — so choose recall for
+  balanced                                        every case                                    screening
+                                                                      09
+SECTION 09
+
+
+
+
+Engineering contribution
+By HIT’s guidelines, turning an inherited research prototype into a
+reproducible, end-to-end system is a result in its own right.
+ENGINEERING · THE TOOL
+
+A segmentation app the lab actually uses
+A one-click GUI wrapping our segmentation + CNN typing — built for Prof. Hava Golan to curate USVs without the command line.
+
+
+
+
+ year → session hierarchy             Same algorithms as the pipeline      Outputs the canonical file   Caught the genotype error
+
+ Published & citable — USV Segmentation v1.0.2 · Zenodo · one-click Windows installer
+ENGINEERING · REPRODUCIBILITY
+
+From inherited prototype to a single source of truth
+One documented data lineage, versioned end to end — rebuilt on top of an inherited research prototype.
+
+                                                Canonical file ·
+     Raw WAV             GUI segmentation      single source of        Manifest + filters      Train matrices           Per-run results
+                                                     truth
+
+
+
+
+  Single source of truth                       Data-integrity fix                            End-to-end reproducible
+  One canonical file + a versioned manifest    Establishing that source exposed a            Runs from a clean checkout: pinned
+  replace scattered, undocumented              genotype-labeling error: 14 mice · 2,495      environment (requirements + Dockerfile)
+  spreadsheets — every number traces back      rows corrected (HET → WT) — and with it,      and documented CLI flags for model, split
+  to a specific run.                           the honest, lower baseline.                   regime and strain.
+
+
+
+
+  OPEN SOURCE Public GitHub repository — clone and run                CITABLE Zenodo · doi:10.5281/zenodo.20096810
+                                                                 10
+SECTION 10
+
+
+
+
+Conclusions & future work
+Closing the research loop — what we answered, and what's next.
+CONCLUSIONS
+
+Answering the research questions
+  RQ1 M O D E L S                                             Yes     RQ2 F E AT U R E S                                          Partly
+
+ Do the new models beat the inherited baseline?                       Which acoustic features drive the classification?
+ TabPFN wins both regimes (0.781 within · 0.729 across · ROC-AUC      Border frequencies and per-syllable-type durations (consistent
+ 0.783); tuned XGBoost gives the best minority recall (0.869 on       with Shekel et al.) — but HT precision ≈ 0.50 marks a feature-
+ unseen animals).                                                     representation ceiling.
+
+
+
+
+  RQ3 R E G I M E & G E N E R A L I Z AT I O N           Decisive           ENGINEERING                                              Yes
+
+ How do split regime and grouping affect generalization?              Can the inherited pipeline be made reproducible?
+ Regime dominates — report within vs across separately (up to ~0.30   A reproducible, versioned, end-to-end pipeline with a single source
+ gap in HT recall); strain is confounded with cohort; sequence        of truth and GUI curation — which also exposed and fixed a
+ models don’t help at this scale.                                     genotype-labeling error.
+CONCLUSION
+
+Mouse USVs carry a real ASD-model signal — strong on
+known animals, realistically above chance on new ones.
+
+
+                                                                   Subject-dependent
+                                                                  seen animals · 0.78–0.80
+
+
+
+ chance 0.50                                   Subject-independent                                                           perfect 1.00
+                                              unseen animals · 0.729 acc
+                                                     · 0.783 AUC
+
+
+
+
+ The signal is real                         Honestly bounded                                 Reproducible & auditable
+ USVs separate wild-type from the Mthfr     A ~0.50 feature-level precision ceiling and a    A single source of truth, open-sourced end
+ ASD model — 0.869 HT recall catches true   strain–cohort confound — reported per            to end — every number traceable, a
+ cases on unseen animals.                   regime, never hidden.                            foundation to build on.
+FUTURE WORK
+
+Where this goes next
+The three highest-leverage next steps.
+
+
+
+
+    1                                       2
+                                                                                      3
+  Richer per-call features                 A true cross-cohort test
+                                                                                     Per-subject decisions
+  Add full frequency-contour               Train on one strain and evaluate on the
+                                                                                     Aggregate call- and session-level
+  descriptors (mean / min / max / slope,   other, separating the ASD phenotype
+                                                                                     predictions into one vote per mouse
+  bandwidth, FM depth) to test whether     from cohort membership and
+                                                                                     and report subject-level metrics — the
+  the HT-precision wall finally breaks —   controlling the confirmed genetic-
+                                                                                     clinically meaningful resolution.
+  the highest-leverage experiment.         background difference.
+T H A N K YO U
+
+
+
+
+Questions & discussion
+Advisor                      Biology lead & data owner
+Dr. Dror Lederman            Prof. Hava M. Golan
+                             Ben-Gurion University
+
+Presented by
+Chen Aharon · Aviel Bitton
+M.Sc. Data Science
+
